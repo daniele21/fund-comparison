@@ -37,3 +37,10 @@ yarn-error.log*
 final_fp_data.csv
 
 # Keep repository metadata and source tracked explicitly
+data/FP_costi.csv
+data/FP_data_rendimenti.csv
+scripts/check_ids.js
+fix.py
+output_1 copy.json
+output_1.json
+test.py

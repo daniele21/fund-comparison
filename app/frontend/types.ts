@@ -1,0 +1,33 @@
+export interface PensionFund {
+  id: string;
+  type: 'FPN' | 'FPA' | 'PIP';
+  societa: string | null;
+  pip: string; // "fondo" from CSV
+  nAlbo: number;
+  linea: string; // "comparto" from CSV
+  ramo: string | null; // This is missing from new data, will be null
+  categoria: FundCategory;
+  isc: {
+    isc2a: number | null;
+    isc5a: number | null;
+    isc10a: number | null;
+    isc35a: number | null;
+  };
+  costoAnnuo: number | null; // Will map isc5a here for simplicity in existing components
+  rendimenti: {
+    ultimoAnno: number | null;
+    ultimi3Anni: number | null;
+    ultimi5Anni: number | null;
+    ultimi10Anni: number | null;
+    ultimi20Anni: number | null;
+  };
+}
+
+export type FundCategory = 'GAR' | 'BIL' | 'AZN' | 'OBB MISTO' | 'OBB PURO' | 'OBB';
+
+export type SortableKey = keyof PensionFund | 'ultimoAnno' | 'ultimi3Anni' | 'ultimi5Anni' | 'ultimi10Anni' | 'ultimi20Anni';
+
+export interface SortConfig {
+  key: SortableKey;
+  direction: 'ascending' | 'descending';
+}

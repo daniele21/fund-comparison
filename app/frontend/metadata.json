@@ -1,0 +1,5 @@
+{
+  "name": "Fondo Pensione Comparator",
+  "description": "A web application to compare the performance and characteristics of Italian pension funds (Fondi Pensione). Users can filter, sort, and visualize data to make informed decisions.",
+  "requestFramePermissions": []
+}
