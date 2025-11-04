@@ -31,3 +31,11 @@ export interface SortConfig {
   key: SortableKey;
   direction: 'ascending' | 'descending';
 }
+
+// Auth user returned by the API
+export interface AuthUser {
+  id: string;
+  email: string;
+  name?: string | null;
+  picture?: string | null;
+}

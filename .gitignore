@@ -44,3 +44,5 @@ fix.py
 output_1 copy.json
 output_1.json
 test.py
+app/frontend/.env
+scripts/install_backend_deps.sh

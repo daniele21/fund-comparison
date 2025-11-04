@@ -3,6 +3,7 @@ import { pensionFundsData } from './data/funds';
 import { PensionFund, FundCategory, SortConfig, SortableKey } from './types';
 import Header from './components/Header';
 import Playbook from './components/Playbook';
+import LoginModal from './components/LoginModal';
 import FilterControls from './components/FilterControls';
 import PerformanceChart from './components/PerformanceChart';
 import CostChart from './components/CostChart';
@@ -65,6 +66,11 @@ const App: React.FC = () => {
   const handleGoToPlaybook = () => {
     setView('playbook');
   };
+
+  // Login modal gating
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const openLoginModal = () => setShowLoginModal(true);
+  const closeLoginModal = () => setShowLoginModal(false);
 
   const { companies, categories } = useMemo(() => {
     const companySet = new Set<string>();
@@ -163,7 +169,19 @@ const App: React.FC = () => {
   };
 
   if (view === 'playbook') {
-    return <Playbook onStart={() => setView('dashboard')} theme={theme} toggleTheme={toggleTheme} />;
+    return (
+      <>
+        <Playbook onStart={openLoginModal} theme={theme} toggleTheme={toggleTheme} />
+        <LoginModal
+          open={showLoginModal}
+          onClose={closeLoginModal}
+          onSuccess={() => {
+            closeLoginModal();
+            setView('dashboard');
+          }}
+        />
+      </>
+    );
   }
 
   return (
