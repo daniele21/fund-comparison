@@ -46,3 +46,11 @@ output_1.json
 test.py
 app/frontend/.env
 scripts/install_backend_deps.sh
+app/backend/.coverage
+app/backend/.env.development
+app/backend/.env.development.example
+app/backend/.env.example
+app/backend/.env.test
+app/backend/config.development.json
+app/backend/Makefile
+app/backend/pyproject.toml
