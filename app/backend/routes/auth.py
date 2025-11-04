@@ -1,8 +1,18 @@
 from fastapi import APIRouter, Depends, Response, Request, HTTPException
-from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
 import logging
+import os
+import time
+import jwt
 
 from backend.services.auth_service import build_login_url, exchange_code, get_current_user, logout_user, OAUTH_PROVIDERS, get_provider, _get_redirect_uri
+from backend.services import user_service
+from backend.schemas.user import UserProfileUpdate, UserProfileCreate
+
+try:
+    from google.auth.exceptions import DefaultCredentialsError
+except Exception:  # pragma: no cover - optional dependency
+    DefaultCredentialsError = None  # type: ignore
 
 logger = logging.getLogger("uvicorn.error")
 from backend.settings import settings
@@ -82,11 +92,10 @@ async def oauth_callback(provider: str, code: str, state: str, response: Respons
                     console.log('🎯 [Backend Callback] targetOrigin:', '{frontend_origin}');
                     console.log('🪟 [Backend Callback] window.opener exists:', !!window.opener);
                     try {{
-                                    if (window.opener) {{
-                                        window.opener.postMessage({{ type: 'oauth', provider: '{provider}', status: 'success', token: '{session.token}' }}, '{frontend_origin}');
+                        if (window.opener) {{
+                            window.opener.postMessage({{ type: 'oauth', provider: '{provider}', status: 'success', token: '{session.token}' }}, '{frontend_origin}');
                             console.log('✅ [Backend Callback] postMessage sent successfully');
-                            // Temporarily disabled auto-close for debugging
-                            // setTimeout(function() {{ window.close(); }}, 100);
+                            setTimeout(function() {{ window.close(); }}, 200);
                         }} else {{
                             console.log('⚠️ [Backend Callback] No window.opener, redirecting');
                             window.location.href = '{frontend_url}';
@@ -131,6 +140,22 @@ async def me(request: Request):
     user = await get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
+
+    plan = user.get("plan")
+    try:
+        profile = await user_service.get_user_by_id(str(user["id"]))
+        if profile and profile.plan:
+            plan = profile.plan
+    except Exception as exc:
+        if DefaultCredentialsError and isinstance(exc, DefaultCredentialsError):
+            logger.warning("Skipping Firestore lookup for /auth/me due to missing credentials: %s", exc)
+        else:
+            logger.exception("Failed to retrieve user profile for plan check", exc_info=True)
+
+    normalized_plan = str(plan or "free").strip().lower().replace(" ", "-")
+    if normalized_plan not in {"free", "full-access"}:
+        normalized_plan = "free"
+    user["plan"] = normalized_plan
     return user
 
 
@@ -139,6 +164,93 @@ async def logout(response: Response):
     """Sign out and clear session cookie."""
     logout_user(response)
     return {"ok": True}
+
+
+@router.post("/upgrade/fake")
+async def fake_upgrade(request: Request):
+    """Development-only helper to simulate a plan upgrade."""
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    new_plan = "full-access"
+
+    try:
+        user_id = str(user["id"])
+        profile = await user_service.get_user_by_id(user_id)
+        if profile:
+            await user_service.update_user(user_id, UserProfileUpdate(plan=new_plan))
+        else:
+            email = user.get("email")
+            if not email:
+                raise HTTPException(status_code=400, detail="Missing email for user")
+            payload = UserProfileCreate(
+                id=user_id,
+                email=email,
+                name=user.get("name"),
+                picture=user.get("picture"),
+                plan=new_plan,
+            )
+            await user_service.upsert_user(payload, mark_login=False)
+    except HTTPException:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        if DefaultCredentialsError and isinstance(exc, DefaultCredentialsError):
+            logger.warning("Skipping Firestore update during fake upgrade: %s", exc)
+        else:
+            logger.exception("Failed to apply fake upgrade", exc_info=True)
+            raise HTTPException(status_code=500, detail="Unable to upgrade plan") from exc
+
+    # Refresh session cookie with upgraded plan
+    jwt_secret = os.getenv("APP_JWT_SECRET", "dev-secret-key")
+    jwt_algorithm = "HS256"
+    jwt_expire_minutes = 60
+
+    auth_config = settings.auth_config
+    if auth_config and auth_config.jwt:
+        jwt_secret = auth_config.jwt.secret_key
+        jwt_algorithm = auth_config.jwt.algorithm
+        jwt_expire_minutes = auth_config.jwt.access_token_expire_minutes
+
+    issued_at = int(time.time())
+    expires_at = issued_at + jwt_expire_minutes * 60
+    roles = user.get("roles") or ["user"]
+
+    claims = {
+        "sub": user["id"],
+        "email": user.get("email"),
+        "name": user.get("name"),
+        "picture": user.get("picture"),
+        "provider": user.get("provider"),
+        "roles": roles,
+        "plan": new_plan,
+        "iat": issued_at,
+        "exp": expires_at,
+    }
+
+    if auth_config and auth_config.jwt:
+        aud = getattr(auth_config.jwt, "audience", None)
+        iss = getattr(auth_config.jwt, "issuer", None)
+        if aud:
+            claims["aud"] = aud
+        if iss:
+            claims["iss"] = iss
+
+    upgraded_token = jwt.encode(claims, jwt_secret, algorithm=jwt_algorithm)
+
+    response = JSONResponse({"plan": new_plan, "token": upgraded_token})
+
+    is_prod = getattr(settings, 'ENV', '').lower() == 'production'
+    cookie_name = "session"
+    response.set_cookie(
+        key=cookie_name,
+        value=upgraded_token,
+        httponly=True,
+        samesite=("strict" if is_prod else "lax"),
+        max_age=60 * 60 * 24 * 7,
+        secure=is_prod,
+    )
+
+    return response
 
 
 @router.get("/providers")
@@ -154,4 +266,3 @@ async def list_providers():
             for name, provider in OAUTH_PROVIDERS.items()
         }
     }
-

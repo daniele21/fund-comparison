@@ -38,4 +38,6 @@ export interface AuthUser {
   email: string;
   name?: string | null;
   picture?: string | null;
+  plan?: 'free' | 'full-access';
+  roles?: string[];
 }

@@ -54,3 +54,4 @@ app/backend/.env.test
 app/backend/config.development.json
 app/backend/Makefile
 app/backend/pyproject.toml
+app/firestore-access.json

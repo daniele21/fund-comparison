@@ -10,6 +10,9 @@ import CostChart from './components/CostChart';
 import FundTable from './components/FundTable';
 import FundDetailModal from './components/FundDetailModal';
 import { CATEGORY_MAP } from './constants';
+import { useAuth } from './auth';
+import UpgradeDialog from './components/UpgradeDialog';
+import FakePaymentDialog from './components/FakePaymentDialog';
 
 type View = 'playbook' | 'dashboard';
 
@@ -37,6 +40,7 @@ const getSortValue = (fund: PensionFund, key: SortableKey): string | number | nu
   }
 };
 
+const FREE_PLAN_LIMIT = 10;
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>('playbook');
@@ -48,6 +52,11 @@ const App: React.FC = () => {
   const [selectedFundIds, setSelectedFundIds] = useState<Set<string>>(new Set());
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ultimoAnno', direction: 'descending' });
   const [modalFund, setModalFund] = useState<PensionFund | null>(null);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [showFakePayment, setShowFakePayment] = useState(false);
+  const { user, loading: authLoading } = useAuth();
+  const currentPlan = user?.plan ?? 'free';
+  const isFullAccess = currentPlan === 'full-access';
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -69,8 +78,22 @@ const App: React.FC = () => {
 
   // Login modal gating
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingUpgradeAfterLogin, setPendingUpgradeAfterLogin] = useState(false);
   const openLoginModal = () => setShowLoginModal(true);
-  const closeLoginModal = () => setShowLoginModal(false);
+  const closeLoginModal = () => {
+    setShowLoginModal(false);
+    setPendingUpgradeAfterLogin(false);
+  };
+  const handleUpgradeLogin = () => {
+    setShowUpgradeDialog(false);
+    setPendingUpgradeAfterLogin(true);
+    openLoginModal();
+  };
+
+  const handleStartFakePayment = () => {
+    setShowUpgradeDialog(false);
+    setShowFakePayment(true);
+  };
 
   const { companies, categories } = useMemo(() => {
     const companySet = new Set<string>();
@@ -130,6 +153,15 @@ const App: React.FC = () => {
 
     return sorted;
 }, [filteredFunds, sortConfig]);
+
+  const visibleFunds = useMemo(() => {
+    if (isFullAccess) {
+      return filteredAndSortedFunds;
+    }
+    return filteredAndSortedFunds.slice(0, FREE_PLAN_LIMIT);
+  }, [filteredAndSortedFunds, isFullAccess]);
+
+  const showUpgradeNotice = !authLoading && !isFullAccess && filteredAndSortedFunds.length > FREE_PLAN_LIMIT;
 
   const selectedFunds = useMemo(() => {
     return pensionFundsData.filter(fund => selectedFundIds.has(fund.id));
@@ -228,11 +260,39 @@ const App: React.FC = () => {
                 <div className="flex justify-between items-baseline mb-5">
                     <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Risultati</h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                        Mostrando {filteredAndSortedFunds.length} di {pensionFundsData.length} fondi
+                        Mostrando {visibleFunds.length} di {filteredAndSortedFunds.length} fondi
                     </p>
                 </div>
+                {showUpgradeNotice && (
+                  <div className="mb-5 rounded-xl border border-sky-200 bg-sky-50 p-4 text-slate-700 shadow-sm dark:border-sky-700/70 dark:bg-slate-800/60 dark:text-slate-200">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-base font-semibold text-slate-900 dark:text-slate-100">Piano Free attivo</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
+                          Visualizzi i primi {FREE_PLAN_LIMIT} risultati. Passa al piano Full Access per esplorare l&apos;elenco completo dei fondi.
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        {!user && (
+                          <button
+                            onClick={handleUpgradeLogin}
+                            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                          >
+                            Accedi
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setShowUpgradeDialog(true)}
+                          className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
+                        >
+                          Scopri Full Access
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <FundTable
-                  funds={filteredAndSortedFunds}
+                  funds={visibleFunds}
                   sortConfig={sortConfig}
                   setSortConfig={setSortConfig}
                   selectedFundIds={selectedFundIds}
@@ -244,6 +304,30 @@ const App: React.FC = () => {
         </div>
       </main>
       <FundDetailModal fund={modalFund} onClose={handleCloseModal} theme={theme} />
+      <UpgradeDialog
+        open={showUpgradeDialog}
+        onClose={() => setShowUpgradeDialog(false)}
+        onRequestLogin={handleUpgradeLogin}
+        onStartCheckout={handleStartFakePayment}
+        isAuthenticated={!!user}
+      />
+      <FakePaymentDialog
+        open={showFakePayment}
+        onClose={() => setShowFakePayment(false)}
+        onSuccess={() => setShowFakePayment(false)}
+      />
+      <LoginModal
+        open={showLoginModal}
+        onClose={closeLoginModal}
+        onSuccess={() => {
+          const shouldOpenPayment = pendingUpgradeAfterLogin;
+          closeLoginModal();
+          setShowUpgradeDialog(false);
+          if (shouldOpenPayment) {
+            setShowFakePayment(true);
+          }
+        }}
+      />
     </div>
   );
 };

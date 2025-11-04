@@ -8,6 +8,8 @@ import httpx
 from urllib.parse import urlencode
 from fastapi import HTTPException
 from ..settings import settings
+from ..services import user_service
+from ..schemas.user import UserProfileCreate
 import logging
 
 logger = logging.getLogger("uvicorn.error")
@@ -251,6 +253,32 @@ async def exchange_code(provider_name: str, code: str, state: str) -> Session:
     
     # Normalize user info across providers
     normalized_user = _normalize_user_info(provider_name, user_info)
+
+    # Persist user profile in Firestore so downstream services can access it
+    if normalized_user.get("email"):
+        try:
+            profile = UserProfileCreate(
+                id=normalized_user["id"],
+                email=normalized_user["email"],
+                name=normalized_user.get("name"),
+                picture=normalized_user.get("picture"),
+            )
+            await user_service.upsert_user(profile, mark_login=True)
+            logger.info(
+                "Firestore profile upserted (auth_service) user_id=%s email=%s",
+                normalized_user["id"],
+                normalized_user.get("email"),
+            )
+        except Exception:  # noqa: BLE001
+            logger.exception(
+                "Failed to upsert user profile in Firestore for user_id=%s",
+                normalized_user.get("id"),
+            )
+    else:
+        logger.warning(
+            "Skipping Firestore profile upsert because email missing for user_id=%s",
+            normalized_user.get("id"),
+        )
     
     # Get JWT config
     jwt_secret = os.getenv("APP_JWT_SECRET", "dev-secret-key")
@@ -400,4 +428,3 @@ async def get_current_user(request) -> Optional[dict]:
 def logout_user(response):
     """Delete session cookie."""
     response.delete_cookie("session")
-

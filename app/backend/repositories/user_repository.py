@@ -75,6 +75,11 @@ class FirestoreUserRepository:
                 "created_at": created_at,
                 "updated_at": now,
             }
+            plan = updated.get("plan")
+            if not plan:
+                updated["plan"] = "free"
+            else:
+                updated["plan"] = str(plan).lower()
             if payload.get("last_login_at"):
                 updated["last_login_at"] = payload["last_login_at"]
             elif not existing.get("last_login_at"):

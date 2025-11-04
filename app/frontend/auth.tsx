@@ -6,12 +6,28 @@ type AuthContextValue = {
   loading: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
+  refresh: (tokenOverride?: string) => Promise<AuthUser | null>;
+  setToken: (token?: string) => void;
+  updateUser: (updater: (prev: AuthUser | null) => AuthUser | null) => void;
+  token?: string;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 const env = (import.meta as any).env as Record<string, string> | undefined;
 const API_BASE = (env && env.VITE_API_BASE) || 'http://localhost:8000';
+const TOKEN_STORAGE_KEY = 'app.authToken';
+
+function readStoredToken(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    const stored = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+    return stored || undefined;
+  } catch (err) {
+    console.warn('[Auth] Unable to read stored token:', err);
+    return undefined;
+  }
+}
 
 async function fetchMe(token?: string): Promise<AuthUser | null> {
   try {
@@ -37,21 +53,47 @@ async function fetchMe(token?: string): Promise<AuthUser | null> {
     if (!res.ok) return null;
     const data = await res.json();
     console.log('[Auth] /auth/me returned user:', data);
-    return data;
+    const plan = typeof data.plan === 'string' ? data.plan.toLowerCase() : 'free';
+    const normalizedPlan = plan === 'full-access' ? 'full-access' : 'free';
+    return { ...data, plan: normalizedPlan } as AuthUser;
   } catch (e) {
     console.warn('[Auth] fetchMe error:', e);
     return null;
   }
 }
 
-export const AuthProvider: React.FC<{ children: ReactNode }>= ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionToken, setSessionToken] = useState<string | undefined>(() => {
+    return readStoredToken();
+  });
+
+  const persistToken = (token?: string) => {
+    setSessionToken(token);
+    if (typeof window !== 'undefined') {
+      if (token) {
+        (window as any).__APP_OAUTH_TOKEN = token;
+        try {
+          window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+        } catch (err) {
+          console.warn('[Auth] Unable to persist token to storage:', err);
+        }
+      } else {
+        delete (window as any).__APP_OAUTH_TOKEN;
+        try {
+          window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+        } catch (err) {
+          console.warn('[Auth] Unable to remove token from storage:', err);
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const u = await fetchMe();
+      const u = await fetchMe(sessionToken);
       if (mounted) setUser(u);
       if (mounted) setLoading(false);
     })();
@@ -94,8 +136,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }>= ({ children }) => 
           const token = payload.token as string | undefined;
           if (token) {
             console.log('[Auth] 🔑 Token received in postMessage, length:', token.length);
-            // Save token in memory (not persisted)
-            (window as any).__APP_OAUTH_TOKEN = token;
+            persistToken(token);
           } else {
             console.log('[Auth] ⚠️ No token in postMessage payload');
           }
@@ -166,7 +207,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }>= ({ children }) => 
         settled = true;
         clearInterval(checkInterval);
         // Try one more time to fetch user
-        fetchMe().then(u => {
+        fetchMe(sessionToken).then(u => {
           if (u) setUser(u);
         }).finally(() => resolve());
       }, 60_000);
@@ -187,10 +228,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }>= ({ children }) => 
       // ignore
     }
     setUser(null);
+    persistToken(undefined);
+  };
+
+  const refresh = async (tokenOverride?: string) => {
+    const effectiveToken = tokenOverride ?? sessionToken;
+    const updated = await fetchMe(effectiveToken);
+    if (updated) {
+      setUser(updated);
+    }
+    if (tokenOverride) {
+      persistToken(tokenOverride);
+    }
+    return updated;
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      login,
+      logout,
+      refresh,
+      setToken: persistToken,
+      updateUser: (updater) => setUser((prev) => updater(prev)),
+      token: sessionToken,
+    }}>
       {children}
     </AuthContext.Provider>
   );

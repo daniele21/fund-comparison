@@ -301,7 +301,14 @@ async def exchange_google_code(
             hd=user_info.get("hd"),
             metadata=metadata or None,
         )
-        await user_service.upsert_user(profile, mark_login=True)
+        logger.info("Attempting Firestore upsert for user_id=%s email=%s", user_info["id"], user_info.get("email"))
+        saved_profile = await user_service.upsert_user(profile, mark_login=True)
+        logger.info(
+            "Firestore profile upserted for user_id=%s plan=%s email=%s",
+            getattr(saved_profile, "id", user_info["id"]),
+            getattr(saved_profile, "plan", None),
+            user_info.get("email"),
+        )
     except Exception as exc:  # noqa: BLE001
         user_service.handle_service_error(exc)
     
