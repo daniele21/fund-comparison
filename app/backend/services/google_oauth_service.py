@@ -151,6 +151,15 @@ class GoogleOAuthService:
                 "grant_type": "authorization_code",
             }
             
+            # DEBUG: Log token exchange details (without logging the secret or code)
+            logger.info(
+                "🔍 DEBUG Token Exchange Request: client_id=%s redirect_uri=%s code_length=%s client_secret_length=%s",
+                self.client_id,
+                redirect_uri,
+                len(code) if code else 0,
+                len(self.client_secret) if self.client_secret else 0
+            )
+            
             logger.info("Exchanging authorization code for tokens")
             response = await client.post(self.TOKEN_URL, data=token_data)
             
@@ -159,6 +168,11 @@ class GoogleOAuthService:
                     "Token exchange failed: status=%s body=%s",
                     response.status_code,
                     response.text
+                )
+                logger.error(
+                    "🔍 DEBUG Failed token exchange used: client_id=%s redirect_uri=%s",
+                    self.client_id,
+                    redirect_uri
                 )
                 raise HTTPException(
                     status_code=400,

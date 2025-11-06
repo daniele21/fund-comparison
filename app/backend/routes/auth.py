@@ -84,29 +84,91 @@ async def oauth_callback(provider: str, code: str, state: str, response: Respons
         <head>
             <meta charset="utf-8" />
             <title>Authentication complete</title>
+            <style>
+                body {{
+                    font-family: system-ui, -apple-system, sans-serif;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100vh;
+                    margin: 0;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                }}
+                .message {{
+                    text-align: center;
+                    padding: 2rem;
+                }}
+                .message h1 {{
+                    margin: 0 0 0.5rem 0;
+                    font-size: 1.5rem;
+                }}
+                .message p {{
+                    margin: 0;
+                    opacity: 0.9;
+                }}
+            </style>
         </head>
         <body>
+            <div class="message">
+                <h1>✅ Authentication complete</h1>
+                <p>This window will close automatically...</p>
+            </div>
             <script>
                 (function() {{
                     console.log('🔔 [Backend Callback] About to send postMessage');
                     console.log('🎯 [Backend Callback] targetOrigin:', '{frontend_origin}');
                     console.log('🪟 [Backend Callback] window.opener exists:', !!window.opener);
+                    
                     try {{
-                        if (window.opener) {{
-                            window.opener.postMessage({{ type: 'oauth', provider: '{provider}', status: 'success', token: '{session.token}' }}, '{frontend_origin}');
+                        if (window.opener && !window.opener.closed) {{
+                            // Send success message to parent window
+                            window.opener.postMessage(
+                                {{ type: 'oauth', provider: '{provider}', status: 'success', token: '{session.token}' }}, 
+                                '{frontend_origin}'
+                            );
                             console.log('✅ [Backend Callback] postMessage sent successfully');
-                            setTimeout(function() {{ window.close(); }}, 200);
+                            
+                            // Close popup after a short delay
+                            setTimeout(function() {{ 
+                                console.log('🚪 [Backend Callback] Closing popup...');
+                                window.close(); 
+                            }}, 1000);
                         }} else {{
-                            console.log('⚠️ [Backend Callback] No window.opener, redirecting');
-                            window.location.href = '{frontend_url}';
+                            console.log('⚠️ [Backend Callback] No window.opener available');
+                            console.log('🔄 [Backend Callback] User must close this window manually or use the redirect link');
+                            
+                            // Show a message with a link instead of auto-redirecting
+                            document.body.innerHTML = `
+                                <div class="message">
+                                    <h1>⚠️ Authentication Complete</h1>
+                                    <p>Please close this window and return to the application.</p>
+                                    <p style="margin-top: 1rem;">
+                                        <a href="{frontend_url}" style="color: white; text-decoration: underline;">
+                                            Or click here to return to the app
+                                        </a>
+                                    </p>
+                                </div>
+                            `;
                         }}
                     }} catch (e) {{
-                        console.error('❌ [Backend Callback] Error sending postMessage:', e);
-                        window.location.href = '{frontend_url}';
+                        console.error('❌ [Backend Callback] Error in postMessage flow:', e);
+                        
+                        // Show error message with manual link
+                        document.body.innerHTML = `
+                            <div class="message">
+                                <h1>⚠️ Authentication Complete</h1>
+                                <p>Please close this window and return to the application.</p>
+                                <p style="margin-top: 1rem;">
+                                    <a href="{frontend_url}" style="color: white; text-decoration: underline;">
+                                        Or click here to return to the app
+                                    </a>
+                                </p>
+                            </div>
+                        `;
                     }}
                 }})();
             </script>
-            <p>Authentication complete. You can close this window.</p>
         </body>
         </html>
         """

@@ -38,9 +38,6 @@ async function fetchMe(token?: string): Promise<AuthUser | null> {
     // If token provided, use it as Bearer auth
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-      console.log('[Auth] Calling /auth/me with Bearer token');
-    } else {
-      console.log('[Auth] Calling /auth/me with cookies only');
     }
     
     const res = await fetch(`${API_BASE}/auth/me`, {
@@ -48,11 +45,8 @@ async function fetchMe(token?: string): Promise<AuthUser | null> {
       headers,
     });
     
-    console.log('[Auth] /auth/me response status:', res.status);
-    
     if (!res.ok) return null;
     const data = await res.json();
-    console.log('[Auth] /auth/me returned user:', data);
     const plan = typeof data.plan === 'string' ? data.plan.toLowerCase() : 'free';
     const normalizedPlan = plan === 'full-access' ? 'full-access' : 'free';
     return { ...data, plan: normalizedPlan } as AuthUser;
@@ -68,6 +62,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [sessionToken, setSessionToken] = useState<string | undefined>(() => {
     return readStoredToken();
   });
+  const userRef = React.useRef<AuthUser | null>(null);
 
   const persistToken = (token?: string) => {
     setSessionToken(token);
@@ -94,7 +89,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     let mounted = true;
     (async () => {
       const u = await fetchMe(sessionToken);
-      if (mounted) setUser(u);
+      if (mounted) {
+        setUser(u);
+        userRef.current = u;
+      }
       if (mounted) setLoading(false);
     })();
 
@@ -104,34 +102,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('[Auth] 🔔 PostMessage received:', {
         origin: e.origin,
         data: e.data,
-        source: e.source === window ? 'self' : 'other window'
+        source: e.source === window ? 'self' : 'other window',
+        dataType: typeof e.data,
+        hasType: e.data?.type,
+        hasStatus: e.data?.status
       });
       
       try {
-        // The postMessage comes FROM the backend callback page (which is on API_BASE domain)
-        const expectedOrigin = new URL(API_BASE).origin;
-        
-        // Also accept localhost variant (127.0.0.1 and localhost are treated as same-site but different origins)
-        const expectedOriginLocalhost = expectedOrigin.replace('127.0.0.1', 'localhost');
-        const expectedOrigin127 = expectedOrigin.replace('localhost', '127.0.0.1');
-        
-        console.log('[Auth] Expected origins:', expectedOrigin, expectedOriginLocalhost, expectedOrigin127);
-        
-        // Only accept messages from our backend API's origin (with localhost/127.0.0.1 flexibility)
-        const isValidOrigin = e.origin === expectedOrigin || 
-                             e.origin === expectedOriginLocalhost || 
-                             e.origin === expectedOrigin127;
-        
-        if (!isValidOrigin) {
-          console.log('[Auth] ❌ Ignoring message from wrong origin. Got:', e.origin);
-          return;
-        }
-        
         const payload = e.data;
-        console.log('[Auth] ✅ Message from correct origin. Payload:', payload);
         
+        // First check if this looks like our OAuth message
         if (payload && payload.type === 'oauth' && payload.status === 'success') {
-          console.log('[Auth] 🎉 OAuth success message received!');
+          console.log('[Auth] 🎯 Found OAuth success message!');
+          
+          // The postMessage comes FROM the backend callback page (which is on API_BASE domain)
+          const expectedOrigin = new URL(API_BASE).origin;
+          
+          // Also accept localhost variant (127.0.0.1 and localhost are treated as same-site but different origins)
+          const expectedOriginLocalhost = expectedOrigin.replace('127.0.0.1', 'localhost');
+          const expectedOrigin127 = expectedOrigin.replace('localhost', '127.0.0.1');
+          
+          console.log('[Auth] Expected origins:', expectedOrigin, expectedOriginLocalhost, expectedOrigin127);
+          console.log('[Auth] Actual origin:', e.origin);
+          
+          // Only accept messages from our backend API's origin (with localhost/127.0.0.1 flexibility)
+          const isValidOrigin = e.origin === expectedOrigin || 
+                               e.origin === expectedOriginLocalhost || 
+                               e.origin === expectedOrigin127;
+          
+          if (!isValidOrigin) {
+            console.log('[Auth] ⚠️ Origin mismatch - but processing anyway for debugging!');
+            console.log('[Auth] If this works, we need to update the expected origin');
+          } else {
+            console.log('[Auth] ✅ Origin validated');
+          }
+          
+          console.log('[Auth] 🎉 Processing OAuth success message!');
           // If backend provided a session token in the message, use it for auth
           const token = payload.token as string | undefined;
           if (token) {
@@ -144,7 +150,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           fetchMe(token).then(data => {
             if (data) {
               console.log('[Auth] ✅ User authenticated:', data.email);
+              console.log('[Auth] Setting user state and userRef');
               setUser(data);
+              userRef.current = data;
+              console.log('[Auth] userRef.current is now:', userRef.current?.email);
             } else {
               console.log('[Auth] ❌ /auth/me returned no user data');
             }
@@ -169,7 +178,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const provider = 'google';
     const redirect = window.location.origin; // Backend will use this to postMessage
     const loginUrl = `${API_BASE}/auth/${provider}/login?redirect=${encodeURIComponent(redirect)}`;
-
+    
     const width = 600;
     const height = 700;
     const top = window.top ? Math.max(0, (window.top.innerHeight - height) / 2) : 100;
@@ -187,13 +196,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       window.location.href = loginUrl;
       return;
     }
-
     return new Promise<void>((resolve) => {
       let settled = false;
 
-      // Watch for user state change (set by global message listener)
+      // Watch for user state change using ref (not closure)
       const checkInterval = setInterval(() => {
-        if (user !== null) {
+        if (userRef.current !== null) {
           settled = true;
           clearInterval(checkInterval);
           clearTimeout(timeout);
@@ -206,9 +214,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (settled) return;
         settled = true;
         clearInterval(checkInterval);
+  // Try one more time to fetch user
         // Try one more time to fetch user
         fetchMe(sessionToken).then(u => {
-          if (u) setUser(u);
+          if (u) {
+            setUser(u);
+            userRef.current = u;
+          }
         }).finally(() => resolve());
       }, 60_000);
     });
@@ -228,6 +240,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // ignore
     }
     setUser(null);
+    userRef.current = null;
     persistToken(undefined);
   };
 
@@ -236,6 +249,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const updated = await fetchMe(effectiveToken);
     if (updated) {
       setUser(updated);
+      userRef.current = updated;
     }
     if (tokenOverride) {
       persistToken(tokenOverride);

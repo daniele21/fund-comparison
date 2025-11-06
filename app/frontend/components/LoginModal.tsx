@@ -11,6 +11,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
   const { user, loading, login } = useAuth();
   const [busy, setBusy] = useState(false);
 
+  // Reset busy state when modal closes
+  useEffect(() => {
+    if (!open) {
+      setBusy(false);
+    }
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     // If user is already authenticated, immediately call success
@@ -25,14 +32,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
     try {
       setBusy(true);
       await login();
-      // login() resolves after popup flow; the auth context will update user
-      // Wait a short moment for user to be set by the provider
-      setTimeout(() => {
-        setBusy(false);
-        onSuccess();
-      }, 300);
+      setBusy(false);
     } catch (e) {
-      console.error('Login failed', e);
+      console.error('[LoginModal] Login failed:', e);
       setBusy(false);
     }
   };

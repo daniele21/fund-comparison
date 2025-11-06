@@ -216,6 +216,15 @@ async def exchange_code(provider_name: str, code: str, state: str) -> Session:
         "grant_type": "authorization_code",
     }
     
+    # DEBUG: Log token exchange details (without logging secrets)
+    logger.info(
+        "🔍 DEBUG Token Exchange (auth_service): client_id=%s redirect_uri=%s code_length=%s secret_length=%s",
+        client_id,
+        redirect_uri,
+        len(code) if code else 0,
+        len(client_secret) if client_secret else 0
+    )
+    
     async with httpx.AsyncClient() as client:
         # Get access token
         headers = {"Accept": "application/json"}

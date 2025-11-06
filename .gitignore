@@ -20,6 +20,8 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.firebase/
+firebase-debug.log
 
 # OS files
 .DS_Store
@@ -55,3 +57,16 @@ app/backend/config.development.json
 app/backend/Makefile
 app/backend/pyproject.toml
 app/firestore-access.json
+.deploy/backend
+.deploy/frontend
+app/backend/.env.production
+app/backend/deploy_from_env.py
+app/backend/DEPLOY.md
+app/backend/env_prod.json
+app/backend/README_DEPLOY.md
+app/frontend/.env.production
+scripts/diagnose-oauth-invalid-client.sh
+scripts/setup-secret-access.sh
+scripts/test-oauth-locally.sh
+scripts/verify-oauth-config.md
+scripts/verify-oauth-secret.sh

@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 import anyio
 from google.cloud import firestore
 
-from ..providers.firestore import get_collection_name, get_firestore_client
+from backend.providers.firestore import get_collection_name, get_firestore_client
 
 
 def _utcnow() -> datetime:

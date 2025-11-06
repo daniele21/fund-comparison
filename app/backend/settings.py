@@ -219,12 +219,21 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         """CORS origins (backward compatibility)."""
+        # Allow explicit override via APP_CORS_ORIGINS environment variable
+        env_val = os.getenv("APP_CORS_ORIGINS")
+        if env_val:
+            # comma-separated list in env
+            return [s.strip() for s in env_val.split(",") if s.strip()]
+
+        # Next prefer auth config (if loaded)
         if self._auth_config:
             return self._auth_config.cors_origins
+
+        # Fallback development-friendly defaults
         return [
             "http://localhost:3000",
             "http://127.0.0.1:3000",
-            "http://localhost:8080"
+            "http://localhost:8080",
         ]
     
     # Legacy properties for backward compatibility
@@ -267,18 +276,28 @@ class Settings(BaseSettings):
     @property
     def BASE_URL(self) -> str:
         """Base API URL (backward compatibility)."""
+        # Check environment variable first (highest priority)
+        env_value = os.getenv("APP_BASE_URL")
+        if env_value:
+            return env_value
+        # Fall back to environment config
         if self._environment_config:
             return self._environment_config.get("api_base_url", "http://localhost:8000")
-        # Do not hardcode base URL; require APP_BASE_URL in environment or environment config.
-        return os.getenv("APP_BASE_URL")
+        # Final fallback
+        return "http://localhost:8000"
     
     @property
     def FRONTEND_BASE_URL(self) -> str:
         """Frontend base URL (backward compatibility)."""
+        # Check environment variable first (highest priority)
+        env_value = os.getenv("APP_FRONTEND_BASE_URL")
+        if env_value:
+            return env_value
+        # Fall back to environment config
         if self._environment_config:
             return self._environment_config.get("frontend_base_url", "http://127.0.0.1:3000")
-        # Do not hardcode frontend URL; prefer explicit APP_FRONTEND_BASE_URL setting.
-        return os.getenv("APP_FRONTEND_BASE_URL")
+        # Final fallback
+        return "http://127.0.0.1:3000"
 
     @property
     def TELEGRAM_BOT_TOKEN(self) -> Optional[str]:
