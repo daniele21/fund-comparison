@@ -27,7 +27,8 @@ const SortableHeader: React.FC<{
     sortConfig: SortConfig;
     setSortConfig: (config: SortConfig | ((prevConfig: SortConfig) => SortConfig)) => void;
     className?: string;
-}> = ({ label, sortKey, sortConfig, setSortConfig, className }) => {
+    align?: 'left' | 'center' | 'right';
+}> = ({ label, sortKey, sortConfig, setSortConfig, className, align = 'left' }) => {
   const isSorted = sortConfig.key === sortKey;
   const direction = isSorted ? sortConfig.direction : undefined;
 
@@ -39,17 +40,20 @@ const SortableHeader: React.FC<{
     });
   };
   
+  const alignmentClass = align === 'right' ? 'justify-end' : align === 'center' ? 'justify-center' : 'justify-start';
+  const textAlign = align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
+  
     return (
-        <th className={`py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider ${className}`}>
+        <th className={`py-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider ${textAlign} ${className}`}>
             <button
                 type="button"
                 onClick={handleClick}
-                className="w-full text-left cursor-pointer select-none flex items-center focus:outline-none"
+                className={`w-full ${textAlign} cursor-pointer select-none flex items-center ${alignmentClass} focus:outline-none group`}
                 aria-pressed={isSorted}
                 aria-label={`Ordina per ${label}`}
             >
                 {label}
-                <span className="ml-2">
+                <span className={`ml-2 transition-opacity ${isSorted ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`}>
                     <SortIcon direction={direction} />
                 </span>
             </button>
@@ -64,7 +68,7 @@ const RendimentoCell: React.FC<{ value: number | null; label?: string; isMobile?
     const content = (
         <>
             {label && <span className={`text-slate-500 dark:text-slate-400 mr-2 ${highlight ? 'font-semibold' : ''}`}>{label}:</span>}
-            <span className={`${fontClass} ${color}`}>{value !== null ? `${value.toFixed(2)}%` : 'N/A'}</span>
+            <span className={`${fontClass} ${color} tabular-nums`}>{value !== null ? `${value.toFixed(2)}%` : 'N/A'}</span>
         </>
     );
 
@@ -72,7 +76,7 @@ const RendimentoCell: React.FC<{ value: number | null; label?: string; isMobile?
         return <div className="flex justify-between w-full items-baseline text-sm">{content}</div>
     }
 
-    return <td className="px-2 py-4 whitespace-nowrap text-sm text-center">{content}</td>;
+    return <td className="px-2 py-4 whitespace-nowrap text-sm text-right">{content}</td>;
 };
 
 
@@ -83,24 +87,30 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
         <div className="hidden lg:block bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-                    <thead className="bg-slate-50 dark:bg-slate-800">
+                    <thead className="sticky top-0 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur z-10 shadow-sm">
                         <tr>
                             <th className="px-3 py-3"></th>
-                            <SortableHeader label="Fondo" sortKey="linea" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" />
-                            <SortableHeader label="Categoria" sortKey="categoria" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" />
-                            <SortableHeader label="Tipo" sortKey="type" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" />
-                            <SortableHeader label="Costo Annuo" sortKey="costoAnnuo" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" />
-                            <SortableHeader label="Rend. 1A" sortKey="ultimoAnno" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" />
-                            <SortableHeader label="Rend. 3A" sortKey="ultimi3Anni" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" />
-                            <SortableHeader label="Rend. 5A" sortKey="ultimi5Anni" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" />
-                            <SortableHeader label="Rend. 10A" sortKey="ultimi10Anni" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" />
-                            <SortableHeader label="Rend. 20A" sortKey="ultimi20Anni" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" />
+                            <SortableHeader label="Fondo" sortKey="linea" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
+                            <SortableHeader label="Categoria" sortKey="categoria" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
+                            <SortableHeader label="Tipo" sortKey="type" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
+                            <SortableHeader label="Costo Annuo" sortKey="costoAnnuo" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" align="right" />
+                            <SortableHeader label="Rend. 1A" sortKey="ultimoAnno" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" align="right" />
+                            <SortableHeader label="Rend. 3A" sortKey="ultimi3Anni" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" align="right" />
+                            <SortableHeader label="Rend. 5A" sortKey="ultimi5Anni" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" align="right" />
+                            <SortableHeader label="Rend. 10A" sortKey="ultimi10Anni" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" align="right" />
+                            <SortableHeader label="Rend. 20A" sortKey="ultimi20Anni" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" align="right" />
                         </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-                        {funds.length > 0 ? funds.map(fund => (
-                            <tr key={fund.id} className="transition-colors duration-200 ease-in-out hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                                <td className="px-3 py-4">
+                        {funds.length > 0 ? funds.map((fund, index) => (
+                            <tr 
+                                key={fund.id} 
+                                className={`transition-colors duration-200 ease-in-out hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer ${
+                                    index % 2 === 0 ? 'bg-white dark:bg-slate-950' : 'bg-slate-50 dark:bg-slate-900'
+                                }`}
+                                onClick={() => toggleFundSelection(fund.id)}
+                            >
+                                <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
                                     <input
                                         type="checkbox"
                                         checked={selectedFundIds.has(fund.id)}
@@ -109,22 +119,22 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                                         className="h-4 w-4 text-sky-600 bg-gray-100 border-slate-300 dark:bg-slate-600 dark:border-slate-500 rounded focus:ring-sky-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                     />
                                 </td>
-                                <td className="px-3 py-4 whitespace-nowrap cursor-pointer max-w-sm" onClick={() => onFundClick(fund)}>
+                                <td className="px-3 py-4 whitespace-nowrap max-w-sm" onClick={(e) => { e.stopPropagation(); onFundClick(fund); }}>
                                     <div className="text-sm font-semibold text-sky-600 hover:underline dark:text-sky-400 truncate" title={fund.linea}>{fund.linea}</div>
                                     <div className="text-xs text-slate-500 dark:text-slate-400 truncate" title={fund.pip}>{fund.pip}</div>
                                     <div className="text-xs font-medium text-slate-600 dark:text-slate-400 truncate" title={fund.societa ?? ''}>{fund.societa}</div>
                                 </td>
-                                <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium text-center">
-                                    <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
-                                        {fund.type}
-                                    </span>
-                                </td>
-                                <td className="px-3 py-4 whitespace-nowrap">
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium">
                                     <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
                                         {CATEGORY_MAP[fund.categoria]}
                                     </span>
                                 </td>
-                                <td className="px-2 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium text-center">
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium">
+                                    <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                                        {fund.type}
+                                    </span>
+                                </td>
+                                <td className="px-2 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium text-right tabular-nums">
                                     {fund.costoAnnuo !== null ? `${fund.costoAnnuo.toFixed(2)}%` : 'N/A'}
                                 </td>
                                 <RendimentoCell value={fund.rendimenti.ultimoAnno} />

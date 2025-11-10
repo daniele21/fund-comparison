@@ -14,6 +14,7 @@ interface FilterControlsProps {
   selectedType: PensionFund['type'] | 'all';
   setSelectedType: (t: PensionFund['type'] | 'all') => void;
   onReset: () => void;
+  totalFunds?: number;
 }
 
 const FilterControls: React.FC<FilterControlsProps> = ({
@@ -27,14 +28,35 @@ const FilterControls: React.FC<FilterControlsProps> = ({
   companies,
   selectedType,
   setSelectedType,
-  onReset
+  onReset,
+  totalFunds = 0
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  
+  // Count active filters
+  const activeFiltersCount = [
+    searchTerm,
+    selectedCategory !== 'all' && selectedCategory,
+    selectedCompany !== 'all' && selectedCompany,
+    selectedType !== 'all' && selectedType
+  ].filter(Boolean).length;
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 transition-all duration-300">
       <div className="flex justify-between items-center p-4 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
-        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Filtra e Confronta</h2>
+        <div className="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+            🔍 Filtra e confronta
+            {activeFiltersCount > 0 && (
+              <span className="ml-2 text-sm font-normal text-slate-500 dark:text-slate-400">
+                ({activeFiltersCount} {activeFiltersCount === 1 ? 'filtro attivo' : 'filtri attivi'})
+              </span>
+            )}
+          </h2>
+        </div>
         <button aria-label={isExpanded ? 'Collapse filters' : 'Expand filters'}>
            <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 text-slate-500 dark:text-slate-400 transform transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -70,7 +92,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
                   onChange={(e) => setSelectedCompany(e.target.value)}
                   className="w-full px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 appearance-none"
                 >
-                  <option value="all">Tutte le società</option>
+                  <option value="all">Tutte le società ({companies.length})</option>
                   {companies.map(company => (
                     <option key={company} value={company}>{company}</option>
                   ))}
@@ -98,7 +120,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
                   onChange={(e) => setSelectedCategory(e.target.value as FundCategory | 'all')}
                   className="w-full px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 appearance-none"
                 >
-                  <option value="all">Tutte le categorie</option>
+                  <option value="all">Tutte le categorie ({categories.length})</option>
                   {categories.map(category => (
                     <option key={category} value={category}>{CATEGORY_MAP[category]}</option>
                   ))}

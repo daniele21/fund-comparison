@@ -1,6 +1,7 @@
 import React from 'react';
 import { PensionFund } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line } from 'recharts';
+import { CHART_COLORS, getColorForFund } from '../utils/colorMapping';
 
 interface PerformanceChartProps {
   selectedFunds: PensionFund[];
@@ -8,18 +9,6 @@ interface PerformanceChartProps {
   isCompact?: boolean;
 }
 
-const CHART_COLORS = [
-    '#0ea5e9', // sky
-    '#14b8a6', // teal
-    '#8b5cf6', // violet
-    '#f59e0b', // amber
-    '#f43f5e', // rose
-    '#6366f1', // indigo
-    '#ec4899', // pink
-    '#22c55e', // green
-    '#d97706', // yellow-600
-    '#64748b'  // slate
-];
 const BENCHMARK_COLOR = '#e11d48'; // A distinct rose for the benchmark
 
 // TFR revaluation rates based on historical ISTAT FOI data.
@@ -38,6 +27,9 @@ const TFR_BENCHMARK = {
 const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, theme, isCompact = false }) => {
   const tickColor = theme === 'dark' ? '#94a3b8' : '#475569'; // slate-400 for dark, slate-600 for light
   const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0'; // slate-700 for dark, slate-200 for light
+
+  // Create stable color mapping
+  const selectedFundIds = selectedFunds.map(f => f.id);
 
   // Don't show placeholder in compact mode as it's for the modal which always has a fund
   if (selectedFunds.length === 0 && !isCompact) {
@@ -130,9 +122,10 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
             <YAxis unit="%" tick={{ fill: tickColor, fontSize: isCompact ? 10 : 12 }} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}/>
             {!isCompact && <Legend wrapperStyle={{fontSize: "14px", paddingTop: "20px"}}/>}
-            {selectedFunds.map((fund, index) => (
-                 <Bar key={fund.id} dataKey={fundLabels[index]} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-            ))}
+            {selectedFunds.map((fund) => {
+                 const color = getColorForFund(fund.id, selectedFundIds);
+                 return <Bar key={fund.id} dataKey={fundLabels[selectedFundIds.indexOf(fund.id)]} fill={color} />;
+            })}
             <Line type="monotone" dataKey={TFR_BENCHMARK.label} stroke={BENCHMARK_COLOR} strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
           </BarChart>
         </ResponsiveContainer>

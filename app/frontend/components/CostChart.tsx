@@ -1,6 +1,7 @@
 import React from 'react';
 import { PensionFund } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LineChart, Line } from 'recharts';
+import { CHART_COLORS, getColorForFund } from '../utils/colorMapping';
 
 interface CostChartProps {
   selectedFunds: PensionFund[];
@@ -8,11 +9,6 @@ interface CostChartProps {
   isCompact?: boolean;
   detailFund?: PensionFund | null;
 }
-
-const CHART_COLORS = [
-    '#0ea5e9', '#14b8a6', '#8b5cf6', '#f59e0b', '#f43f5e',
-    '#6366f1', '#ec4899', '#22c55e', '#d97706', '#64748b'
-];
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -38,6 +34,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact = false, detailFund = null }) => {
   const tickColor = theme === 'dark' ? '#94a3b8' : '#475569';
   const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0';
+
+  // Create stable color mapping
+  const selectedFundIds = selectedFunds.map(f => f.id);
 
   if (detailFund) {
     const detailChartData = [
@@ -130,17 +129,20 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
             <YAxis unit="%" tick={{ fill: tickColor, fontSize: isCompact ? 10 : 12 }} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}/>
             {!isCompact && <Legend wrapperStyle={{fontSize: "14px", paddingTop: "20px"}}/>}
-            {selectedFunds.map((fund, index) => (
-                <Line 
-                  key={fund.id} 
-                  type="monotone" 
-                  dataKey={fundLabels[index]} 
-                  stroke={CHART_COLORS[index % CHART_COLORS.length]} 
-                  strokeWidth={2.5} 
-                  dot={{ r: 4 }} 
-                  activeDot={{ r: 7 }} 
-                />
-            ))}
+            {selectedFunds.map((fund, index) => {
+                const color = getColorForFund(fund.id, selectedFundIds);
+                return (
+                  <Line 
+                    key={fund.id} 
+                    type="monotone" 
+                    dataKey={fundLabels[index]} 
+                    stroke={color} 
+                    strokeWidth={2.5} 
+                    dot={{ r: 4 }} 
+                    activeDot={{ r: 7 }} 
+                  />
+                );
+            })}
           </LineChart>
         </ResponsiveContainer>
       </div>
