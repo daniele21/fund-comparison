@@ -23,6 +23,8 @@ const getSortValue = (fund: PensionFund, key: SortableKey): string | number | nu
       return fund.linea;
     case 'categoria':
       return fund.categoria;
+    case 'type':
+      return fund.type;
     case 'costoAnnuo':
       return fund.costoAnnuo;
     case 'ultimoAnno':
@@ -49,6 +51,7 @@ const App: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<FundCategory | 'all'>('all');
   const [selectedCompany, setSelectedCompany] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<'FPN' | 'FPA' | 'PIP' | 'all'>('all');
   const [selectedFundIds, setSelectedFundIds] = useState<Set<string>>(new Set());
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ultimoAnno', direction: 'descending' });
   const [modalFund, setModalFund] = useState<PensionFund | null>(null);
@@ -112,22 +115,25 @@ const App: React.FC = () => {
   
   const filteredFunds = useMemo(() => {
     return pensionFundsData.filter(fund => {
-        if (selectedCategory !== 'all' && fund.categoria !== selectedCategory) {
-            return false;
+      if (selectedType !== 'all' && fund.type !== selectedType) {
+        return false;
+      }
+      if (selectedCategory !== 'all' && fund.categoria !== selectedCategory) {
+        return false;
+      }
+      if (selectedCompany !== 'all' && fund.societa !== selectedCompany) {
+        return false;
+      }
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        const fundText = `${fund.pip} ${fund.linea} ${fund.societa || ''}`.toLowerCase();
+        if (!fundText.includes(term)) {
+          return false;
         }
-        if (selectedCompany !== 'all' && fund.societa !== selectedCompany) {
-            return false;
-        }
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            const fundText = `${fund.pip} ${fund.linea} ${fund.societa || ''}`.toLowerCase();
-            if (!fundText.includes(term)) {
-                return false;
-            }
-        }
-        return true;
+      }
+      return true;
     });
-  }, [searchTerm, selectedCategory, selectedCompany]);
+  }, [searchTerm, selectedCategory, selectedCompany, selectedType]);
 
   const filteredAndSortedFunds = useMemo(() => {
     const { key, direction } = sortConfig;
@@ -198,6 +204,7 @@ const App: React.FC = () => {
     setSearchTerm('');
     setSelectedCategory('all');
     setSelectedCompany('all');
+    setSelectedType('all');
   };
 
   if (view === 'playbook') {
@@ -253,6 +260,8 @@ const App: React.FC = () => {
               selectedCompany={selectedCompany}
               setSelectedCompany={setSelectedCompany}
               companies={companies}
+              selectedType={selectedType}
+              setSelectedType={setSelectedType}
               onReset={resetFilters}
             />
             

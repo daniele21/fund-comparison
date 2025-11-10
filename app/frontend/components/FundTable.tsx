@@ -88,6 +88,7 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                             <th className="px-3 py-3"></th>
                             <SortableHeader label="Fondo" sortKey="linea" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" />
                             <SortableHeader label="Categoria" sortKey="categoria" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" />
+                            <SortableHeader label="Tipo" sortKey="type" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" />
                             <SortableHeader label="Costo Annuo" sortKey="costoAnnuo" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" />
                             <SortableHeader label="Rend. 1A" sortKey="ultimoAnno" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" />
                             <SortableHeader label="Rend. 3A" sortKey="ultimi3Anni" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" />
@@ -113,6 +114,11 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                                     <div className="text-xs text-slate-500 dark:text-slate-400 truncate" title={fund.pip}>{fund.pip}</div>
                                     <div className="text-xs font-medium text-slate-600 dark:text-slate-400 truncate" title={fund.societa ?? ''}>{fund.societa}</div>
                                 </td>
+                                <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium text-center">
+                                    <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                                        {fund.type}
+                                    </span>
+                                </td>
                                 <td className="px-3 py-4 whitespace-nowrap">
                                     <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
                                         {CATEGORY_MAP[fund.categoria]}
@@ -129,7 +135,7 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                             </tr>
                         )) : (
                             <tr>
-                                <td colSpan={9} className="text-center py-16 text-slate-500 dark:text-slate-400">
+                                <td colSpan={10} className="text-center py-16 text-slate-500 dark:text-slate-400">
                                     <p className="font-semibold">Nessun fondo trovato</p>
                                     <p className="text-sm">Prova a modificare i filtri per trovare quello che cerchi.</p>
                                 </td>
@@ -159,6 +165,7 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                     <option value="ultimi10Anni">Rend. 10A</option>
                     <option value="costoAnnuo">Costo Annuo</option>
                     <option value="linea">Fondo</option>
+                    <option value="type">Tipo</option>
                     <option value="categoria">Categoria</option>
                     <option value="ultimi3Anni">Rend. 3A</option>
                     <option value="ultimi20Anni">Rend. 20A</option>

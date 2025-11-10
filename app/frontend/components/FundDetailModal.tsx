@@ -72,10 +72,16 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, onClose, theme 
             {/* Principal Info */}
             <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4 mb-8">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                <div>
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Società</p>
-                    <p className="font-semibold text-slate-700 dark:text-slate-200 truncate" title={fund.societa || ''}>{fund.societa || 'N/A'}</p>
-                </div>
+        <div>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Società</p>
+          {/* For FPN funds the società field may be missing; show a friendly fallback */}
+          <p
+            className="font-semibold text-slate-700 dark:text-slate-200 truncate"
+            title={fund.societa || (fund.type === 'FPN' ? 'Fondo pensione di categoria' : '')}
+          >
+            {fund.societa || (fund.type === 'FPN' ? 'Fondo pensione di categoria' : 'N/A')}
+          </p>
+        </div>
                 <div>
                     <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Categoria</p>
                     <p className="font-semibold text-slate-700 dark:text-slate-200">{CATEGORY_MAP[fund.categoria]}</p>

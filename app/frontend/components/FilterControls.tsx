@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FundCategory } from '../types';
+import { FundCategory, PensionFund } from '../types';
 import { CATEGORY_MAP } from '../constants';
 
 interface FilterControlsProps {
@@ -11,6 +11,8 @@ interface FilterControlsProps {
   selectedCompany: string;
   setSelectedCompany: (company: string) => void;
   companies: string[];
+  selectedType: PensionFund['type'] | 'all';
+  setSelectedType: (t: PensionFund['type'] | 'all') => void;
   onReset: () => void;
 }
 
@@ -23,6 +25,8 @@ const FilterControls: React.FC<FilterControlsProps> = ({
   selectedCompany,
   setSelectedCompany,
   companies,
+  selectedType,
+  setSelectedType,
   onReset
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -70,6 +74,20 @@ const FilterControls: React.FC<FilterControlsProps> = ({
                   {companies.map(company => (
                     <option key={company} value={company}>{company}</option>
                   ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="type" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tipo Fondo</label>
+                <select
+                  id="type"
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value as PensionFund['type'] | 'all')}
+                  className="w-full px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 appearance-none"
+                >
+                  <option value="all">Tutti i tipi</option>
+                  <option value="PIP">PIP</option>
+                  <option value="FPA">FPA</option>
+                  <option value="FPN">FPN</option>
                 </select>
               </div>
               <div>
