@@ -163,6 +163,8 @@ const App: React.FC = () => {
 }, [filteredFunds, sortConfig]);
 
   const visibleFunds = useMemo(() => {
+    // For pagination we will compute a paginated slice later. Here return the full
+    // (or limited by free plan) array that pagination will slice from.
     if (isFullAccess) {
       return filteredAndSortedFunds;
     }
@@ -212,6 +214,13 @@ const App: React.FC = () => {
     setSelectedCompany('all');
     setSelectedType('all');
   };
+
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Reset page when filters or sort change
+  useEffect(() => setPage(1), [searchTerm, selectedCategory, selectedCompany, selectedType, sortConfig]);
 
   if (view === 'playbook') {
     return (
@@ -319,13 +328,31 @@ const App: React.FC = () => {
                   </div>
                 )}
                 <FundTable
-                  funds={visibleFunds}
+                  funds={/* paginated slice applied below */ visibleFunds.slice((page - 1) * pageSize, page * pageSize)}
                   sortConfig={sortConfig}
                   setSortConfig={setSortConfig}
                   selectedFundIds={selectedFundIds}
                   toggleFundSelection={toggleFundSelection}
                   onFundClick={handleFundClick}
                 />
+
+                {/* Pagination controls */}
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-sm text-slate-600 dark:text-slate-300">
+                    Mostrati {Math.min(visibleFunds.length, page * pageSize) - (page - 1) * pageSize} di {visibleFunds.length}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-slate-600 dark:text-slate-300">Per pagina</label>
+                    <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }} className="text-sm px-2 py-1 border rounded bg-white dark:bg-slate-800">
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                    </select>
+                    <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))} className="px-3 py-1 bg-white dark:bg-slate-800 border rounded disabled:opacity-50">Prev</button>
+                    <span className="text-sm">{page}</span>
+                    <button disabled={page * pageSize >= visibleFunds.length} onClick={() => setPage(p => p + 1)} className="px-3 py-1 bg-white dark:bg-slate-800 border rounded disabled:opacity-50">Next</button>
+                  </div>
+                </div>
             </section>
           </div>
         </div>
