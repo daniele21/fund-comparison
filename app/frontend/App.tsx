@@ -138,28 +138,37 @@ const App: React.FC = () => {
   }, [searchTerm, selectedCategory, selectedCompany, selectedType]);
 
   const filteredAndSortedFunds = useMemo(() => {
-    const { key, direction } = sortConfig;
-    
-    const sorted = [...filteredFunds].sort((a, b) => {
-        const aVal = getSortValue(a, key);
-        const bVal = getSortValue(b, key);
-        const dir = direction === 'ascending' ? 1 : -1;
+  const { key, direction } = sortConfig;
 
-        // Robust null handling: always push nulls to the bottom
-        if (aVal === null && bVal === null) return 0;
-        if (aVal === null) return 1;
-        if (bVal === null) return -1;
+  const sorted = [...filteredFunds].sort((a, b) => {
+    const dir = direction === 'ascending' ? 1 : -1;
 
-        if (typeof aVal === 'number' && typeof bVal === 'number') {
-            return (aVal - bVal) * dir;
-        }
-        if (typeof aVal === 'string' && typeof bVal === 'string') {
-            return aVal.localeCompare(bVal) * dir;
-        }
-        return 0;
-    });
+    // Special-case: allow sorting by whether a fund is selected
+    if (key === 'selected') {
+      const aSel = selectedFundIds.has(a.id) ? 1 : 0;
+      const bSel = selectedFundIds.has(b.id) ? 1 : 0;
+      // put selected first when descending, last when ascending
+      return (aSel - bSel) * dir * -1;
+    }
 
-    return sorted;
+    const aVal = getSortValue(a, key);
+    const bVal = getSortValue(b, key);
+
+    // Robust null handling: always push nulls to the bottom
+    if (aVal === null && bVal === null) return 0;
+    if (aVal === null) return 1;
+    if (bVal === null) return -1;
+
+    if (typeof aVal === 'number' && typeof bVal === 'number') {
+      return (aVal - bVal) * dir;
+    }
+    if (typeof aVal === 'string' && typeof bVal === 'string') {
+      return aVal.localeCompare(bVal) * dir;
+    }
+    return 0;
+  });
+
+  return sorted;
 }, [filteredFunds, sortConfig]);
 
   const visibleFunds = useMemo(() => {

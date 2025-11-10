@@ -25,7 +25,7 @@ export interface PensionFund {
 
 export type FundCategory = 'GAR' | 'BIL' | 'AZN' | 'OBB MISTO' | 'OBB PURO' | 'OBB';
 
-export type SortableKey = keyof PensionFund | 'ultimoAnno' | 'ultimi3Anni' | 'ultimi5Anni' | 'ultimi10Anni' | 'ultimi20Anni';
+export type SortableKey = keyof PensionFund | 'ultimoAnno' | 'ultimi3Anni' | 'ultimi5Anni' | 'ultimi10Anni' | 'ultimi20Anni' | 'selected';
 
 export interface SortConfig {
   key: SortableKey;

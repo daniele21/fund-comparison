@@ -89,7 +89,7 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                 <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                     <thead className="sticky top-0 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur z-10 shadow-sm">
                         <tr>
-                            <th className="px-3 py-3"></th>
+                            <SortableHeader label="Selezione" sortKey="selected" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="center" />
                             <SortableHeader label="Fondo" sortKey="linea" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
                             <SortableHeader label="Categoria" sortKey="categoria" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
                             <SortableHeader label="Tipo" sortKey="type" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
@@ -174,6 +174,7 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                     <option value="ultimi5Anni">Rend. 5A</option>
                     <option value="ultimi10Anni">Rend. 10A</option>
                     <option value="costoAnnuo">Costo Annuo</option>
+                    <option value="selected">Selezionati</option>
                     <option value="linea">Fondo</option>
                     <option value="type">Tipo</option>
                     <option value="categoria">Categoria</option>
