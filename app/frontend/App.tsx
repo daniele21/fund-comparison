@@ -15,6 +15,7 @@ import { CATEGORY_MAP } from './constants';
 import { useAuth } from './auth';
 import UpgradeDialog from './components/UpgradeDialog';
 import FakePaymentDialog from './components/FakePaymentDialog';
+import FeedbackWidget from './components/feedback/FeedbackWidget';
 
 type View = 'playbook' | 'dashboard';
 
@@ -391,6 +392,7 @@ const App: React.FC = () => {
           }
         }}
       />
+      <FeedbackWidget />
     </div>
   );
 };
