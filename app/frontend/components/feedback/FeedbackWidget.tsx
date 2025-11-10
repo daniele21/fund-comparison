@@ -19,7 +19,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 const Button = ({ variant = 'default', size = 'default', className, ...props }: ButtonProps) => {
 	const base = 'inline-flex items-center justify-center rounded-xl font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none'
 	const variantClasses: Record<ButtonVariant, string> = {
-		default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+		default: 'bg-[#0284c7] text-white hover:bg-[#026fa8]',
 		ghost: 'bg-transparent text-muted-fg hover:bg-surface2/70',
 	}
 	const sizeClasses: Record<ButtonSize, string> = {
@@ -93,6 +93,21 @@ const initialState: FeedbackFormState = { message: '', feedbackType: 'generic' }
 export const FeedbackWidget = () => {
 	const { config } = useAppConfig()
 	const { user, login } = useAuth()
+
+	// Ensure a global CSS rule exists that forces an opaque background for feedback elements
+	useEffect(() => {
+		if (typeof document === 'undefined') return
+		const id = 'fc-feedback-opaque-style'
+		if (document.getElementById(id)) return
+		const style = document.createElement('style')
+		style.id = id
+		style.textContent = `
+			.fc-feedback-opaque { background-color: #0284c7 !important; color: #fff !important; }
+			.fc-feedback-opaque:hover { background-color: #026fa8 !important; }
+			.fc-feedback-opaque:focus { box-shadow: 0 0 0 4px rgba(2,132,199,0.16) !important; }
+		`
+		document.head.appendChild(style)
+	}, [])
 	const requireAuth = config?.feedback?.requireAuth ?? false
 	const { notify } = useToast()
 	const [open, setOpen] = useState(false)
@@ -214,15 +229,25 @@ export const FeedbackWidget = () => {
 	return (
 		<Dialog.Root open={open} onOpenChange={handleOpenChange}>
 			<Dialog.Trigger asChild>
-				<Button
-					type="button"
-					variant="default"
-					size="icon"
-					className="fixed bottom-6 right-6 z-[var(--z-fab)] h-12 w-12 rounded-full shadow-xl shadow-black/20"
-				>
-					<MessageCircle className="h-5 w-5" aria-hidden="true" />
-					<span className="sr-only">Apri il feedback</span>
-				</Button>
+				<div className="fixed bottom-32 md:bottom-6 right-6 z-[var(--z-fab)] flex items-center gap-3" style={{ bottom: 0 }}>
+					{/* Visible label on md+ screens, icon-only on small screens */}
+						<button
+							type="button"
+							className="hidden md:inline-flex items-center gap-3 rounded-xl bg-[#0284c7] text-white px-3 py-2 text-sm font-medium shadow-xl shadow-black/20 hover:bg-[#026fa8] fc-feedback-opaque"
+							aria-label="Apri il feedback"
+						>
+							<span className="whitespace-nowrap">Non trovi il tuo fondo? Segnalacelo</span>
+						</button>
+					<Button
+						type="button"
+						variant="default"
+						size="icon"
+						className="h-12 w-12 rounded-full shadow-xl shadow-black/20 fc-feedback-opaque"
+					>
+						<MessageCircle className="h-5 w-5" aria-hidden="true" />
+						<span className="sr-only">Apri il feedback</span>
+					</Button>
+				</div>
 			</Dialog.Trigger>
 			<Dialog.Portal>
 				<Dialog.Overlay
