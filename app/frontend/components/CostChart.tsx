@@ -93,6 +93,12 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
     );
   }
   
+  // Create labels that include fund name and società for better identification
+  const fundLabels = selectedFunds.map(f => {
+    const societaPart = f.societa ? ` (${f.societa})` : '';
+    return `${f.pip} - ${f.linea}${societaPart}`;
+  });
+
   const chartData = [
     { name: '2 Anni' },
     { name: '5 Anni' },
@@ -100,11 +106,11 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
     { name: '35 Anni' },
   ];
 
-  selectedFunds.forEach(fund => {
-    chartData[0][fund.linea] = fund.isc.isc2a;
-    chartData[1][fund.linea] = fund.isc.isc5a;
-    chartData[2][fund.linea] = fund.isc.isc10a;
-    chartData[3][fund.linea] = fund.isc.isc35a;
+  selectedFunds.forEach((fund, index) => {
+    chartData[0][fundLabels[index]] = fund.isc.isc2a;
+    chartData[1][fundLabels[index]] = fund.isc.isc5a;
+    chartData[2][fundLabels[index]] = fund.isc.isc10a;
+    chartData[3][fundLabels[index]] = fund.isc.isc35a;
   });
 
   return (
@@ -128,7 +134,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
                 <Line 
                   key={fund.id} 
                   type="monotone" 
-                  dataKey={fund.linea} 
+                  dataKey={fundLabels[index]} 
                   stroke={CHART_COLORS[index % CHART_COLORS.length]} 
                   strokeWidth={2.5} 
                   dot={{ r: 4 }} 

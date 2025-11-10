@@ -62,13 +62,19 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
     );
   }
   
+  // Create labels that include fund name and società for better identification
+  const fundLabels = selectedFunds.map(f => {
+    const societaPart = f.societa ? ` (${f.societa})` : '';
+    return `${f.pip} - ${f.linea}${societaPart}`;
+  });
+
   const chartData = [
-    { name: 'Ultimo Anno', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimoAnno, ...Object.fromEntries(selectedFunds.map(f => [f.linea, f.rendimenti.ultimoAnno])) },
-    { name: 'Ultimi 3 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi3Anni, ...Object.fromEntries(selectedFunds.map(f => [f.linea, f.rendimenti.ultimi3Anni])) },
-    { name: 'Ultimi 5 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi5Anni, ...Object.fromEntries(selectedFunds.map(f => [f.linea, f.rendimenti.ultimi5Anni])) },
-    { name: 'Ultimi 10 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi10Anni, ...Object.fromEntries(selectedFunds.map(f => [f.linea, f.rendimenti.ultimi10Anni])) },
+    { name: 'Ultimo Anno', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimoAnno, ...Object.fromEntries(selectedFunds.map((f, i) => [fundLabels[i], f.rendimenti.ultimoAnno])) },
+    { name: 'Ultimi 3 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi3Anni, ...Object.fromEntries(selectedFunds.map((f, i) => [fundLabels[i], f.rendimenti.ultimi3Anni])) },
+    { name: 'Ultimi 5 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi5Anni, ...Object.fromEntries(selectedFunds.map((f, i) => [fundLabels[i], f.rendimenti.ultimi5Anni])) },
+    { name: 'Ultimi 10 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi10Anni, ...Object.fromEntries(selectedFunds.map((f, i) => [fundLabels[i], f.rendimenti.ultimi10Anni])) },
     // FIX: Added 20-year data to the chart.
-    { name: 'Ultimi 20 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi20Anni, ...Object.fromEntries(selectedFunds.map(f => [f.linea, f.rendimenti.ultimi20Anni])) },
+    { name: 'Ultimi 20 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi20Anni, ...Object.fromEntries(selectedFunds.map((f, i) => [fundLabels[i], f.rendimenti.ultimi20Anni])) },
   ];
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -125,7 +131,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}/>
             {!isCompact && <Legend wrapperStyle={{fontSize: "14px", paddingTop: "20px"}}/>}
             {selectedFunds.map((fund, index) => (
-                 <Bar key={fund.id} dataKey={fund.linea} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                 <Bar key={fund.id} dataKey={fundLabels[index]} fill={CHART_COLORS[index % CHART_COLORS.length]} />
             ))}
             <Line type="monotone" dataKey={TFR_BENCHMARK.label} stroke={BENCHMARK_COLOR} strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
           </BarChart>
