@@ -1,6 +1,6 @@
 import React from 'react';
 import { PensionFund } from '../types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line } from 'recharts';
 import { CHART_COLORS, getColorForFund } from '../utils/colorMapping';
 
 interface CostChartProps {
@@ -38,6 +38,81 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
   // Create stable color mapping
   const selectedFundIds = selectedFunds.map(f => f.id);
 
+  const TOOLTIP_WIDTH = 260;
+  const TOOLTIP_OFFSET = 470;
+  const chartWrapperRef = React.useRef<HTMLDivElement | null>(null);
+  const [chartWidthPx, setChartWidthPx] = React.useState(0);
+  const [chartHeightPx, setChartHeightPx] = React.useState(0);
+  const [tooltipPosition, setTooltipPosition] = React.useState<{ x: number; y: number } | undefined>(undefined);
+  const [animationsEnabled, setAnimationsEnabled] = React.useState(true);
+  const animationsDisabledRef = React.useRef(false);
+
+  // Reset animations when selectedFunds change
+  React.useEffect(() => {
+    setAnimationsEnabled(true);
+    animationsDisabledRef.current = false;
+  }, [selectedFunds, detailFund]);
+
+  React.useLayoutEffect(() => {
+    const element = chartWrapperRef.current;
+    if (!element) {
+      return;
+    }
+
+    const updateSize = () => {
+      const rect = element.getBoundingClientRect();
+      setChartWidthPx(rect.width);
+      setChartHeightPx(rect.height);
+    };
+
+    updateSize();
+
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [detailFund, isCompact, selectedFunds.length]);
+
+  const handleTooltipMove = React.useCallback(
+    (state: any) => {
+      if (!state || !state.isTooltipActive) {
+        setTooltipPosition(undefined);
+        return;
+      }
+
+      if (!animationsDisabledRef.current) {
+        animationsDisabledRef.current = true;
+        setAnimationsEnabled(false);
+      }
+
+  const chartX = state.chartX ?? state.activeCoordinate?.x;
+  // Prefer the data-point Y (activeCoordinate.y). If it's not available, use a stable
+  // top-aligned Y based on chart height so the tooltip doesn't follow the mouse vertically.
+  // Do NOT use state.activeCoordinate?.y here — it often reflects the mouse Y and
+  // causes the tooltip to follow the cursor vertically. Use a stable top offset
+  // so the tooltip behaves like the PerformanceChart's default placement.
+  const TOP_OFFSET = 0; // small gap from the top of the chart
+  const chartY = Math.max(TOP_OFFSET, Math.floor(chartHeightPx * 0.1));
+
+      if (chartX == null || chartY == null) {
+        setTooltipPosition(undefined);
+        return;
+      }
+
+      // Simpler behavior requested: always place tooltip to the left of the
+      // anchor (negative offset). No viewport/container checks.
+      // This intentionally places the tooltip at chartX - TOOLTIP_WIDTH - offset.
+      let nextX = chartX - TOOLTIP_WIDTH - TOOLTIP_OFFSET;
+
+      setTooltipPosition({ x: nextX, y: chartY });
+    },
+    [chartWidthPx]
+  );
+
+  const resetTooltipPosition = React.useCallback(() => {
+    setTooltipPosition(undefined);
+  }, []);
+
   if (detailFund) {
     const detailChartData = [
       { name: '2 Anni', costo: detailFund.isc.isc2a },
@@ -49,17 +124,26 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
     return (
       <div>
         <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">Dettaglio Costi (ISC %)</h3>
-        <div style={{ width: '100%', height: 300 }}>
+        <div ref={chartWrapperRef} style={{ width: '100%', height: 300 }}>
           <ResponsiveContainer>
             <BarChart 
               data={detailChartData} 
-              margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
+              margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+              onMouseMove={handleTooltipMove}
+              onMouseLeave={resetTooltipPosition}
             >
               <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
               <XAxis dataKey="name" tick={{ fill: tickColor, fontSize: 12 }} />
               <YAxis unit="%" tick={{ fill: tickColor, fontSize: 12 }} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}/>
-              <Bar dataKey="costo" name="Costo">
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
+                position={tooltipPosition}
+                offset={0}
+                allowEscapeViewBox={{ x: true, y: false }}
+                wrapperStyle={{ pointerEvents: 'none' }}
+              />
+              <Bar dataKey="costo" name="Costo" isAnimationActive={animationsEnabled}>
                 {detailChartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                 ))}
@@ -118,17 +202,25 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
            L'<strong>Indicatore Sintetico di Costo (ISC)</strong> mostra l'impatto percentuale dei costi sul montante accumulato, anno dopo anno. <strong>Una linea più bassa significa un fondo più efficiente.</strong>
        </p>
-      <div style={{ width: '100%', height: isCompact ? 300 : 400 }}>
+      <div ref={chartWrapperRef} style={{ width: '100%', height: isCompact ? 300 : 400 }}>
         <ResponsiveContainer>
           <LineChart 
             data={chartData} 
-            margin={isCompact ? { top: 5, right: 30, left: 0, bottom: 5 } : { top: 5, right: 20, left: -10, bottom: 20 }}
+            margin={isCompact ? { top: 5, right: 30, left: 10, bottom: 5 } : { top: 5, right: 20, left: 10, bottom: 20 }}
+            onMouseMove={handleTooltipMove}
+            onMouseLeave={resetTooltipPosition}
           >
             <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
             <XAxis dataKey="name" tick={{ fill: tickColor, fontSize: isCompact ? 10 : 14 }} dy={isCompact ? 5 : 10} />
             <YAxis unit="%" tick={{ fill: tickColor, fontSize: isCompact ? 10 : 12 }} />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}/>
-            {!isCompact && <Legend wrapperStyle={{fontSize: "14px", paddingTop: "20px"}}/>}
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
+              position={tooltipPosition}
+              offset={0}
+              allowEscapeViewBox={{ x: true, y: false }}
+              wrapperStyle={{ pointerEvents: 'none' }}
+            />
             {selectedFunds.map((fund, index) => {
                 const color = getColorForFund(fund.id, selectedFundIds);
                 return (
@@ -140,6 +232,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
                     strokeWidth={2.5} 
                     dot={{ r: 4 }} 
                     activeDot={{ r: 7 }} 
+                    isAnimationActive={animationsEnabled}
                   />
                 );
             })}

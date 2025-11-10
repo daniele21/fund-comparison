@@ -1,7 +1,7 @@
 import React from 'react';
 import { PensionFund } from '../types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line } from 'recharts';
-import { CHART_COLORS, getColorForFund } from '../utils/colorMapping';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line } from 'recharts';
+import { getColorForFund } from '../utils/colorMapping';
 
 interface PerformanceChartProps {
   selectedFunds: PensionFund[];
@@ -120,8 +120,13 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
             <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
             <XAxis dataKey="name" tick={{ fill: tickColor, fontSize: isCompact ? 10 : 14 }} dy={isCompact ? 5 : 10} />
             <YAxis unit="%" tick={{ fill: tickColor, fontSize: isCompact ? 10 : 12 }} />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}/>
-            {!isCompact && <Legend wrapperStyle={{fontSize: "14px", paddingTop: "20px"}}/>}
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
+              offset={50}
+              allowEscapeViewBox={{ x: true, y: false }}
+              wrapperStyle={{ pointerEvents: 'none' }}
+            />
             {selectedFunds.map((fund) => {
                  const color = getColorForFund(fund.id, selectedFundIds);
                  return <Bar key={fund.id} dataKey={fundLabels[selectedFundIds.indexOf(fund.id)]} fill={color} />;
