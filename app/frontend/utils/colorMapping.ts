@@ -23,3 +23,28 @@ export const getColorForFund = (fundId: string, selectedFundIds: string[]): stri
   if (index === -1) return CHART_COLORS[0];
   return CHART_COLORS[index % CHART_COLORS.length];
 };
+
+export const withAlpha = (color: string, alpha = 0.15): string => {
+  if (!color) {
+    return `rgba(148, 163, 184, ${alpha})`;
+  }
+
+  if (!color.startsWith('#')) {
+    return color;
+  }
+
+  let hex = color.replace('#', '');
+  if (hex.length === 3) {
+    hex = hex.split('').map(char => char + char).join('');
+  }
+
+  const bigint = parseInt(hex, 16);
+  if (Number.isNaN(bigint)) {
+    return color;
+  }
+
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};

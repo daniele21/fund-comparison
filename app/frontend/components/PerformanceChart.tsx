@@ -3,6 +3,7 @@ import { PensionFund } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line } from 'recharts';
 import type { TooltipPayload } from 'recharts';
 import { getColorForFund } from '../utils/colorMapping';
+import { formatFundLabel } from '../utils/fundLabel';
 import ChartTooltip from './ChartTooltip';
 
 interface PerformanceChartProps {
@@ -25,6 +26,32 @@ const TFR_BENCHMARK = {
   label: 'Benchmark TFR',
 };
 
+const PERFORMANCE_PERIODS = [
+  { label: 'Ultimo Anno', key: 'ultimoAnno' as const, benchmark: TFR_BENCHMARK.ultimoAnno },
+  { label: 'Ultimi 3 Anni', key: 'ultimi3Anni' as const, benchmark: TFR_BENCHMARK.ultimi3Anni },
+  { label: 'Ultimi 5 Anni', key: 'ultimi5Anni' as const, benchmark: TFR_BENCHMARK.ultimi5Anni },
+  { label: 'Ultimi 10 Anni', key: 'ultimi10Anni' as const, benchmark: TFR_BENCHMARK.ultimi10Anni },
+  { label: 'Ultimi 20 Anni', key: 'ultimi20Anni' as const, benchmark: TFR_BENCHMARK.ultimi20Anni },
+];
+
+const LABEL_TO_RENDIMENTO_KEY: Record<string, keyof PensionFund['rendimenti']> = PERFORMANCE_PERIODS.reduce(
+  (acc, period) => {
+    acc[period.label] = period.key;
+    return acc;
+  },
+  {} as Record<string, keyof PensionFund['rendimenti']>
+);
+
+const DEFAULT_SORT_LABEL = PERFORMANCE_PERIODS[0].label;
+
+const getValueForLabel = (fund: PensionFund, label: string): number => {
+  const key = LABEL_TO_RENDIMENTO_KEY[label] ?? 'ultimoAnno';
+  const value = fund.rendimenti[key];
+  if (typeof value === 'number') {
+    return value;
+  }
+  return value != null ? Number(value) : Number.NEGATIVE_INFINITY;
+};
 
 const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, theme, isCompact = false }) => {
   const tickColor = theme === 'dark' ? '#94a3b8' : '#475569'; // slate-400 for dark, slate-600 for light
@@ -32,9 +59,62 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
 
   // Create stable color mapping
   const selectedFundIds = selectedFunds.map(f => f.id);
+  const chartWrapperRef = React.useRef<HTMLDivElement | null>(null);
+  const showPlaceholder = selectedFunds.length === 0 && !isCompact;
 
-  // Don't show placeholder in compact mode as it's for the modal which always has a fund
-  if (selectedFunds.length === 0 && !isCompact) {
+  React.useLayoutEffect(() => {
+    const element = chartWrapperRef.current;
+    if (!element) {
+      return;
+    }
+
+    const observer = new ResizeObserver(() => {});
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [selectedFunds.length, isCompact]);
+
+  const fundLabelMap = React.useMemo(() => {
+    const map = new Map<string, string>();
+    selectedFunds.forEach(fund => {
+      map.set(fund.id, formatFundLabel(fund));
+    });
+    return map;
+  }, [selectedFunds]);
+
+  const orderedFunds = React.useMemo(() => {
+    return [...selectedFunds].sort(
+      (a, b) => getValueForLabel(b, DEFAULT_SORT_LABEL) - getValueForLabel(a, DEFAULT_SORT_LABEL)
+    );
+  }, [selectedFunds]);
+
+  const chartData = React.useMemo(() => {
+    return PERFORMANCE_PERIODS.map(period => {
+      const entries = Object.fromEntries(
+        orderedFunds.map(fund => {
+          const label = fundLabelMap.get(fund.id) ?? formatFundLabel(fund);
+          return [label, fund.rendimenti[period.key]];
+        })
+      );
+      return {
+        name: period.label,
+        [TFR_BENCHMARK.label]: period.benchmark,
+        ...entries,
+      };
+    });
+  }, [orderedFunds, fundLabelMap]);
+
+  const performanceTooltipSorter = React.useCallback(
+    (a: TooltipPayload, b: TooltipPayload) => {
+      if (a.dataKey === TFR_BENCHMARK.label) return -1;
+      if (b.dataKey === TFR_BENCHMARK.label) return 1;
+      const aValue = typeof a.value === 'number' ? a.value : parseFloat(String(a.value));
+      const bValue = typeof b.value === 'number' ? b.value : parseFloat(String(b.value));
+      return (bValue || 0) - (aValue || 0);
+    },
+    []
+  );
+  if (showPlaceholder) {
     return (
       <div className="p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 text-center">
         <div className="flex flex-col items-center justify-center h-96">
@@ -55,32 +135,6 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
       </div>
     );
   }
-  
-  // Create labels that include fund name and società for better identification
-  const fundLabels = selectedFunds.map(f => {
-    const societaPart = f.societa ? ` (${f.societa})` : '';
-    return `${f.pip} - ${f.linea}${societaPart}`;
-  });
-
-  const chartData = [
-    { name: 'Ultimo Anno', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimoAnno, ...Object.fromEntries(selectedFunds.map((f, i) => [fundLabels[i], f.rendimenti.ultimoAnno])) },
-    { name: 'Ultimi 3 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi3Anni, ...Object.fromEntries(selectedFunds.map((f, i) => [fundLabels[i], f.rendimenti.ultimi3Anni])) },
-    { name: 'Ultimi 5 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi5Anni, ...Object.fromEntries(selectedFunds.map((f, i) => [fundLabels[i], f.rendimenti.ultimi5Anni])) },
-    { name: 'Ultimi 10 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi10Anni, ...Object.fromEntries(selectedFunds.map((f, i) => [fundLabels[i], f.rendimenti.ultimi10Anni])) },
-    // FIX: Added 20-year data to the chart.
-    { name: 'Ultimi 20 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi20Anni, ...Object.fromEntries(selectedFunds.map((f, i) => [fundLabels[i], f.rendimenti.ultimi20Anni])) },
-  ];
-
-  const performanceTooltipSorter = React.useCallback(
-    (a: TooltipPayload, b: TooltipPayload) => {
-      if (a.dataKey === TFR_BENCHMARK.label) return -1;
-      if (b.dataKey === TFR_BENCHMARK.label) return 1;
-      const aValue = typeof a.value === 'number' ? a.value : parseFloat(String(a.value));
-      const bValue = typeof b.value === 'number' ? b.value : parseFloat(String(b.value));
-      return (bValue || 0) - (aValue || 0);
-    },
-    []
-  );
 
   return (
     <div className={isCompact ? '' : 'p-4 md:p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700'}>
@@ -96,7 +150,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
           </p>
         </>
       )}
-      <div style={{ width: '100%', height: isCompact ? 300 : 400 }}>
+      <div ref={chartWrapperRef} style={{ width: '100%', height: isCompact ? 300 : 400 }}>
         <ResponsiveContainer>
           <BarChart 
             data={chartData} 
@@ -114,13 +168,15 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
                 />
               }
               cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
-              offset={50}
-              allowEscapeViewBox={{ x: true, y: false }}
-              wrapperStyle={{ pointerEvents: 'none', opacity: 1, zIndex: 9999 }}
+              wrapperStyle={{ pointerEvents: 'auto', opacity: 1, zIndex: 9999 }}
             />
-            {selectedFunds.map((fund) => {
+            {orderedFunds.map((fund) => {
+                 const label = fundLabelMap.get(fund.id);
+                 if (!label) {
+                   return null;
+                 }
                  const color = getColorForFund(fund.id, selectedFundIds);
-                 return <Bar key={fund.id} dataKey={fundLabels[selectedFundIds.indexOf(fund.id)]} fill={color} />;
+                 return <Bar key={fund.id} dataKey={label} fill={color} />;
             })}
             <Line type="monotone" dataKey={TFR_BENCHMARK.label} stroke={BENCHMARK_COLOR} strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
           </BarChart>

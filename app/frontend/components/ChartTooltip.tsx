@@ -1,5 +1,6 @@
 import React from 'react';
 import type { TooltipPayload, TooltipProps } from 'recharts';
+import { withAlpha } from '../utils/colorMapping';
 
 const DEFAULT_VALUE_FORMATTER = (value?: number | string): string => {
   if (value == null) {
@@ -39,31 +40,73 @@ const ChartTooltip: React.FC<ChartTooltipProps> = ({
 
   const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
 
+  const isCrowded = sortedPayload.length > 4;
+  const shouldScroll = sortedPayload.length > 6;
+
   return (
     <div
-      className="p-3 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg"
-      style={{ opacity: 1, backgroundColor: isDark ? '#1e293b' : '#ffffff', zIndex: 9999 }}
+      className="p-3 border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg"
+      style={{
+        opacity: 1,
+        backgroundColor: isDark ? '#0f172a' : '#ffffff',
+        zIndex: 9999,
+        maxWidth: 320,
+      }}
     >
-      {label && <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">{label}</p>}
-      {sortedPayload.map((entry, index) => {
-        const key = `${entry.dataKey ?? entry.name ?? 'series'}-${index}`;
-        const color =
-          entry.dataKey === highlightKey && highlightColor
-            ? highlightColor
-            : entry.color || entry.stroke || entry.fill || '#64748b';
+      {label && (
+        <p className="font-semibold text-slate-900 dark:text-slate-100 mb-3 tracking-tight">
+          {label}
+        </p>
+      )}
+      <div
+        className="space-y-1.5 pr-1"
+        style={{
+          maxHeight: shouldScroll ? 220 : undefined,
+          overflowY: shouldScroll ? 'auto' : undefined,
+        }}
+      >
+        {sortedPayload.map((entry, index) => {
+          const key = `${entry.dataKey ?? entry.name ?? 'series'}-${index}`;
+          const isHighlight = entry.dataKey === highlightKey && !!highlightColor;
+          const color =
+            isHighlight && highlightColor
+              ? highlightColor
+              : entry.color || entry.stroke || entry.fill || '#64748b';
+          const value = valueFormatter(entry.value as number | string | undefined);
 
-        return (
-          <div key={key} className="flex items-center text-sm my-1">
-            <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: color }}></span>
-            <span className="text-slate-700 dark:text-slate-300 mr-2">
-              {entry.dataKey || entry.name}:
-            </span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">
-              {valueFormatter(entry.value as number | string | undefined)}
-            </span>
-          </div>
-        );
-      })}
+          const rowBackground = withAlpha(color, isHighlight ? 0.25 : isDark ? 0.3 : 0.12);
+          const rowBorder = withAlpha(color, isDark ? 0.5 : 0.35);
+
+          return (
+            <div
+              key={key}
+              className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm gap-3"
+              style={{
+                backgroundColor: rowBackground,
+                border: `1px solid ${rowBorder}`,
+              }}
+            >
+              <div className="flex items-center min-w-0 gap-2">
+                {isCrowded && (
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 w-5">
+                    {index + 1}
+                  </span>
+                )}
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: color }}
+                ></span>
+                <span className="truncate text-slate-700 dark:text-slate-200">
+                  {entry.dataKey || entry.name}
+                </span>
+              </div>
+              <span className="font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
+                {value}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

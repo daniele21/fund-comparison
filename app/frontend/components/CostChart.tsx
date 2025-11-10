@@ -3,6 +3,7 @@ import { PensionFund } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line } from 'recharts';
 import type { TooltipPayload } from 'recharts';
 import { CHART_COLORS, getColorForFund } from '../utils/colorMapping';
+import { formatFundLabel } from '../utils/fundLabel';
 import ChartTooltip from './ChartTooltip';
 
 interface CostChartProps {
@@ -28,7 +29,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
   const selectedFundIds = selectedFunds.map(f => f.id);
 
   const TOOLTIP_WIDTH = 260;
-  const TOOLTIP_OFFSET = 470;
+  const TOOLTIP_MARGIN = 16;
   const chartWrapperRef = React.useRef<HTMLDivElement | null>(null);
   const [chartWidthPx, setChartWidthPx] = React.useState(0);
   const [chartHeightPx, setChartHeightPx] = React.useState(0);
@@ -88,14 +89,14 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
         return;
       }
 
-      // Simpler behavior requested: always place tooltip to the left of the
-      // anchor (negative offset). No viewport/container checks.
-      // This intentionally places the tooltip at chartX - TOOLTIP_WIDTH - offset.
-      let nextX = chartX - TOOLTIP_WIDTH - TOOLTIP_OFFSET;
+      let nextX = chartX + TOOLTIP_MARGIN; // default place to the right
+      if (nextX + TOOLTIP_WIDTH + TOOLTIP_MARGIN > chartWidthPx) {
+        nextX = Math.max(TOOLTIP_MARGIN, chartX - TOOLTIP_WIDTH - TOOLTIP_MARGIN);
+      }
 
       setTooltipPosition({ x: nextX, y: chartY });
     },
-    [chartWidthPx]
+    [chartHeightPx, chartWidthPx]
   );
 
   const resetTooltipPosition = React.useCallback(() => {
@@ -130,7 +131,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
                 position={tooltipPosition}
                 offset={0}
                 allowEscapeViewBox={{ x: true, y: false }}
-                wrapperStyle={{ pointerEvents: 'none', opacity: 1, zIndex: 9999 }}
+                wrapperStyle={{ pointerEvents: 'auto', opacity: 1, zIndex: 9999 }}
               />
               <Bar dataKey="costo" name="Costo" isAnimationActive={animationsEnabled}>
                 {detailChartData.map((entry, index) => (
@@ -166,10 +167,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
   }
   
   // Create labels that include fund name and società for better identification
-  const fundLabels = selectedFunds.map(f => {
-    const societaPart = f.societa ? ` (${f.societa})` : '';
-    return `${f.pip} - ${f.linea}${societaPart}`;
-  });
+  const fundLabels = selectedFunds.map(formatFundLabel);
 
   const chartData = [
     { name: '2 Anni' },
@@ -208,7 +206,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
               position={tooltipPosition}
               offset={0}
               allowEscapeViewBox={{ x: true, y: false }}
-              wrapperStyle={{ pointerEvents: 'none', opacity: 1, zIndex: 9999 }}
+              wrapperStyle={{ pointerEvents: 'auto', opacity: 1, zIndex: 9999 }}
             />
             {selectedFunds.map((fund, index) => {
                 const color = getColorForFund(fund.id, selectedFundIds);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { PensionFund } from '../types';
-import { getColorForFund } from '../utils/colorMapping';
+import { getColorForFund, withAlpha } from '../utils/colorMapping';
+import { formatFundLabel, formatShortFundLabel } from '../utils/fundLabel';
 
 interface SelectedFundsBarProps {
   selectedFunds: PensionFund[];
@@ -28,15 +29,21 @@ const SelectedFundsBar: React.FC<SelectedFundsBarProps> = ({
 
         {selectedFunds.map((fund) => {
           const color = getColorForFund(fund.id, selectedFundIds);
-          // Create a short name for display
-          const shortName = fund.linea.length > 25 ? fund.linea.substring(0, 25) + '...' : fund.linea;
+          const fullLabel = formatFundLabel(fund);
+          const shortName = formatShortFundLabel(fund, 40);
+          const chipBackground = withAlpha(color, 0.15);
+          const chipBorder = withAlpha(color, 0.35);
           
           return (
             <button
               key={fund.id}
               onClick={() => onToggleFund(fund.id)}
-              className="inline-flex items-center gap-2 rounded-full bg-slate-800 dark:bg-slate-700 px-3 py-1.5 text-xs hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors group"
-              title={fund.linea}
+              className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors group"
+              title={fullLabel}
+              style={{
+                backgroundColor: chipBackground,
+                borderColor: chipBorder,
+              }}
             >
               <span
                 className="h-2.5 w-2.5 rounded-full flex-shrink-0"
