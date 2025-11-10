@@ -1,7 +1,9 @@
 import React from 'react';
 import { PensionFund } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line } from 'recharts';
+import type { TooltipPayload } from 'recharts';
 import { CHART_COLORS, getColorForFund } from '../utils/colorMapping';
+import ChartTooltip from './ChartTooltip';
 
 interface CostChartProps {
   selectedFunds: PensionFund[];
@@ -10,33 +12,17 @@ interface CostChartProps {
   detailFund?: PensionFund | null;
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    // Sort payload by value for clarity
-    const sortedPayload = [...payload].sort((a, b) => (b.value || 0) - (a.value || 0));
-
-    return (
-      <div 
-        className="p-3 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg"
-        style={{ opacity: 1, backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff', zIndex: 9999 }}
-      >
-        <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">{label}</p>
-        {sortedPayload.map((pld: any, index: number) => (
-            <div key={index} className="flex items-center text-sm my-1">
-                <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: pld.stroke || pld.fill }}></span>
-                <span className="text-slate-700 dark:text-slate-300 mr-2">{pld.dataKey || pld.name}:</span> 
-                <span className="font-semibold text-slate-900 dark:text-slate-100">{pld.value?.toFixed(2)}%</span>
-            </div>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
-
 const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact = false, detailFund = null }) => {
   const tickColor = theme === 'dark' ? '#94a3b8' : '#475569';
   const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0';
+  const costTooltipSorter = React.useCallback(
+    (a: TooltipPayload, b: TooltipPayload) => {
+      const aValue = typeof a.value === 'number' ? a.value : parseFloat(String(a.value));
+      const bValue = typeof b.value === 'number' ? b.value : parseFloat(String(b.value));
+      return (bValue || 0) - (aValue || 0);
+    },
+    []
+  );
 
   // Create stable color mapping
   const selectedFundIds = selectedFunds.map(f => f.id);
@@ -139,7 +125,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
               <XAxis dataKey="name" tick={{ fill: tickColor, fontSize: 12 }} />
               <YAxis unit="%" tick={{ fill: tickColor, fontSize: 12 }} />
               <Tooltip
-                content={<CustomTooltip />}
+                content={<ChartTooltip sorter={costTooltipSorter} />}
                 cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
                 position={tooltipPosition}
                 offset={0}
@@ -217,7 +203,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
             <XAxis dataKey="name" tick={{ fill: tickColor, fontSize: isCompact ? 10 : 14 }} dy={isCompact ? 5 : 10} />
             <YAxis unit="%" tick={{ fill: tickColor, fontSize: isCompact ? 10 : 12 }} />
             <Tooltip
-              content={<CustomTooltip />}
+              content={<ChartTooltip sorter={costTooltipSorter} />}
               cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
               position={tooltipPosition}
               offset={0}

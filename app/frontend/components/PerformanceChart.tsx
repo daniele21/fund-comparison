@@ -1,7 +1,9 @@
 import React from 'react';
 import { PensionFund } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line } from 'recharts';
+import type { TooltipPayload } from 'recharts';
 import { getColorForFund } from '../utils/colorMapping';
+import ChartTooltip from './ChartTooltip';
 
 interface PerformanceChartProps {
   selectedFunds: PensionFund[];
@@ -69,36 +71,16 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
     { name: 'Ultimi 20 Anni', [TFR_BENCHMARK.label]: TFR_BENCHMARK.ultimi20Anni, ...Object.fromEntries(selectedFunds.map((f, i) => [fundLabels[i], f.rendimenti.ultimi20Anni])) },
   ];
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      // Sort payload to show benchmark first, then funds
-      const sortedPayload = [...payload].sort((a, b) => {
-        if (a.dataKey === TFR_BENCHMARK.label) return -1;
-        if (b.dataKey === TFR_BENCHMARK.label) return 1;
-        return (b.value || 0) - (a.value || 0); // Sort funds by value descending
-      });
-
-      return (
-        <div 
-          className="p-3 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg"
-          style={{ opacity: 1, backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff', zIndex: 9999 }}
-        >
-          <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">{label}</p>
-          {sortedPayload.map((pld: any, index: number) => {
-            const color = pld.dataKey === TFR_BENCHMARK.label ? BENCHMARK_COLOR : pld.fill;
-            return (
-              <div key={pld.dataKey} className="flex items-center text-sm my-1">
-                  <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: color }}></span>
-                  <span className="text-slate-700 dark:text-slate-300 mr-2">{pld.dataKey}:</span> 
-                  <span className="font-semibold text-slate-900 dark:text-slate-100">{pld.value?.toFixed(2)}%</span>
-              </div>
-            );
-          })}
-        </div>
-      );
-    }
-    return null;
-  };
+  const performanceTooltipSorter = React.useCallback(
+    (a: TooltipPayload, b: TooltipPayload) => {
+      if (a.dataKey === TFR_BENCHMARK.label) return -1;
+      if (b.dataKey === TFR_BENCHMARK.label) return 1;
+      const aValue = typeof a.value === 'number' ? a.value : parseFloat(String(a.value));
+      const bValue = typeof b.value === 'number' ? b.value : parseFloat(String(b.value));
+      return (bValue || 0) - (aValue || 0);
+    },
+    []
+  );
 
   return (
     <div className={isCompact ? '' : 'p-4 md:p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700'}>
@@ -124,7 +106,13 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
             <XAxis dataKey="name" tick={{ fill: tickColor, fontSize: isCompact ? 10 : 14 }} dy={isCompact ? 5 : 10} />
             <YAxis unit="%" tick={{ fill: tickColor, fontSize: isCompact ? 10 : 12 }} />
             <Tooltip
-              content={<CustomTooltip />}
+              content={
+                <ChartTooltip
+                  sorter={performanceTooltipSorter}
+                  highlightKey={TFR_BENCHMARK.label}
+                  highlightColor={BENCHMARK_COLOR}
+                />
+              }
               cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
               offset={50}
               allowEscapeViewBox={{ x: true, y: false }}
