@@ -183,9 +183,17 @@ const App: React.FC = () => {
 
   const showUpgradeNotice = !authLoading && !isFullAccess && filteredAndSortedFunds.length > FREE_PLAN_LIMIT;
 
+  const fundById = useMemo(() => {
+    const map = new Map<string, PensionFund>();
+    pensionFundsData.forEach(fund => map.set(fund.id, fund));
+    return map;
+  }, [pensionFundsData]);
+
   const selectedFunds = useMemo(() => {
-    return pensionFundsData.filter(fund => selectedFundIds.has(fund.id));
-  }, [selectedFundIds]);
+    return Array.from(selectedFundIds)
+      .map(fundId => fundById.get(fundId))
+      .filter((fund): fund is PensionFund => Boolean(fund));
+  }, [selectedFundIds, fundById]);
 
   const selectedFundIdsArray = useMemo(() => {
     return Array.from(selectedFundIds);

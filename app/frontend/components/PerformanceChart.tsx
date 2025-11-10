@@ -34,25 +34,6 @@ const PERFORMANCE_PERIODS = [
   { label: 'Ultimi 20 Anni', key: 'ultimi20Anni' as const, benchmark: TFR_BENCHMARK.ultimi20Anni },
 ];
 
-const LABEL_TO_RENDIMENTO_KEY: Record<string, keyof PensionFund['rendimenti']> = PERFORMANCE_PERIODS.reduce(
-  (acc, period) => {
-    acc[period.label] = period.key;
-    return acc;
-  },
-  {} as Record<string, keyof PensionFund['rendimenti']>
-);
-
-const DEFAULT_SORT_LABEL = PERFORMANCE_PERIODS[0].label;
-
-const getValueForLabel = (fund: PensionFund, label: string): number => {
-  const key = LABEL_TO_RENDIMENTO_KEY[label] ?? 'ultimoAnno';
-  const value = fund.rendimenti[key];
-  if (typeof value === 'number') {
-    return value;
-  }
-  return value != null ? Number(value) : Number.NEGATIVE_INFINITY;
-};
-
 const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, theme, isCompact = false }) => {
   const tickColor = theme === 'dark' ? '#94a3b8' : '#475569'; // slate-400 for dark, slate-600 for light
   const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0'; // slate-700 for dark, slate-200 for light
@@ -62,39 +43,12 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
   const chartWrapperRef = React.useRef<HTMLDivElement | null>(null);
   const showPlaceholder = selectedFunds.length === 0 && !isCompact;
 
-  React.useLayoutEffect(() => {
-    const element = chartWrapperRef.current;
-    if (!element) {
-      return;
-    }
-
-    const observer = new ResizeObserver(() => {});
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }, [selectedFunds.length, isCompact]);
-
-  const fundLabelMap = React.useMemo(() => {
-    const map = new Map<string, string>();
-    selectedFunds.forEach(fund => {
-      map.set(fund.id, formatFundLabel(fund));
-    });
-    return map;
-  }, [selectedFunds]);
-
-  const orderedFunds = React.useMemo(() => {
-    return [...selectedFunds].sort(
-      (a, b) => getValueForLabel(b, DEFAULT_SORT_LABEL) - getValueForLabel(a, DEFAULT_SORT_LABEL)
-    );
-  }, [selectedFunds]);
+  const fundLabels = React.useMemo(() => selectedFunds.map(formatFundLabel), [selectedFunds]);
 
   const chartData = React.useMemo(() => {
     return PERFORMANCE_PERIODS.map(period => {
       const entries = Object.fromEntries(
-        orderedFunds.map(fund => {
-          const label = fundLabelMap.get(fund.id) ?? formatFundLabel(fund);
-          return [label, fund.rendimenti[period.key]];
-        })
+        selectedFunds.map((fund, index) => [fundLabels[index], fund.rendimenti[period.key]])
       );
       return {
         name: period.label,
@@ -102,7 +56,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
         ...entries,
       };
     });
-  }, [orderedFunds, fundLabelMap]);
+  }, [selectedFunds, fundLabels]);
 
   const performanceTooltipSorter = React.useCallback(
     (a: TooltipPayload, b: TooltipPayload) => {
@@ -170,11 +124,8 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
               cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
               wrapperStyle={{ pointerEvents: 'auto', opacity: 1, zIndex: 9999 }}
             />
-            {orderedFunds.map((fund) => {
-                 const label = fundLabelMap.get(fund.id);
-                 if (!label) {
-                   return null;
-                 }
+            {selectedFunds.map((fund, index) => {
+                 const label = fundLabels[index];
                  const color = getColorForFund(fund.id, selectedFundIds);
                  return <Bar key={fund.id} dataKey={label} fill={color} />;
             })}
