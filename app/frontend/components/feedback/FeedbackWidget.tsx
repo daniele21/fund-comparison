@@ -229,7 +229,7 @@ export const FeedbackWidget = () => {
 	return (
 		<Dialog.Root open={open} onOpenChange={handleOpenChange}>
 			<Dialog.Trigger asChild>
-				<div className="fixed bottom-32 md:bottom-6 right-6 z-[var(--z-fab)] flex items-center gap-3" style={{ bottom: 0 }}>
+				<div className="fixed bottom-32 md:bottom-6 right-6 z-[var(--z-fab)] flex items-center gap-3" style={{ bottom: -0.3 }}>
 					{/* Visible label on md+ screens, icon-only on small screens */}
 						<button
 							type="button"

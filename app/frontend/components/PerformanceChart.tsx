@@ -79,7 +79,10 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
       });
 
       return (
-        <div className="p-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg">
+        <div 
+          className="p-3 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg"
+          style={{ opacity: 1, backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff', zIndex: 9999 }}
+        >
           <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">{label}</p>
           {sortedPayload.map((pld: any, index: number) => {
             const color = pld.dataKey === TFR_BENCHMARK.label ? BENCHMARK_COLOR : pld.fill;
@@ -125,7 +128,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
               cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
               offset={50}
               allowEscapeViewBox={{ x: true, y: false }}
-              wrapperStyle={{ pointerEvents: 'none' }}
+              wrapperStyle={{ pointerEvents: 'none', opacity: 1, zIndex: 9999 }}
             />
             {selectedFunds.map((fund) => {
                  const color = getColorForFund(fund.id, selectedFundIds);

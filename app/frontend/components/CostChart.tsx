@@ -16,7 +16,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     const sortedPayload = [...payload].sort((a, b) => (b.value || 0) - (a.value || 0));
 
     return (
-      <div className="p-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg">
+      <div 
+        className="p-3 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg"
+        style={{ opacity: 1, backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff', zIndex: 9999 }}
+      >
         <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">{label}</p>
         {sortedPayload.map((pld: any, index: number) => (
             <div key={index} className="flex items-center text-sm my-1">
@@ -141,7 +144,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
                 position={tooltipPosition}
                 offset={0}
                 allowEscapeViewBox={{ x: true, y: false }}
-                wrapperStyle={{ pointerEvents: 'none' }}
+                wrapperStyle={{ pointerEvents: 'none', opacity: 1, zIndex: 9999 }}
               />
               <Bar dataKey="costo" name="Costo" isAnimationActive={animationsEnabled}>
                 {detailChartData.map((entry, index) => (
@@ -219,7 +222,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
               position={tooltipPosition}
               offset={0}
               allowEscapeViewBox={{ x: true, y: false }}
-              wrapperStyle={{ pointerEvents: 'none' }}
+              wrapperStyle={{ pointerEvents: 'none', opacity: 1, zIndex: 9999 }}
             />
             {selectedFunds.map((fund, index) => {
                 const color = getColorForFund(fund.id, selectedFundIds);
