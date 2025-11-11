@@ -10,12 +10,14 @@ import { useGuidedComparator } from './GuidedComparatorContext';
 type GuidedFundComparatorProps = {
   funds: PensionFund[];
   onPresetSelected?: (id: string) => void;
+  onFundClick?: (fund: PensionFund) => void;
+  theme?: string;
   children: React.ReactNode;
 };
 
 const GuidedLayoutInner: React.FC<
-  { funds: PensionFund[]; onPresetSelected?: (id: string) => void; children: React.ReactNode }
-> = ({ funds, onPresetSelected, children }) => {
+  { funds: PensionFund[]; onPresetSelected?: (id: string) => void; onFundClick?: (fund: PensionFund) => void; theme?: string; children: React.ReactNode }
+> = ({ funds, onPresetSelected, onFundClick, theme, children }) => {
   const { entryMode } = useGuidedComparator();
 
   return (
@@ -24,7 +26,7 @@ const GuidedLayoutInner: React.FC<
       {/* <QuestionChipsBar onPresetSelected={onPresetSelected} /> */}
 
       {entryMode === 'check-fund' && <CheckMyFundFlow funds={funds} />}
-      {entryMode === 'choose-fund' && <ChooseFundFlow funds={funds} />}
+      {entryMode === 'choose-fund' && <ChooseFundFlow funds={funds} onFundClick={onFundClick} theme={theme} />}
       {entryMode === 'learn' && <LearnAccordion />}
 
       <div className="grid gap-6 min-w-0">
@@ -34,9 +36,9 @@ const GuidedLayoutInner: React.FC<
   );
 };
 
-export const GuidedFundComparator: React.FC<GuidedFundComparatorProps> = ({ funds, onPresetSelected, children }) => {
+export const GuidedFundComparator: React.FC<GuidedFundComparatorProps> = ({ funds, onPresetSelected, onFundClick, theme, children }) => {
   return (
-    <GuidedLayoutInner funds={funds} onPresetSelected={onPresetSelected}>
+    <GuidedLayoutInner funds={funds} onPresetSelected={onPresetSelected} onFundClick={onFundClick} theme={theme}>
       {children}
     </GuidedLayoutInner>
   );

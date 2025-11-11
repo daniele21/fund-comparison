@@ -5,18 +5,25 @@ import computeShortlist from '../../utils/fundShortlist';
 
 type ChooseFundFlowProps = {
   funds: PensionFund[];
+  onFundClick?: (fund: PensionFund) => void;
+  theme?: string;
 };
 
-export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds }) => {
+export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundClick, theme }) => {
   const { profile, setProfile, setSelectedFundId, selectedFundIds, toggleSelectedFund } = useGuidedComparator();
 
   const shortlist = useMemo(() => computeShortlist(funds, profile, { maxResults: 6 }), [funds, profile]);
 
-  const handleSelectFund = (fund: PensionFund) => {
-    // primary selection for insights
-    setSelectedFundId(fund.id);
-    // toggle in the compare set
+  const handleToggleSelection = (fund: PensionFund, e: React.MouseEvent) => {
+    e.stopPropagation();
     toggleSelectedFund(fund.id);
+  };
+
+  const handleFundNameClick = (fund: PensionFund) => {
+    setSelectedFundId(fund.id);
+    if (onFundClick) {
+      onFundClick(fund);
+    }
   };
 
   return (
@@ -112,56 +119,96 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds }) => {
                 <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">Una prima shortlist per te</h3>
                 <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-300">
                   Non sono consigli personalizzati, ma una selezione filtrata per tipologia e costi, da cui puoi
-                  partire per confrontare. (Mostro ISC a 35 anni e rendimento a 10 anni per confronto rapido)
+                  partire per confrontare. (Mostro ISC a 10 anni e rendimento a 10 anni per confronto rapido)
                 </p>
               </div>
-              <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2">
+              <div className="grid grid-cols-1 gap-2.5 sm:gap-3 min-[480px]:grid-cols-2">
                 {shortlist.map(fund => (
-                  <button
+                  <div
                     key={fund.id}
-                    type="button"
-                    aria-pressed={selectedFundIds.includes(fund.id)}
                     className={
-                      `relative w-full rounded-xl sm:rounded-2xl border px-3 py-2.5 sm:px-4 sm:py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-sky-300 hover:bg-sky-50 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-sky-500/60 active:scale-[0.98] ` +
-                      (selectedFundIds.includes(fund.id) ? 'border-sky-500 bg-sky-50/40 dark:bg-sky-900/40' : 'border-slate-100')
+                      `group relative w-full rounded-lg sm:rounded-xl border-2 px-3 py-2 sm:px-3.5 sm:py-2.5 transition-all duration-200 hover:shadow-md dark:bg-slate-900/60 ` +
+                      (selectedFundIds.includes(fund.id) 
+                        ? 'border-sky-500 bg-gradient-to-br from-sky-50/80 to-sky-100/40 dark:from-sky-900/40 dark:to-sky-800/30 shadow-sm' 
+                        : 'border-slate-200 dark:border-slate-700 bg-white hover:border-sky-300 dark:hover:border-sky-600')
                     }
-                    onClick={() => handleSelectFund(fund)}
                   >
-                    <div className="flex items-start justify-between gap-2 sm:gap-4">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2">
-                          <h4 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100 truncate">{fund.linea}</h4>
-                          <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 truncate">{fund.societa ?? fund.pip ?? 'Compagnia non indicata'}</span>
-                        </div>
-                        <div className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-300 truncate">
-                          <span className="text-xs text-slate-500 dark:text-slate-400 mr-1">Categoria:</span>
-                          <strong className="font-medium mr-2">{fund.categoria}</strong>
-                          <span className="text-xs text-slate-500 dark:text-slate-400 mr-1">Tipo:</span>
-                          <span>{fund.type}</span>
-                        </div>
-                      </div>
+                    {/* Selection checkbox - compact */}
+                    <button
+                      type="button"
+                      onClick={(e) => handleToggleSelection(fund, e)}
+                      aria-label={selectedFundIds.includes(fund.id) ? "Deseleziona fondo" : "Seleziona fondo per il confronto"}
+                      aria-pressed={selectedFundIds.includes(fund.id)}
+                      className="absolute top-2 right-2 flex h-6 w-6 sm:h-6 sm:w-6 items-center justify-center rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-1 hover:scale-110 active:scale-95 z-10"
+                      title={selectedFundIds.includes(fund.id) ? "Rimuovi dal confronto" : "Aggiungi al confronto"}
+                    >
+                      {selectedFundIds.includes(fund.id) ? (
+                        <span className="flex h-full w-full items-center justify-center rounded-md bg-sky-600 dark:bg-sky-500 text-white text-xs font-bold shadow-md">
+                          ✓
+                        </span>
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center rounded-md border-2 border-slate-300 dark:border-slate-500 bg-white dark:bg-slate-700 group-hover:border-sky-400 dark:group-hover:border-sky-400 group-hover:bg-sky-50 dark:group-hover:bg-sky-900/30 transition-all">
+                        </span>
+                      )}
+                    </button>
 
-                      <div className="flex shrink-0 flex-col items-end text-right gap-1">
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-slate-500 dark:text-slate-400">ISC</span>
-                          <span className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-100">
-                            {fund.isc?.isc35a != null ? `${fund.isc.isc35a.toFixed(2)}%` : 'n.d.'}
+                    <div className="pr-8">
+                      {/* Line 1: Fund name (clickable) + Company */}
+                      <button
+                        type="button"
+                        onClick={() => handleFundNameClick(fund)}
+                        className="text-left w-full group/name mb-1.5"
+                      >
+                        <div className="flex items-baseline gap-1.5 flex-wrap">
+                          <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover/name:text-sky-600 dark:group-hover/name:text-sky-400 transition-colors line-clamp-1">
+                            {fund.linea}
+                          </h4>
+                          <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            className="inline-block h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity shrink-0" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                          <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide font-medium truncate">
+                            {fund.societa ?? fund.pip ?? 'N/A'}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-slate-500 dark:text-slate-400">Rend 10y</span>
-                          <span className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-100">
-                            {fund.rendimenti.ultimi10Anni != null ? `${fund.rendimenti.ultimi10Anni.toFixed(2)}%` : 'n.d.'}
+                      </button>
+
+                      {/* Line 2: Category, Type, and Metrics in one line */}
+                      <div className="flex items-center justify-between gap-2 text-[10px] sm:text-xs">
+                        {/* Left: Category + Type */}
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 truncate">
+                            {fund.categoria}
                           </span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 truncate">
+                            {fund.type}
+                          </span>
+                        </div>
+
+                        {/* Right: Metrics inline */}
+                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                          <div className="flex items-center gap-0.5" title="Indicatore Sintetico di Costo a 10 anni">
+                            <span className="text-amber-600 dark:text-amber-400 font-medium">ISC:</span>
+                            <span className="font-bold text-amber-900 dark:text-amber-100 tabular-nums">
+                              {fund.isc?.isc10a != null ? `${fund.isc.isc10a.toFixed(2)}%` : 'n.d.'}
+                            </span>
+                          </div>
+                          <div className="h-3 w-px bg-slate-300 dark:bg-slate-600"></div>
+                          <div className="flex items-center gap-0.5" title="Rendimento medio ultimi 10 anni">
+                            <span className="text-emerald-600 dark:text-emerald-400 font-medium">Rend:</span>
+                            <span className="font-bold text-emerald-900 dark:text-emerald-100 tabular-nums">
+                              {fund.rendimenti.ultimi10Anni != null ? `${fund.rendimenti.ultimi10Anni.toFixed(2)}%` : 'n.d.'}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                    {selectedFundIds.includes(fund.id) && (
-                      <span className="absolute top-2 right-2 flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-sky-600 text-white text-xs" aria-hidden>
-                        ✓
-                      </span>
-                    )}
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>

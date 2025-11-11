@@ -304,7 +304,7 @@ const AppContent: React.FC = () => {
       />
       <main className="px-3 pb-16 pt-24 sm:px-4 sm:pb-20 md:px-6 md:pt-24 lg:px-8 overflow-x-hidden">
         <div className="mx-auto w-full max-w-full lg:max-w-7xl min-w-0">
-          <GuidedFundComparator funds={pensionFundsData} onPresetSelected={handlePresetSelected}>
+          <GuidedFundComparator funds={pensionFundsData} onPresetSelected={handlePresetSelected} onFundClick={handleFundClick} theme={theme}>
             <div className="space-y-6 sm:space-y-8 md:space-y-10">
               <section className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-4 sm:py-5 md:px-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 min-w-0 overflow-hidden">
                 <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
