@@ -39,29 +39,30 @@ const ChartTooltip: React.FC<ChartTooltipProps> = ({
   });
 
   const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640; // sm breakpoint
 
   const isCrowded = sortedPayload.length > 4;
   const shouldScroll = sortedPayload.length > 6;
 
   return (
     <div
-      className="p-3 border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg"
+      className="p-2 sm:p-3 border border-slate-200 dark:border-slate-600 rounded-lg sm:rounded-xl shadow-lg"
       style={{
         opacity: 1,
         backgroundColor: isDark ? '#0f172a' : '#ffffff',
         zIndex: 9999,
-        maxWidth: 320,
+        maxWidth: isMobile ? 280 : 320,
       }}
     >
       {label && (
-        <p className="font-semibold text-slate-900 dark:text-slate-100 mb-3 tracking-tight">
+        <p className="font-semibold text-slate-900 dark:text-slate-100 mb-2 sm:mb-3 tracking-tight text-xs sm:text-sm">
           {label}
         </p>
       )}
       <div
-        className="space-y-1.5 pr-1"
+        className="space-y-1 sm:space-y-1.5 pr-0.5 sm:pr-1"
         style={{
-          maxHeight: shouldScroll ? 220 : undefined,
+          maxHeight: shouldScroll ? (isMobile ? 180 : 220) : undefined,
           overflowY: shouldScroll ? 'auto' : undefined,
         }}
       >
@@ -80,27 +81,27 @@ const ChartTooltip: React.FC<ChartTooltipProps> = ({
           return (
             <div
               key={key}
-              className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm gap-3"
+              className="flex items-center justify-between rounded-md sm:rounded-lg px-1.5 sm:px-2 py-1 sm:py-1.5 text-xs sm:text-sm gap-2 sm:gap-3"
               style={{
                 backgroundColor: rowBackground,
                 border: `1px solid ${rowBorder}`,
               }}
             >
-              <div className="flex items-center min-w-0 gap-2">
+              <div className="flex items-center min-w-0 gap-1.5 sm:gap-2">
                 {isCrowded && (
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 w-5">
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 w-4 sm:w-5">
                     {index + 1}
                   </span>
                 )}
                 <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0"
                   style={{ backgroundColor: color }}
                 ></span>
-                <span className="truncate text-slate-700 dark:text-slate-200">
+                <span className="truncate text-slate-700 dark:text-slate-200 text-xs sm:text-sm">
                   {entry.dataKey || entry.name}
                 </span>
               </div>
-              <span className="font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
+              <span className="font-semibold text-slate-900 dark:text-slate-100 tabular-nums text-xs sm:text-sm">
                 {value}
               </span>
             </div>

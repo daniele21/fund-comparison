@@ -33,7 +33,7 @@ const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
 
   return (
     <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg px-4 py-3 border border-slate-200 dark:border-slate-700">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 mr-1">
           Filtri attivi:
         </span>
@@ -88,7 +88,7 @@ const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
 
         <button
           onClick={onResetAll}
-          className="ml-auto text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 underline font-medium transition-colors"
+          className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 underline font-medium transition-colors w-full sm:w-auto sm:ml-auto text-left sm:text-right"
         >
           Azzera tutti
         </button>

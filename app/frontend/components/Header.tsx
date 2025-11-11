@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../auth';
 
 interface HeaderProps {
@@ -10,6 +10,35 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook }) => {
     const { user, loading, login, logout } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+    const lastScrollY = useRef(0);
+    const ticking = useRef(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (!ticking.current) {
+                window.requestAnimationFrame(() => {
+                    const currentScrollY = window.scrollY;
+                    
+                    // Show header when scrolling up or at top
+                    if (currentScrollY < lastScrollY.current || currentScrollY < 10) {
+                        setIsHeaderVisible(true);
+                    } 
+                    // Hide header when scrolling down and past threshold
+                    else if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+                        setIsHeaderVisible(false);
+                    }
+                    
+                    lastScrollY.current = currentScrollY;
+                    ticking.current = false;
+                });
+                ticking.current = true;
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const handleLogin = async () => {
         await login();
@@ -96,7 +125,9 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook }) =
     );
 
   return (
-    <header className="bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-20 backdrop-blur-sm">
+    <header className={`bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 fixed top-0 left-0 right-0 z-20 backdrop-blur-sm transition-transform duration-300 ${
+      isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
+    }`}>
       <div className="container mx-auto px-4 md:px-8 py-3 md:py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-9 w-9 text-sky-600 dark:text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

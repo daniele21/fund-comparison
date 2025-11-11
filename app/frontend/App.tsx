@@ -259,7 +259,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
       <Header theme={theme} toggleTheme={toggleTheme} onGoToPlaybook={handleGoToPlaybook} />
-      <main className="container mx-auto p-4 sm:p-5 md:p-8">
+      <main className="container mx-auto p-4 sm:p-5 md:p-8 pt-20 sm:pt-24 md:pt-28">
         <div className="space-y-12">
           
           <section>
@@ -355,11 +355,11 @@ const App: React.FC = () => {
                 />
 
                 {/* Pagination controls */}
-                <div className="mt-4 flex items-center justify-between">
-                  <div className="text-sm text-slate-600 dark:text-slate-300">
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="order-2 sm:order-1 text-sm text-slate-600 dark:text-slate-300 text-center sm:text-left">
                     Mostrati {Math.min(visibleFunds.length, page * pageSize) - (page - 1) * pageSize} di {visibleFunds.length}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="order-1 sm:order-2 flex flex-wrap items-center gap-2 justify-center sm:justify-end">
                     <label className="text-sm text-slate-600 dark:text-slate-300">Per pagina</label>
                     <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }} className="text-sm px-2 py-1 border rounded bg-white dark:bg-slate-800">
                       <option value={5}>5</option>
