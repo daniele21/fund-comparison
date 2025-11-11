@@ -302,7 +302,7 @@ const AppContent: React.FC = () => {
         onLoginRequest={openLoginModal}
         onVisibilityChange={setIsHeaderVisible}
       />
-      <main className="px-3 pb-16 pt-6 sm:px-4 sm:pb-20 sm:pt-20 md:px-6 md:pt-24 lg:px-8 overflow-x-hidden">
+      <main className="px-3 pb-16 pt-24 sm:px-4 sm:pb-20 md:px-6 md:pt-24 lg:px-8 overflow-x-hidden">
         <div className="mx-auto w-full max-w-full lg:max-w-7xl min-w-0">
           <GuidedFundComparator funds={pensionFundsData} onPresetSelected={handlePresetSelected}>
             <div className="space-y-6 sm:space-y-8 md:space-y-10">
