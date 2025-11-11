@@ -12,6 +12,13 @@ export function costLabelFromIsc35(isc35: number | null | undefined): string {
   return 'Costo: sopra la media';
 }
 
+// Small wrapper to support ISC measured at 10 years (isc10a).
+// Currently we reuse the same thresholds as for ISC35; if you want
+// different thresholds for 10y, update FUND_LOGIC_CONFIG.costThresholds.
+export function costLabelFromIsc10(isc10: number | null | undefined): string {
+  return costLabelFromIsc35(isc10);
+}
+
 export function perfLabelFromRendimento10y(rendimento10y: number | null | undefined): string {
   if (rendimento10y == null) return 'Rendimenti: dato mancante';
   if (rendimento10y >= PERFORMANCE_THRESHOLDS.aboveAverage) return 'Rendimenti: sopra la media';
@@ -75,6 +82,11 @@ export function colorForCost(isc35: number | null | undefined) {
   if (isc35 <= COST_THRESHOLDS.veryCompetitive) return { badgeBg: 'bg-emerald-50 dark:bg-emerald-900/20', dot: 'bg-emerald-500' };
   if (isc35 <= COST_THRESHOLDS.average) return { badgeBg: 'bg-amber-50 dark:bg-amber-900/20', dot: 'bg-amber-400' };
   return { badgeBg: 'bg-red-50 dark:bg-red-900/20', dot: 'bg-red-500' };
+}
+
+// Wrapper for 10-year ISC coloring (reuses same logic as isc35 for now).
+export function colorForCost10(isc10: number | null | undefined) {
+  return colorForCost(isc10);
 }
 
 export function colorForPerf(rendimento10y: number | null | undefined) {

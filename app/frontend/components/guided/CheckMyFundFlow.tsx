@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import type { PensionFund, UserProfile } from '../../types';
 import { useGuidedComparator } from './GuidedComparatorContext';
 // Inlined insights panel (moved from SelectedFundInsightsPanel.tsx)
-import { costLabelFromIsc35, perfLabelFromRendimento10y, matchLabelFromFund, computeCoherenceScore, colorForCost, colorForPerf, colorForCoherence } from '../../config/fundConfig';
+import { costLabelFromIsc35, costLabelFromIsc10, perfLabelFromRendimento10y, matchLabelFromFund, computeCoherenceScore, colorForCost, colorForCost10, colorForPerf, colorForCoherence } from '../../config/fundConfig';
 import { SelectedFundInsightsPanel } from './SelectedFundInsightsPanel';
 
 type CheckMyFundFlowProps = {
@@ -40,14 +40,15 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
         </div>
       </div>
 
-      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)]">
-        <div className="order-1 space-y-5 xl:order-1">
+      <div className="mt-5 grid gap-5 lg:grid-cols-3">
+        {/* Column 1: Search and Profile */}
+        <div className="order-1">
           <div className="rounded-2xl border border-slate-100 bg-white/90 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/40">
             <label className="block">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Nome del fondo o della compagnia</span>
               <input
                 type="text"
-                className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm bg-white focus:border-sky-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
+                className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm bg-white focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
                 placeholder="Es. FONCHIM, COMETA, Alleanza Previdenza…"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
@@ -60,7 +61,7 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
                   <li key={result.id} className="border-b last:border-b-0">
                     <button
                       type="button"
-                      className="w-full px-3 py-2 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 dark:hover:bg-slate-800"
+                      className="w-full px-3 py-2 text-left transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
                       onClick={() => handleSelectFund(result)}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -76,8 +77,8 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
 
             <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/40">
               <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Per contestualizzare</h3>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <label className="text-sm text-slate-600 dark:text-slate-300">
+              <div className="mt-3 space-y-3">
+                <label className="block text-sm text-slate-600 dark:text-slate-300">
                   Età
                   <select
                     className="mt-2 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
@@ -93,7 +94,7 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
                   </select>
                 </label>
 
-                <label className="text-sm text-slate-600 dark:text-slate-300">
+                <label className="block text-sm text-slate-600 dark:text-slate-300">
                   Anni alla pensione
                   <input
                     type="number"
@@ -112,8 +113,11 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        {/* Column 2: Fund Details */}
+        <div className="order-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950 lg:sticky lg:top-28">
             {fund ? (
               <FundXrayCard fund={fund} profile={profile} />
             ) : (
@@ -124,7 +128,8 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
           </div>
         </div>
 
-        <div className="order-2 xl:order-2 xl:sticky xl:top-28">
+        {/* Column 3: Insights Panel */}
+        <div className="order-3 lg:sticky lg:top-28">
           <SelectedFundInsightsPanel funds={funds} />
         </div>
       </div>
@@ -133,15 +138,15 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
 };
 
 const FundXrayCard: React.FC<{ fund: PensionFund; profile: UserProfile }> = ({ fund, profile }) => {
-  const isc35 = fund.isc?.isc35a;
+  const isc10 = fund.isc?.isc10a;
   const rendimento10y = fund.rendimenti.ultimi10Anni;
 
-  const costLabel = costLabelFromIsc35(isc35);
+  const costLabel = costLabelFromIsc10(isc10);
   const perfLabel = perfLabelFromRendimento10y(rendimento10y);
   const matchLabel = matchLabelFromFund(fund);
   // compute once per render
   const coherenceScore = useMemo(() => computeCoherenceScore(fund.categoria, profile), [fund.categoria, profile]);
-  const costColors = colorForCost(isc35);
+  const costColors = colorForCost10(isc10);
   const perfColors = colorForPerf(rendimento10y);
   const coherenceColors = colorForCoherence(coherenceScore);
 
@@ -160,11 +165,11 @@ const FundXrayCard: React.FC<{ fund: PensionFund; profile: UserProfile }> = ({ f
           <div
             className={`${costColors.badgeBg} flex items-center gap-3 rounded-md px-3 py-1 border border-transparent dark:border-transparent`}
             role="group"
-            aria-label={`ISC 35: ${isc35 != null ? `${isc35.toFixed(2)}%` : 'dato non disponibile'}`}>
+            aria-label={`ISC 10 anni: ${isc10 != null ? `${isc10.toFixed(2)}%` : 'dato non disponibile'}`}>
             <span className={`h-2 w-2 rounded-full ${costColors.dot}`} aria-hidden />
             <div className="leading-tight">
-              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{isc35 != null ? `${isc35.toFixed(2)}%` : '—'}</div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400">ISC (35y)</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{isc10 != null ? `${isc10.toFixed(2)}%` : '—'}</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400">ISC (10 anni)</div>
             </div>
           </div>
 
@@ -182,7 +187,7 @@ const FundXrayCard: React.FC<{ fund: PensionFund; profile: UserProfile }> = ({ f
       </header>
       <ul className="space-y-4">
         <XrayRow color="yellow" title={costLabel}>
-          ISC 35 anni: {isc35 != null ? `${isc35.toFixed(2)}%` : 'dato non disponibile'}. Costi contenuti favoriscono rendimenti netti migliori.
+          ISC 10 anni: {isc10 != null ? `${isc10.toFixed(2)}%` : 'dato non disponibile'}. Costi contenuti favoriscono rendimenti netti migliori.
         </XrayRow>
         <XrayRow color="green" title={perfLabel}>
           Rendimento medio 10y: {rendimento10y != null ? `${rendimento10y.toFixed(2)}%` : 'dato mancante'}.
