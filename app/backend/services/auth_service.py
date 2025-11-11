@@ -114,7 +114,16 @@ def _get_jwt_runtime_settings() -> tuple[str, str, int, Optional[str], Optional[
         or "dev-secret-key"
     )
     jwt_algorithm = os.getenv("APP_JWT_ALGORITHM", "HS256")
-    jwt_expire_minutes = int(os.getenv("APP_JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+    # Parse expiration minutes safely: environment may contain placeholders or invalid values
+    jwt_expire_raw = os.getenv("APP_JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60")
+    try:
+        jwt_expire_minutes = int(str(jwt_expire_raw))
+    except Exception:
+        logger.warning(
+            "Invalid APP_JWT_ACCESS_TOKEN_EXPIRE_MINUTES value '%s', falling back to default 60",
+            jwt_expire_raw,
+        )
+        jwt_expire_minutes = 60
     jwt_audience = os.getenv("APP_JWT_AUDIENCE")
     jwt_issuer = os.getenv("APP_JWT_ISSUER")
 

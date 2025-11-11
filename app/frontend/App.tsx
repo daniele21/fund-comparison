@@ -60,7 +60,7 @@ const App: React.FC = () => {
   const [modalFund, setModalFund] = useState<PensionFund | null>(null);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [showFakePayment, setShowFakePayment] = useState(false);
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, authMode } = useAuth();
   const currentPlan = user?.plan ?? 'free';
   const isFullAccess = currentPlan === 'full-access';
 
@@ -187,14 +187,17 @@ const App: React.FC = () => {
 
   const visibleFunds = useMemo(() => {
     // For pagination we will compute a paginated slice later. Here return the full
-    // (or limited by free plan) array that pagination will slice from.
-    if (isFullAccess) {
+    // (or limited by free plan) array that pagination will slice from. If the
+    // application is running with no authentication (authMode === 'none') we
+    // consider it an open demo environment and show the full dataset.
+    if (isFullAccess || authMode === 'none') {
       return filteredAndSortedFunds;
     }
     return filteredAndSortedFunds.slice(0, FREE_PLAN_LIMIT);
-  }, [filteredAndSortedFunds, isFullAccess]);
+  }, [filteredAndSortedFunds, isFullAccess, authMode]);
 
-  const showUpgradeNotice = !authLoading && !isFullAccess && filteredAndSortedFunds.length > FREE_PLAN_LIMIT;
+  // Do not show upgrade prompt when the app is running with no authentication
+  const showUpgradeNotice = !authLoading && authMode !== 'none' && !isFullAccess && filteredAndSortedFunds.length > FREE_PLAN_LIMIT;
 
   const fundById = useMemo(() => {
     const map = new Map<string, PensionFund>();
