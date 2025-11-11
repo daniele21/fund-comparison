@@ -53,9 +53,9 @@ const FilterControls: React.FC<FilterControlsProps> = ({
   ].filter(Boolean).length;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-3 min-w-0 overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 p-4 min-w-0 overflow-hidden">
       {/* Desktop - All in one row */}
-      <div className="hidden sm:flex items-center gap-2 flex-wrap">
+      <div className="hidden sm:flex items-center gap-3 flex-wrap">
         <div className="flex-1 min-w-0 min-w-[200px]">
           <label htmlFor="search" className="sr-only">Cerca</label>
           <div className="relative">
@@ -65,9 +65,9 @@ const FilterControls: React.FC<FilterControlsProps> = ({
               placeholder="Cerca fondi, società..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-sm border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500"
+              className="w-full pl-10 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 transition-all"
             />
-            <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -79,7 +79,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           id="category_quick"
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value as FundCategory | 'all')}
-          className="text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 w-auto min-w-[120px]"
+          className="text-sm px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 w-auto min-w-[130px] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
         >
           <option value="all">Tutte le categorie</option>
           {categories.map(cat => (
@@ -91,7 +91,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           id="type"
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value as PensionFund['type'] | 'all')}
-          className="text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 w-auto min-w-[100px]"
+          className="text-sm px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 w-auto min-w-[110px] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
         >
           <option value="all">Tutti i tipi</option>
           <option value="PIP">PIP</option>
@@ -103,17 +103,17 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           companies={companies}
           selectedCompany={selectedCompany}
           setSelectedCompany={setSelectedCompany}
-          wrapperClassName="w-auto min-w-[120px]"
-          inputClassName="px-2 py-1.5 w-full text-xs"
+          wrapperClassName="w-auto min-w-[130px]"
+          inputClassName="px-3 py-2 w-full text-sm"
         />
 
         {activeFiltersCount > 0 && (
-          <div className="inline-flex items-center px-2 py-0.5 bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300 text-xs rounded-full border border-sky-200 dark:border-slate-700 font-medium">
+          <div className="inline-flex items-center px-2.5 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 text-xs rounded-full border border-blue-200 dark:border-blue-700 font-semibold shadow-sm">
             {activeFiltersCount}
           </div>
         )}
 
-        <button onClick={onReset} className="text-xs px-2.5 py-1 bg-slate-100 dark:bg-slate-700 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 font-medium whitespace-nowrap">
+        <button onClick={onReset} className="text-sm px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 font-medium whitespace-nowrap transition-colors shadow-sm">
           Resetta
         </button>
       </div>

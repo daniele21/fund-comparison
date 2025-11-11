@@ -84,10 +84,10 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
   return (
     <div className="w-full min-w-0 space-y-4">
         {/* Desktop Table */}
-        <div className="hidden lg:block bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="hidden lg:block bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-                    <thead className="sticky top-0 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur z-10 shadow-sm">
+                    <thead className="sticky top-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 backdrop-blur z-10 shadow-sm">
                         <tr>
                             <SortableHeader label="Selezione" sortKey="selected" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="center" />
                             <SortableHeader label="Fondo" sortKey="linea" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
@@ -105,7 +105,7 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                         {funds.length > 0 ? funds.map((fund, index) => (
                             <tr 
                                 key={fund.id} 
-                                className={`transition-colors duration-200 ease-in-out hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer ${
+                                className={`transition-all duration-200 ease-in-out hover:bg-blue-50 dark:hover:bg-blue-900/10 cursor-pointer hover:shadow-sm ${
                                     index % 2 === 0 ? 'bg-white dark:bg-slate-950' : 'bg-slate-50 dark:bg-slate-900'
                                 }`}
                                 onClick={() => toggleFundSelection(fund.id)}
@@ -120,17 +120,17 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                                     />
                                 </td>
                                 <td className="px-3 py-4 whitespace-nowrap max-w-sm" onClick={(e) => { e.stopPropagation(); onFundClick(fund); }}>
-                                    <div className="text-sm font-semibold text-sky-600 hover:underline dark:text-sky-400 truncate" title={fund.linea}>{fund.linea}</div>
+                                    <div className="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300 truncate transition-colors" title={fund.linea}>{fund.linea}</div>
                                     <div className="text-xs text-slate-500 dark:text-slate-400 truncate" title={fund.pip}>{fund.pip}</div>
                                     <div className="text-xs font-medium text-slate-600 dark:text-slate-400 truncate" title={fund.societa ?? ''}>{fund.societa}</div>
                                 </td>
                                 <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium">
-                                    <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                                    <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
                                         {CATEGORY_MAP[fund.categoria]}
                                     </span>
                                 </td>
                                 <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium">
-                                    <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                                    <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
                                         {fund.type}
                                     </span>
                                 </td>

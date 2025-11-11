@@ -73,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
                     }}
                     aria-label="Torna alla guida"
                     title="Torna alla guida"
-                    className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-900 focus:ring-sky-500 transition-colors"
+                    className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-900 focus:ring-blue-500 transition-all duration-200"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -84,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
             <button
                 onClick={toggleTheme}
                 aria-label="Toggle dark mode"
-                className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-900 focus:ring-sky-500 transition-colors"
+                className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-900 focus:ring-blue-500 transition-all duration-200"
             >
                 {theme === 'light' ? (
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -100,7 +100,7 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
             {!loading && !user && (
                 <button
                     onClick={handleLogin}
-                    className="px-3 py-1.5 bg-sky-600 text-white text-sm font-semibold rounded-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 w-full sm:w-auto"
+                    className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full sm:w-auto shadow-md hover:shadow-lg transition-all duration-200"
                 >
                     Accedi
                 </button>
@@ -110,30 +110,30 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
                 <div className="flex items-center gap-2">
           {authMode === 'google' ? (
             user.picture ? (
-              <img src={user.picture} alt={user.name || user.email} className="h-9 w-9 rounded-full object-cover" />
+              <img src={user.picture} alt={user.name || user.email} className="h-9 w-9 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700" />
             ) : (
-              <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-700 dark:text-slate-200">
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center text-sm font-semibold text-blue-700 dark:text-blue-200 ring-2 ring-blue-200 dark:ring-blue-700">
                 {(user.name || user.email || 'U').charAt(0).toUpperCase()}
               </div>
             )
           ) : (
             // hide personal avatar for non-google auth
-            <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-700 dark:text-slate-200">U</div>
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center text-sm font-semibold text-blue-700 dark:text-blue-200 ring-2 ring-blue-200 dark:ring-blue-700">U</div>
           )}
           <div className="hidden sm:flex flex-col items-start">
             <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
               {authMode === 'google' ? (user.name ?? user.email) : ''}
             </span>
-            <span className="mt-1 inline-flex items-center rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-200 px-2 py-0.5 text-xs font-semibold">
+            <span className="mt-1 inline-flex items-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 px-2.5 py-0.5 text-xs font-semibold">
               {user.plan === 'full-access' ? 'Full Access' : 'Free'}
             </span>
           </div>
-          <span className="sm:hidden inline-flex items-center rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-200 px-2 py-0.5 text-xs font-semibold">
+          <span className="sm:hidden inline-flex items-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 px-2.5 py-0.5 text-xs font-semibold">
             {user.plan === 'full-access' ? 'Full Access' : 'Free'}
           </span>
                     <button
                         onClick={handleLogout}
-                        className="px-3 py-1.5 bg-rose-500 text-white text-sm font-semibold rounded-lg hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500 w-full sm:w-auto"
+                        className="px-3 py-1.5 bg-rose-500 text-white text-sm font-semibold rounded-lg hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500 w-full sm:w-auto transition-colors"
                     >
                         Esci
                     </button>
@@ -143,7 +143,7 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
     );
 
   return (
-    <header className={`bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 fixed top-0 left-0 right-0 z-20 backdrop-blur-sm transition-transform duration-300 ${
+    <header className={`bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 fixed top-0 left-0 right-0 z-20 backdrop-blur-md transition-all duration-300 shadow-sm ${
       isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
     }`}>
       <div className="container mx-auto px-4 md:px-8 py-3 md:py-4 flex items-center justify-between">
