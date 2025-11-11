@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import type { PensionFund, UserProfile } from '../../types';
 import { useGuidedComparator } from './GuidedComparatorContext';
-import { SelectedFundInsightsPanel } from './SelectedFundInsightsPanel';
+// Inlined insights panel (moved from SelectedFundInsightsPanel.tsx)
 import { costLabelFromIsc35, perfLabelFromRendimento10y, matchLabelFromFund, computeCoherenceScore, colorForCost, colorForPerf, colorForCoherence } from '../../config/fundConfig';
+import { SelectedFundInsightsPanel } from './SelectedFundInsightsPanel';
 
 type CheckMyFundFlowProps = {
   funds: PensionFund[];
@@ -29,20 +30,23 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
   };
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white/90 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Controlla il tuo fondo pensione</h2>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-        Scrivi il nome del tuo fondo o della compagnia. Se non lo ricordi, lo trovi sull’estratto conto o
-        sulla documentazione che ricevi ogni anno.
-      </p>
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-800 dark:bg-slate-900/95">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Controlla il tuo fondo pensione</h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300 max-w-xl">
+            Scrivi il nome del tuo fondo o della compagnia. Se non lo ricordi, lo trovi sull’estratto conto o sulla documentazione che ricevi ogni anno.
+          </p>
+        </div>
+      </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+      <div className="mt-5 grid gap-5 lg:grid-cols-3">
         <div className="space-y-4">
           <label className="block">
             <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Nome del fondo o della compagnia</span>
             <input
               type="text"
-              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-inner focus:border-sky-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
+              className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm bg-white focus:border-sky-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
               placeholder="Es. FONCHIM, COMETA, Alleanza Previdenza…"
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -50,18 +54,19 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
           </label>
 
           {matchingFunds.length > 0 && (
-            <ul className="max-h-44 space-y-1 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 text-sm shadow-inner dark:border-slate-800 dark:bg-slate-900">
+            <ul className="max-h-44 overflow-y-auto rounded-md border border-slate-100 bg-white shadow-sm text-sm dark:border-slate-800 dark:bg-slate-900">
               {matchingFunds.slice(0, 8).map(result => (
-                <li key={result.id}>
+                <li key={result.id} className="border-b last:border-b-0">
                   <button
                     type="button"
-                    className="w-full rounded-md px-2 py-1 text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="w-full px-3 py-2 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
                     onClick={() => handleSelectFund(result)}
                   >
-                    <strong className="block text-sm text-slate-900 dark:text-slate-100">{result.linea}</strong>
-                    <span className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                      {result.societa ?? (result.type === 'FPN' ? result.pip : 'Compagnia non indicata')}
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <strong className="text-sm text-slate-900 dark:text-slate-100">{result.linea}</strong>
+                      <span className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">{result.societa ?? (result.type === 'FPN' ? result.pip : '')}</span>
+                    </div>
+                    {result.societa && <div className="mt-1 text-[12px] text-slate-500 dark:text-slate-400">{result.societa}</div>}
                   </button>
                 </li>
               ))}
@@ -107,7 +112,7 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
           {fund ? (
             <FundXrayCard fund={fund} profile={profile} />
           ) : (
@@ -149,17 +154,23 @@ const FundXrayCard: React.FC<{ fund: PensionFund; profile: UserProfile }> = ({ f
         </div>
 
         {/* KPI badges on the right for larger screens; stack below title on very small screens */}
-        <div className="flex gap-2 items-center">
-          <div className={`${costColors.badgeBg} flex items-center gap-3 rounded-md px-3 py-1`}>
-            <span className={`h-2 w-2 rounded-full ${costColors.dot}`} />
+        <div className="flex gap-3 items-center">
+          <div
+            className={`${costColors.badgeBg} flex items-center gap-3 rounded-md px-3 py-1 border border-transparent dark:border-transparent`}
+            role="group"
+            aria-label={`ISC 35: ${isc35 != null ? `${isc35.toFixed(2)}%` : 'dato non disponibile'}`}>
+            <span className={`h-2 w-2 rounded-full ${costColors.dot}`} aria-hidden />
             <div className="leading-tight">
               <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{isc35 != null ? `${isc35.toFixed(2)}%` : '—'}</div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400">ISC (35y)</div>
             </div>
           </div>
 
-          <div className={`${perfColors.badgeBg} flex items-center gap-3 rounded-md px-3 py-1`}>
-            <span className={`h-2 w-2 rounded-full ${perfColors.dot}`} />
+          <div
+            className={`${perfColors.badgeBg} flex items-center gap-3 rounded-md px-3 py-1 border border-transparent dark:border-transparent`}
+            role="group"
+            aria-label={`Rendimento medio 10 anni: ${rendimento10y != null ? `${rendimento10y.toFixed(2)}%` : 'dato mancante'}`}>
+            <span className={`h-2 w-2 rounded-full ${perfColors.dot}`} aria-hidden />
             <div className="leading-tight">
               <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{rendimento10y != null ? `${rendimento10y.toFixed(2)}%` : '—'}</div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400">Rend. medio 10y</div>
@@ -208,11 +219,11 @@ const XrayRow: React.FC<{ color: keyof typeof COLOR_MAP; title: string; children
   title,
   children,
 }) => (
-  <li className="flex gap-2 items-start">
-    <span className={`mt-1 h-2 w-2 rounded-full ${COLOR_MAP[color]}`} />
-    <div>
-      <strong className="text-sm text-slate-900 dark:text-slate-100">{title}</strong>
-      <p className="text-[12px] text-slate-600 dark:text-slate-300">{children}</p>
+  <li className="flex gap-3 items-start border-b last:border-b-0 pb-3">
+    <span className={`mt-1 h-2.5 w-2.5 rounded-full ${COLOR_MAP[color]}`} />
+    <div className="flex-1">
+      <strong className="block text-sm text-slate-900 dark:text-slate-100">{title}</strong>
+      <p className="mt-1 text-[13px] text-slate-600 dark:text-slate-300">{children}</p>
     </div>
   </li>
 );
@@ -226,7 +237,7 @@ const CoherenceGauge: React.FC<{ score: number; showNumber?: boolean; colorClass
     <div className="flex items-center gap-2">
       <div className="flex-1 rounded-md bg-slate-100 dark:bg-slate-800" style={{ height: 6 }}>
         <div
-          className={`${color} h-1.5 rounded-md`}
+          className={`${color} h-1.5 rounded-md transition-all duration-300 ease-in-out`}
           style={{ width: `${clamped}%`, height: 6 }}
           role="progressbar"
           aria-valuemin={0}

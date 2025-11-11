@@ -7,7 +7,6 @@ import { CheckMyFundFlow } from './CheckMyFundFlow';
 import { ChooseFundFlow } from './ChooseFundFlow';
 import { LearnAccordion } from './LearnAccordion';
 import { useGuidedComparator } from './GuidedComparatorContext';
-import { SelectedFundInsightsPanel } from './SelectedFundInsightsPanel';
 
 type GuidedFundComparatorProps = {
   funds: PensionFund[];
@@ -29,9 +28,8 @@ const GuidedLayoutInner: React.FC<
       {entryMode === 'choose-fund' && <ChooseFundFlow funds={funds} />}
       {entryMode === 'learn' && <LearnAccordion />}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid gap-6">
         <div className="space-y-6">{children}</div>
-        <SelectedFundInsightsPanel funds={funds} />
       </div>
     </div>
   );
