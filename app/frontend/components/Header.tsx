@@ -106,26 +106,31 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
                 </button>
             )}
 
-            {!loading && user && (
+      {!loading && user && (
                 <div className="flex items-center gap-2">
-                    {user.picture ? (
-                        <img src={user.picture} alt={user.name || user.email} className="h-9 w-9 rounded-full object-cover" />
-                    ) : (
-                        <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-700 dark:text-slate-200">
-                            {(user.name || user.email || 'U').charAt(0).toUpperCase()}
-                        </div>
-                    )}
-                    <div className="hidden sm:flex flex-col items-start">
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                            {user.name ?? user.email}
-                        </span>
-                        <span className="mt-1 inline-flex items-center rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-200 px-2 py-0.5 text-xs font-semibold">
-                            {user.plan === 'full-access' ? 'Full Access' : 'Free'}
-                        </span>
-                    </div>
-                    <span className="sm:hidden inline-flex items-center rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-200 px-2 py-0.5 text-xs font-semibold">
-                        {user.plan === 'full-access' ? 'Full Access' : 'Free'}
-                    </span>
+          {authMode === 'google' ? (
+            user.picture ? (
+              <img src={user.picture} alt={user.name || user.email} className="h-9 w-9 rounded-full object-cover" />
+            ) : (
+              <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-700 dark:text-slate-200">
+                {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+              </div>
+            )
+          ) : (
+            // hide personal avatar for non-google auth
+            <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-700 dark:text-slate-200">U</div>
+          )}
+          <div className="hidden sm:flex flex-col items-start">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              {authMode === 'google' ? (user.name ?? user.email) : ''}
+            </span>
+            <span className="mt-1 inline-flex items-center rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-200 px-2 py-0.5 text-xs font-semibold">
+              {user.plan === 'full-access' ? 'Full Access' : 'Free'}
+            </span>
+          </div>
+          <span className="sm:hidden inline-flex items-center rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-200 px-2 py-0.5 text-xs font-semibold">
+            {user.plan === 'full-access' ? 'Full Access' : 'Free'}
+          </span>
                     <button
                         onClick={handleLogout}
                         className="px-3 py-1.5 bg-rose-500 text-white text-sm font-semibold rounded-lg hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500 w-full sm:w-auto"
@@ -219,15 +224,19 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
 
             {!loading && user && (
               <div className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3">
-                {user.picture ? (
-                  <img src={user.picture} alt={user.name || user.email} className="h-10 w-10 rounded-full object-cover" />
+                {authMode === 'google' ? (
+                  authMode === 'google' && (user.picture ? (
+                    <img src={user.picture} alt={user.name || user.email} className="h-10 w-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+                    </div>
+                  ))
                 ) : (
-                  <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-700 dark:text-slate-200">
-                    {(user.name || user.email || 'U').charAt(0).toUpperCase()}
-                  </div>
+                  <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-700 dark:text-slate-200">U</div>
                 )}
                 <div>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user.name ?? user.email}</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{authMode === 'google' ? (user.name ?? user.email) : ''}</p>
                   <span className="mt-1 inline-flex items-center rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-200 px-2 py-0.5 text-xs font-semibold">
                     {user.plan === 'full-access' ? 'Full Access' : 'Free'}
                   </span>
