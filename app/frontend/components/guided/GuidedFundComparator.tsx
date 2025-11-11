@@ -21,7 +21,7 @@ const GuidedLayoutInner: React.FC<
   return (
     <div className="space-y-6">
       <EntryModeSelector />
-      <QuestionChipsBar onPresetSelected={onPresetSelected} />
+      {/* <QuestionChipsBar onPresetSelected={onPresetSelected} /> */}
 
       {entryMode === 'check-fund' && <CheckMyFundFlow funds={funds} />}
       {entryMode === 'choose-fund' && <ChooseFundFlow funds={funds} />}
