@@ -74,6 +74,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   });
   const [authMode, setAuthMode] = useState<AuthMode>('google');
   const [inviteRequiresEmail, setInviteRequiresEmail] = useState(true);
+  const [authConfigLoaded, setAuthConfigLoaded] = useState(false);
   const userRef = React.useRef<AuthUser | null>(null);
 
   const persistToken = (token?: string) => {
@@ -117,6 +118,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     } catch (err) {
       console.warn('[Auth] Unable to load auth config:', err);
+    } finally {
+      // Signal that we've attempted to load auth config (success or failure)
+      setAuthConfigLoaded(true);
     }
   }, []);
 
@@ -126,14 +130,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      const u = await fetchMe(sessionToken);
-      if (mounted) {
-        setUser(u);
-        userRef.current = u;
-      }
-      if (mounted) setLoading(false);
-    })();
 
     // Listen for popup postMessage (popup flow sends { type: 'oauth', provider, status, token })
     function onMessage(e: MessageEvent) {
@@ -206,11 +202,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     window.addEventListener('message', onMessage);
+
+    // Only attempt to call /auth/me after we've loaded auth config. If the configured
+    // auth mode is not 'google', skip the automatic /auth/me call to avoid unwanted 401s.
+    (async () => {
+      if (!authConfigLoaded) return;
+      if (authMode !== 'google') {
+        if (mounted) setLoading(false);
+        return;
+      }
+
+      const u = await fetchMe(sessionToken);
+      if (mounted) {
+        setUser(u);
+        userRef.current = u;
+      }
+      if (mounted) setLoading(false);
+    })();
+
     return () => {
       mounted = false;
       window.removeEventListener('message', onMessage);
     };
-  }, []);
+  }, [sessionToken, authConfigLoaded, authMode]);
 
   const loginWithInvite = async (options: InviteLoginOptions) => {
     const payload = {
@@ -238,8 +252,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         let message = 'Codice invito non valido o già utilizzato.';
         try {
           const errorBody = await res.json();
-          if (errorBody?.detail) {
-            message = String(errorBody.detail);
+          const detail = errorBody?.detail;
+          if (detail) {
+            // Map known backend messages to localized, user-friendly Italian strings
+            const detailStr = String(detail).toLowerCase();
+            if (detailStr.includes('invalid') || detailStr.includes('invitation') || detailStr.includes('invalid invitation')) {
+              message = 'Codice invito non valido.';
+            } else if (detailStr.includes('already') || detailStr.includes('used')) {
+              message = 'Questo codice è già stato utilizzato.';
+            } else if (detailStr.includes('expired')) {
+              message = 'Il codice invito è scaduto.';
+            } else {
+              // Fallback: use provided detail but keep it short
+              message = String(detail);
+            }
           }
         } catch (parseErr) {
           console.warn('[Auth] Unable to parse invite login error:', parseErr);

@@ -57,13 +57,21 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
     setBusy(true);
     setError(null);
     try {
+      // If user is already authenticated (e.g. via OAuth popup), short-circuit
+      if (user) {
+        onSuccess();
+        return;
+      }
+
       await login({
         code: form.code,
         email: form.email || undefined,
         name: form.name || undefined,
       });
     } catch (err) {
-      console.error('[LoginModal] Invite login failed:', err);
+      // Avoid printing full stack to console to reduce noise; log message only
+      // The UI will show a friendly error via setError
+      console.info('[LoginModal] Invite login failed:', err instanceof Error ? err.message : err);
       setError(err instanceof Error ? err.message : 'Impossibile verificare il codice. Riprova.');
     } finally {
       setBusy(false);
