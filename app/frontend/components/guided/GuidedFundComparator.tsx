@@ -19,7 +19,7 @@ const GuidedLayoutInner: React.FC<
   const { entryMode } = useGuidedComparator();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0">
       <EntryModeSelector />
       {/* <QuestionChipsBar onPresetSelected={onPresetSelected} /> */}
 
@@ -27,8 +27,8 @@ const GuidedLayoutInner: React.FC<
       {entryMode === 'choose-fund' && <ChooseFundFlow funds={funds} />}
       {entryMode === 'learn' && <LearnAccordion />}
 
-      <div className="grid gap-6">
-        <div className="space-y-6">{children}</div>
+      <div className="grid gap-6 min-w-0">
+        <div className="space-y-6 min-w-0">{children}</div>
       </div>
     </div>
   );

@@ -40,89 +40,91 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
         </div>
       </div>
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-3">
-        <div className="space-y-4">
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Nome del fondo o della compagnia</span>
-            <input
-              type="text"
-              className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm bg-white focus:border-sky-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
-              placeholder="Es. FONCHIM, COMETA, Alleanza Previdenza…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </label>
+      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)]">
+        <div className="order-1 space-y-5 xl:order-1">
+          <div className="rounded-2xl border border-slate-100 bg-white/90 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/40">
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Nome del fondo o della compagnia</span>
+              <input
+                type="text"
+                className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm bg-white focus:border-sky-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
+                placeholder="Es. FONCHIM, COMETA, Alleanza Previdenza…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </label>
 
-          {matchingFunds.length > 0 && (
-            <ul className="max-h-44 overflow-y-auto rounded-md border border-slate-100 bg-white shadow-sm text-sm dark:border-slate-800 dark:bg-slate-900">
-              {matchingFunds.slice(0, 8).map(result => (
-                <li key={result.id} className="border-b last:border-b-0">
-                  <button
-                    type="button"
-                    className="w-full px-3 py-2 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
-                    onClick={() => handleSelectFund(result)}
+            {matchingFunds.length > 0 && (
+              <ul className="mt-3 max-h-52 overflow-y-auto rounded-xl border border-slate-100 bg-white shadow-sm text-sm dark:border-slate-800 dark:bg-slate-900">
+                {matchingFunds.slice(0, 8).map(result => (
+                  <li key={result.id} className="border-b last:border-b-0">
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 dark:hover:bg-slate-800"
+                      onClick={() => handleSelectFund(result)}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <strong className="text-sm text-slate-900 dark:text-slate-100">{result.linea}</strong>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 sm:text-[11px]">{result.societa ?? (result.type === 'FPN' ? result.pip : '')}</span>
+                      </div>
+                      {result.societa && <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 sm:text-[12px]">{result.societa}</div>}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/40">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Per contestualizzare</h3>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <label className="text-sm text-slate-600 dark:text-slate-300">
+                  Età
+                  <select
+                    className="mt-2 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    value={profile.ageRange ?? ''}
+                    onChange={e =>
+                      setProfile(prev => ({ ...prev, ageRange: e.target.value ? (e.target.value as typeof profile.ageRange) : undefined }))
+                    }
                   >
-                    <div className="flex items-center justify-between">
-                      <strong className="text-sm text-slate-900 dark:text-slate-100">{result.linea}</strong>
-                      <span className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">{result.societa ?? (result.type === 'FPN' ? result.pip : '')}</span>
-                    </div>
-                    {result.societa && <div className="mt-1 text-[12px] text-slate-500 dark:text-slate-400">{result.societa}</div>}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+                    <option value="">Seleziona…</option>
+                    <option value="under35">&lt; 35 anni</option>
+                    <option value="35-50">35–50 anni</option>
+                    <option value="over50">&gt; 50 anni</option>
+                  </select>
+                </label>
 
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/40">
-            <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Per contestualizzare</h3>
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <label className="text-sm text-slate-600 dark:text-slate-300">
-                Età
-                <select
-                  className="mt-2 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
-                  value={profile.ageRange ?? ''}
-                  onChange={e =>
-                    setProfile(prev => ({ ...prev, ageRange: e.target.value ? (e.target.value as typeof profile.ageRange) : undefined }))
-                  }
-                >
-                  <option value="">Seleziona…</option>
-                  <option value="under35">&lt; 35 anni</option>
-                  <option value="35-50">35–50 anni</option>
-                  <option value="over50">&gt; 50 anni</option>
-                </select>
-              </label>
-
-              <label className="text-sm text-slate-600 dark:text-slate-300">
-                Anni alla pensione
-                <input
-                  type="number"
-                  min={0}
-                  max={50}
-                  className="mt-2 w-full rounded-md border border-slate-200 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
-                  value={profile.horizonYears ?? ''}
-                  onChange={e =>
-                    setProfile(prev => ({
-                      ...prev,
-                      horizonYears: e.target.value ? Number(e.target.value) : undefined,
-                    }))
-                  }
-                />
-              </label>
+                <label className="text-sm text-slate-600 dark:text-slate-300">
+                  Anni alla pensione
+                  <input
+                    type="number"
+                    min={0}
+                    max={50}
+                    className="mt-2 w-full rounded-md border border-slate-200 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    value={profile.horizonYears ?? ''}
+                    onChange={e =>
+                      setProfile(prev => ({
+                        ...prev,
+                        horizonYears: e.target.value ? Number(e.target.value) : undefined,
+                      }))
+                    }
+                  />
+                </label>
+              </div>
             </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            {fund ? (
+              <FundXrayCard fund={fund} profile={profile} />
+            ) : (
+              <div className="text-sm text-slate-500 dark:text-slate-400">
+                Seleziona un fondo dall’elenco per vedere costi, rendimenti e coerenza con il tuo orizzonte.
+              </div>
+            )}
           </div>
         </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-          {fund ? (
-            <FundXrayCard fund={fund} profile={profile} />
-          ) : (
-            <div className="text-sm text-slate-500 dark:text-slate-400">
-              Seleziona un fondo dall’elenco per vedere costi, rendimenti e coerenza con il tuo orizzonte.
-            </div>
-          )}
-        </div>
-
-        <div className="lg:col-span-1">
+        <div className="order-2 xl:order-2 xl:sticky xl:top-28">
           <SelectedFundInsightsPanel funds={funds} />
         </div>
       </div>
@@ -145,7 +147,7 @@ const FundXrayCard: React.FC<{ fund: PensionFund; profile: UserProfile }> = ({ f
 
   return (
     <div className="space-y-3">
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{fund.linea}</h3>
           <p className="text-xs uppercase tracking-wide text-slate-500">
@@ -154,7 +156,7 @@ const FundXrayCard: React.FC<{ fund: PensionFund; profile: UserProfile }> = ({ f
         </div>
 
         {/* KPI badges on the right for larger screens; stack below title on very small screens */}
-        <div className="flex gap-3 items-center">
+        <div className="flex flex-wrap gap-3">
           <div
             className={`${costColors.badgeBg} flex items-center gap-3 rounded-md px-3 py-1 border border-transparent dark:border-transparent`}
             role="group"
@@ -219,7 +221,7 @@ const XrayRow: React.FC<{ color: keyof typeof COLOR_MAP; title: string; children
   title,
   children,
 }) => (
-  <li className="flex gap-3 items-start border-b last:border-b-0 pb-3">
+  <li className="flex flex-wrap gap-3 items-start border-b last:border-b-0 pb-3">
     <span className={`mt-1 h-2.5 w-2.5 rounded-full ${COLOR_MAP[color]}`} />
     <div className="flex-1">
       <strong className="block text-sm text-slate-900 dark:text-slate-100">{title}</strong>

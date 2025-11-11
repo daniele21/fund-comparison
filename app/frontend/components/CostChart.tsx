@@ -125,28 +125,29 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
     ].filter(d => d.costo !== null && !isNaN(d.costo));
 
     return (
-      <div>
-        <h3 className="text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3 sm:mb-4">Dettaglio Costi (ISC %)</h3>
-        <div ref={chartWrapperRef} style={{ width: '100%', height: isMobile ? 250 : 300 }}>
+      <div className="min-w-0 overflow-hidden">
+        <h3 className="text-sm sm:text-base md:text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2 sm:mb-3 md:mb-4 px-1">Dettaglio Costi (ISC %)</h3>
+        <div ref={chartWrapperRef} className="min-w-0" style={{ width: '100%', height: isMobile ? 220 : 280 }}>
           <ResponsiveContainer>
             <BarChart 
               data={detailChartData} 
-              margin={isMobile ? { top: 5, right: 10, left: -15, bottom: 5 } : { top: 5, right: 20, left: 10, bottom: 5 }}
+              margin={isMobile ? { top: 10, right: 5, left: -25, bottom: 5 } : { top: 10, right: 20, left: -5, bottom: 5 }}
               onMouseMove={handleTooltipMove}
               onMouseLeave={resetTooltipPosition}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} opacity={0.5} />
               <XAxis 
                 dataKey="name" 
-                tick={{ fill: tickColor, fontSize: isMobile ? 9 : 12 }}
-                angle={isMobile ? -45 : 0}
+                tick={{ fill: tickColor, fontSize: isMobile ? 8 : 12 }}
+                angle={isMobile ? -30 : 0}
                 textAnchor={isMobile ? "end" : "middle"}
-                height={isMobile ? 50 : undefined}
+                height={isMobile ? 55 : undefined}
+                dy={isMobile ? 5 : 0}
               />
               <YAxis 
                 unit="%" 
-                tick={{ fill: tickColor, fontSize: isMobile ? 9 : 12 }}
-                width={isMobile ? 35 : undefined}
+                tick={{ fill: tickColor, fontSize: isMobile ? 8 : 11 }}
+                width={isMobile ? 30 : 40}
               />
               <Tooltip
                 content={<ChartTooltip sorter={costTooltipSorter} />}
@@ -156,7 +157,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
                 allowEscapeViewBox={{ x: true, y: false }}
                 wrapperStyle={{ pointerEvents: 'auto', opacity: 1, zIndex: 9999 }}
               />
-              <Bar dataKey="costo" name="Costo" isAnimationActive={animationsEnabled} radius={isMobile ? [4, 4, 0, 0] : undefined}>
+              <Bar dataKey="costo" name="Costo" isAnimationActive={animationsEnabled} radius={isMobile ? [3, 3, 0, 0] : [4, 4, 0, 0]}>
                 {detailChartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                 ))}
@@ -170,18 +171,18 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
 
   if (selectedFunds.length === 0 && !isCompact) {
     return (
-      <div className="p-4 sm:p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 text-center">
-        <div className="flex flex-col items-center justify-center h-64 sm:h-96">
-            <svg className="h-12 w-12 sm:h-16 sm:w-16 text-slate-300 dark:text-slate-600 mb-3 sm:mb-4" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <div className="p-2 sm:p-3 md:p-4 lg:p-6 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-center">
+        <div className="flex flex-col items-center justify-center h-48 sm:h-64 md:h-96">
+            <svg className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16 text-slate-300 dark:text-slate-600 mb-2 sm:mb-3 md:mb-4" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M2 38H38" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4"/>
               <path d="M2 2V38" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4"/>
               <rect x="2" y="8" width="22" height="6" fill={theme === 'dark' ? '#475569' : '#e2e8f0'}/>
               <rect x="2" y="17" width="32" height="6" fill={theme === 'dark' ? '#475569' : '#e2e8f0'}/>
               <rect x="2" y="26" width="16" height="6" fill={theme === 'dark' ? '#475569' : '#e2e8f0'}/>
             </svg>
-            <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 text-slate-800 dark:text-slate-200">Confronto Costi</h2>
-            <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 px-4">I costi dei fondi selezionati appariranno qui.</p>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-8 sm:w-8 text-slate-400 dark:text-slate-500 mt-2 sm:mt-3 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <h2 className="text-base sm:text-lg md:text-xl font-semibold mb-1 sm:mb-2 text-slate-800 dark:text-slate-200 px-2">Confronto Costi</h2>
+            <p className="text-xs sm:text-sm md:text-base text-slate-500 dark:text-slate-400 px-3 sm:px-4">I costi dei fondi selezionati appariranno qui.</p>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-slate-400 dark:text-slate-500 mt-2 sm:mt-3 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
         </div>
@@ -207,36 +208,36 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
   });
 
   return (
-    <div className={isCompact ? '' : 'p-3 sm:p-4 md:p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700'}>
-       <h2 className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-200">Confronto Costi (ISC %)</h2>
-       <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-3 sm:mb-4 bg-slate-50 dark:bg-slate-700/50 p-2 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+    <div className={`${isCompact ? '' : 'p-2 sm:p-3 md:p-4 lg:p-6 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm border border-slate-200 dark:border-slate-700'} min-w-0 overflow-hidden`}>
+       <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-800 dark:text-slate-200 px-1">Confronto Costi (ISC %)</h2>
+       <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2 sm:mb-3 md:mb-4 bg-slate-50 dark:bg-slate-700/50 p-2 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 mt-2">
            L'<strong>Indicatore Sintetico di Costo (ISC)</strong> mostra l'impatto percentuale dei costi sul montante accumulato{!isMobile && ', anno dopo anno'}. <strong>Una linea più bassa significa un fondo più efficiente.</strong>
        </p>
-      <div ref={chartWrapperRef} style={{ width: '100%', height: isMobile ? (isCompact ? 250 : 300) : (isCompact ? 300 : 400) }}>
+      <div ref={chartWrapperRef} className="min-w-0" style={{ width: '100%', height: isMobile ? (isCompact ? 200 : 250) : (isCompact ? 280 : 380) }}>
         <ResponsiveContainer>
           <LineChart 
             data={chartData} 
             margin={
               isMobile 
-                ? { top: 5, right: 10, left: -20, bottom: 5 } 
-                : (isCompact ? { top: 5, right: 30, left: 10, bottom: 5 } : { top: 5, right: 20, left: 10, bottom: 20 })
+                ? { top: 10, right: 5, left: -25, bottom: 5 } 
+                : (isCompact ? { top: 10, right: 20, left: -5, bottom: 5 } : { top: 10, right: 20, left: -5, bottom: 20 })
             }
             onMouseMove={handleTooltipMove}
             onMouseLeave={resetTooltipPosition}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} opacity={0.5} />
             <XAxis 
               dataKey="name" 
-              tick={{ fill: tickColor, fontSize: isMobile ? 9 : (isCompact ? 10 : 14) }} 
-              dy={isMobile ? 3 : (isCompact ? 5 : 10)}
-              angle={isMobile ? -45 : 0}
+              tick={{ fill: tickColor, fontSize: isMobile ? 8 : (isCompact ? 9 : 12) }} 
+              dy={isMobile ? 5 : (isCompact ? 5 : 10)}
+              angle={isMobile ? -30 : 0}
               textAnchor={isMobile ? "end" : "middle"}
-              height={isMobile ? 50 : undefined}
+              height={isMobile ? 55 : (isCompact ? 50 : undefined)}
             />
             <YAxis 
               unit="%" 
-              tick={{ fill: tickColor, fontSize: isMobile ? 9 : (isCompact ? 10 : 12) }}
-              width={isMobile ? 35 : undefined}
+              tick={{ fill: tickColor, fontSize: isMobile ? 8 : (isCompact ? 9 : 11) }}
+              width={isMobile ? 30 : (isCompact ? 35 : 40)}
             />
             <Tooltip
               content={<ChartTooltip sorter={costTooltipSorter} />}
@@ -255,8 +256,8 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
                     dataKey={fundLabels[index]} 
                     stroke={color} 
                     strokeWidth={isMobile ? 2 : 2.5} 
-                    dot={{ r: isMobile ? 3 : 4 }} 
-                    activeDot={{ r: isMobile ? 5 : 7 }} 
+                    dot={{ r: isMobile ? 2.5 : 4 }} 
+                    activeDot={{ r: isMobile ? 4 : 6 }} 
                     isAnimationActive={animationsEnabled}
                   />
                 );

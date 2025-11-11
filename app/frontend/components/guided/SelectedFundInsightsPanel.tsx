@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import type { PensionFund } from '../../types';
 import { useGuidedComparator } from './GuidedComparatorContext';
 
@@ -8,12 +8,27 @@ type SelectedFundInsightsPanelProps = {
 
 export const SelectedFundInsightsPanel: React.FC<SelectedFundInsightsPanelProps> = ({ funds }) => {
   const { selectedFundId, profile } = useGuidedComparator();
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
 
   const fund = useMemo(() => funds.find(f => f.id === selectedFundId) ?? null, [funds, selectedFundId]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const media = window.matchMedia('(min-width: 1024px)');
+    const handleChange = () => setIsDesktop(media.matches);
+    handleChange();
+    media.addEventListener('change', handleChange);
+    return () => media.removeEventListener('change', handleChange);
+  }, []);
+
+  useEffect(() => {
+    setMobileExpanded(false);
+  }, [fund?.id]);
+
   if (!fund) {
     return (
-      <section className="rounded-2xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300">
+      <section className="rounded-2xl border border-dashed border-slate-200 bg-white/60 px-4 py-5 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300 sm:p-6">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Come leggere i risultati</h3>
         <p className="mt-3">
           Clicca su un fondo nella tabella o selezionalo dai flussi guidati per vedere una spiegazione in
@@ -40,13 +55,37 @@ export const SelectedFundInsightsPanel: React.FC<SelectedFundInsightsPanelProps>
   const isc35 = fund.isc?.isc35a;
   const rendimento10y = fund.rendimenti.ultimi10Anni;
 
-  return (
-    <section className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-lg shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-900/40">
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Come leggere questo fondo</h3>
-      <h4 className="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-50">{fund.linea}</h4>
-      {fund.societa && <p className="text-sm text-slate-500 dark:text-slate-400">{fund.societa}</p>}
+  const bodyVisible = isDesktop || mobileExpanded;
 
-      <div className="mt-5 space-y-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-5 shadow-lg shadow-slate-200/60 sm:p-6 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-900/40">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Come leggere questo fondo</h3>
+          <h4 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-50">{fund.linea}</h4>
+          {fund.societa && <p className="text-sm text-slate-500 dark:text-slate-400">{fund.societa}</p>}
+        </div>
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-600 transition hover:border-sky-300 hover:text-sky-600 lg:hidden dark:border-slate-700 dark:text-slate-200"
+          aria-expanded={bodyVisible}
+          onClick={() => setMobileExpanded(prev => !prev)}
+        >
+          {bodyVisible ? 'Nascondi' : 'Apri'} dettagli
+          <svg
+            aria-hidden
+            viewBox="0 0 16 8"
+            className={`h-3 w-3 transform transition ${bodyVisible ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path d="M2 1.5L8 6.5L14 1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      <div className={`mt-5 space-y-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300 ${bodyVisible ? '' : 'hidden lg:block'}`}>
         <p>
           <strong>Che tipo di fondo è?</strong> È classificato come{' '}
           <strong>{fund.categoria}</strong> ({fund.type}), quindi si posiziona in una fascia di rischio{' '}

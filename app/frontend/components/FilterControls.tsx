@@ -53,10 +53,10 @@ const FilterControls: React.FC<FilterControlsProps> = ({
   ].filter(Boolean).length;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-3">
+    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-3 min-w-0 overflow-hidden">
       {/* Desktop - All in one row */}
-      <div className="hidden sm:flex items-center gap-2">
-        <div className="flex-1 min-w-0">
+      <div className="hidden sm:flex items-center gap-2 flex-wrap">
+        <div className="flex-1 min-w-0 min-w-[200px]">
           <label htmlFor="search" className="sr-only">Cerca</label>
           <div className="relative">
             <input
@@ -79,7 +79,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           id="category_quick"
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value as FundCategory | 'all')}
-          className="text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 flex-shrink-0 w-44"
+          className="text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 w-auto min-w-[120px]"
         >
           <option value="all">Tutte le categorie</option>
           {categories.map(cat => (
@@ -91,7 +91,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           id="type"
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value as PensionFund['type'] | 'all')}
-          className="text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 flex-shrink-0 w-28"
+          className="text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 w-auto min-w-[100px]"
         >
           <option value="all">Tutti i tipi</option>
           <option value="PIP">PIP</option>
@@ -103,17 +103,17 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           companies={companies}
           selectedCompany={selectedCompany}
           setSelectedCompany={setSelectedCompany}
-          wrapperClassName="flex-shrink-0 w-36"
+          wrapperClassName="w-auto min-w-[120px]"
           inputClassName="px-2 py-1.5 w-full text-xs"
         />
 
         {activeFiltersCount > 0 && (
-          <div className="inline-flex items-center px-2 py-0.5 bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300 text-xs rounded-full border border-sky-200 dark:border-slate-700 font-medium flex-shrink-0">
+          <div className="inline-flex items-center px-2 py-0.5 bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300 text-xs rounded-full border border-sky-200 dark:border-slate-700 font-medium">
             {activeFiltersCount}
           </div>
         )}
 
-        <button onClick={onReset} className="text-xs px-2.5 py-1 bg-slate-100 dark:bg-slate-700 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 font-medium flex-shrink-0">
+        <button onClick={onReset} className="text-xs px-2.5 py-1 bg-slate-100 dark:bg-slate-700 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 font-medium whitespace-nowrap">
           Resetta
         </button>
       </div>
@@ -143,7 +143,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
         <div className="flex gap-2">
           <button
             onClick={() => setMobileFiltersOpen(prev => !prev)}
-            className="flex-1 inline-flex items-center justify-between rounded-md border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
+            className="flex-1 inline-flex items-center justify-between rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
           >
             <span>Filtri</span>
             <div className="flex items-center gap-1.5">
@@ -157,7 +157,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
               </svg>
             </div>
           </button>
-          <button onClick={onReset} className="px-2.5 py-1.5 text-xs rounded-md border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 font-semibold">
+          <button onClick={onReset} className="px-3 py-2 text-sm rounded-md border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 font-semibold">
             Resetta
           </button>
         </div>
@@ -167,7 +167,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value as FundCategory | 'all')}
-              className="w-full text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200"
+              className="w-full text-sm px-2.5 py-2 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200"
             >
               <option value="all">Tutte le categorie</option>
               {categories.map(cat => (
@@ -178,7 +178,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value as PensionFund['type'] | 'all')}
-              className="w-full text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200"
+              className="w-full text-sm px-2.5 py-2 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200"
             >
               <option value="all">Tutti i tipi</option>
               <option value="PIP">PIP</option>
@@ -191,7 +191,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
               selectedCompany={selectedCompany}
               setSelectedCompany={setSelectedCompany}
               wrapperClassName="w-full"
-              inputClassName="px-2 py-1.5 w-full text-xs"
+              inputClassName="px-2.5 py-2 w-full text-sm"
             />
           </div>
         )}

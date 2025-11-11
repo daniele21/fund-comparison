@@ -41,12 +41,12 @@ const InfoCard: React.FC<{
     const colors = accentColors[accent];
 
     return (
-        <div className={`p-6 rounded-xl border ${colors.border} ${colors.bg} h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}>
-            <div className={`w-12 h-12 mb-4 rounded-lg flex items-center justify-center ${colors.iconBg} ${colors.iconText}`}>
+        <div className={`p-4 sm:p-5 md:p-6 rounded-xl border ${colors.border} ${colors.bg} h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}>
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 mb-3 sm:mb-4 rounded-lg flex items-center justify-center ${colors.iconBg} ${colors.iconText}`}>
                 {icon}
             </div>
-            <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-2 text-lg">{title}</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{children}</p>
+            <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-2 text-base sm:text-lg">{title}</h3>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{children}</p>
         </div>
     );
 };
@@ -54,18 +54,18 @@ const InfoCard: React.FC<{
 const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-12 z-50">
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-6 md:right-6 lg:top-8 lg:right-12 z-50">
             <button
                 onClick={toggleTheme}
                 aria-label="Toggle dark mode"
                 className="p-2 rounded-full text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 focus:ring-sky-500 transition-colors backdrop-blur-sm"
             >
                 {theme === 'light' ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                     </svg>
                 ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                 )}
@@ -74,22 +74,22 @@ const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
         
         <div className="relative isolate overflow-hidden">
              <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-100 to-slate-50 dark:from-slate-900/50 dark:to-slate-950"></div>
-            <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 text-center">
-                <div className="inline-flex items-center justify-center bg-sky-100 dark:bg-sky-900/50 p-3 rounded-full mb-6 border border-sky-200 dark:border-sky-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-sky-600 dark:text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32 text-center">
+                <div className="inline-flex items-center justify-center bg-sky-100 dark:bg-sky-900/50 p-2 sm:p-3 rounded-full mb-4 sm:mb-6 border border-sky-200 dark:border-sky-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 sm:h-10 sm:w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                 </div>
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                    Costruisci la Tua Pensione Oggi,<br/>Assicura il Tuo Domani.
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-tight px-2">
+                    Costruisci la Tua Pensione Oggi,<br className="hidden sm:block"/>Assicura il Tuo Domani.
                 </h1>
-                <p className="mt-6 text-lg text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+                <p className="mt-4 sm:mt-6 text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-3xl mx-auto px-4">
                     La pensione pubblica potrebbe non bastare. Un fondo pensione privato è una scelta strategica per un futuro sereno. Questa guida spiega i pro, i contro e come usare questo strumento per scegliere con consapevolezza.
                 </p>
-                <div className="mt-10">
+                <div className="mt-6 sm:mt-10">
                     <button
                         onClick={onStart}
-                        className="inline-flex items-center gap-x-2 px-8 py-4 bg-sky-600 text-white font-semibold rounded-lg shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-slate-900 transition-all duration-200 transform hover:scale-105"
+                        className="inline-flex items-center gap-x-2 px-6 py-3 sm:px-8 sm:py-4 bg-sky-600 text-white text-base sm:text-lg font-semibold rounded-lg shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-slate-900 transition-all duration-200 transform hover:scale-105 active:scale-95"
                     >
                         Inizia a Confrontare
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
@@ -98,13 +98,13 @@ const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
             </div>
         </div>
 
-        <main className="container mx-auto px-6 lg:px-8 py-20 space-y-24">
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 space-y-16 sm:space-y-20 lg:space-y-24">
             <section>
-                <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">Perché è una Scelta Intelligente</h2>
-                    <p className="mt-4 text-lg leading-8 text-slate-600 dark:text-slate-400">I vantaggi chiave che rendono la pensione integrativa un potente strumento finanziario.</p>
+                <div className="text-center max-w-2xl mx-auto px-4">
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl">Perché è una Scelta Intelligente</h2>
+                    <p className="mt-3 sm:mt-4 text-base sm:text-lg leading-7 sm:leading-8 text-slate-600 dark:text-slate-400">I vantaggi chiave che rendono la pensione integrativa un potente strumento finanziario.</p>
                 </div>
-                <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="mt-8 sm:mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
                     <InfoCard title="Deducibilità Fiscale" accent="emerald" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}>
                         Deduci fino a 5.164,57€ all'anno dal tuo reddito imponibile. Questo significa pagare meno tasse oggi, un risparmio tangibile che aumenta il beneficio netto del tuo investimento.
                     </InfoCard>
@@ -121,11 +121,11 @@ const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
             </section>
 
             <section>
-                 <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">I Compromessi da Considerare</h2>
-                    <p className="mt-4 text-lg leading-8 text-slate-600 dark:text-slate-400">È un ottimo strumento, ma è importante capirne i limiti prima di impegnarsi.</p>
+                 <div className="text-center max-w-2xl mx-auto px-4">
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl">I Compromessi da Considerare</h2>
+                    <p className="mt-3 sm:mt-4 text-base sm:text-lg leading-7 sm:leading-8 text-slate-600 dark:text-slate-400">È un ottimo strumento, ma è importante capirne i limiti prima di impegnarsi.</p>
                 </div>
-                <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="mt-8 sm:mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
                     <InfoCard title="Capitale Vincolato" accent="rose" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>}>
                         Le somme sono accessibili, di norma, solo al momento della pensione. Esistono eccezioni per anticipi (es. acquisto prima casa, spese sanitarie), ma non è uno strumento liquido come un conto corrente.
                     </InfoCard>
@@ -136,13 +136,13 @@ const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
             </section>
             
             <section>
-                 <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">Capire le Diverse Opzioni</h2>
-                    <p className="mt-4 text-lg leading-8 text-slate-600 dark:text-slate-400">I fondi pensione si dividono in diverse tipologie e livelli di rischio. Ecco cosa devi sapere.</p>
+                 <div className="text-center max-w-2xl mx-auto px-4">
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl">Capire le Diverse Opzioni</h2>
+                    <p className="mt-3 sm:mt-4 text-base sm:text-lg leading-7 sm:leading-8 text-slate-600 dark:text-slate-400">I fondi pensione si dividono in diverse tipologie e livelli di rischio. Ecco cosa devi sapere.</p>
                 </div>
-                <div className="mt-16">
-                     <h3 className="text-2xl font-bold text-center mb-8 text-slate-800 dark:text-slate-200">Le Tipologie di Fondo Pensione</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="mt-10 sm:mt-12 md:mt-16">
+                     <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 text-slate-800 dark:text-slate-200 px-4">Le Tipologie di Fondo Pensione</h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                         <InfoCard title="Fondi Negoziali (FPN)" accent="slate" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}>
                            Detti anche "chiusi", sono istituiti per specifiche categorie di lavoratori (es. Cometa per i metalmeccanici). Vantaggio chiave: contributo obbligatorio del datore. Hanno costi tipicamente più bassi.
                         </InfoCard>
@@ -154,9 +154,9 @@ const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
                         </InfoCard>
                     </div>
                 </div>
-                 <div className="mt-16">
-                     <h3 className="text-2xl font-bold text-center mb-8 text-slate-800 dark:text-slate-200">Le Linee di Investimento (Livelli di Rischio)</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                 <div className="mt-10 sm:mt-12 md:mt-16">
+                     <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 text-slate-800 dark:text-slate-200 px-4">Le Linee di Investimento (Livelli di Rischio)</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
                         <InfoCard title="Garantita (GAR)" accent="slate" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 20.944A12.02 12.02 0 0012 22a12.02 12.02 0 009-1.056A11.955 11.955 0 0121.944 12a11.955 11.955 0 01-2.326-8.984z" /></svg>}>
                             <b>Basso Rischio.</b> Mira a proteggere il capitale, spesso garantendo un rendimento minimo o il capitale a scadenza. Ideale per chi è vicino alla pensione.
                         </InfoCard>
@@ -173,33 +173,33 @@ const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
                 </div>
             </section>
             
-            <section className="bg-slate-100 dark:bg-slate-800/50 py-20 rounded-2xl">
+            <section className="bg-slate-100 dark:bg-slate-800/50 py-12 sm:py-16 md:py-20 rounded-xl sm:rounded-2xl px-4">
                  <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400 sm:text-4xl">Come Questo Strumento Ti Aiuta</h2>
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400 md:text-4xl">Come Questo Strumento Ti Aiuta</h2>
                 </div>
-                <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                    <div className="p-4">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-400 font-bold text-2xl border border-sky-200 dark:border-sky-800">1</div>
-                        <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1 text-lg">Filtra e Trova</h3>
+                <div className="mt-8 sm:mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-center">
+                    <div className="p-3 sm:p-4">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full flex items-center justify-center bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-400 font-bold text-xl sm:text-2xl border border-sky-200 dark:border-sky-800">1</div>
+                        <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1 text-base sm:text-lg">Filtra e Trova</h3>
                         <p className="text-sm text-slate-600 dark:text-slate-400">Usa i filtri per restringere la ricerca per categoria di rischio o società di gestione.</p>
                     </div>
-                     <div className="p-4">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-400 font-bold text-2xl border border-sky-200 dark:border-sky-800">2</div>
-                        <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1 text-lg">Confronta Visivamente</h3>
+                     <div className="p-3 sm:p-4">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full flex items-center justify-center bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-400 font-bold text-xl sm:text-2xl border border-sky-200 dark:border-sky-800">2</div>
+                        <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1 text-base sm:text-lg">Confronta Visivamente</h3>
                         <p className="text-sm text-slate-600 dark:text-slate-400">Seleziona fino a 10 fondi per vedere performance e costi in grafici di facile lettura.</p>
                     </div>
-                     <div className="p-4">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-400 font-bold text-2xl border border-sky-200 dark:border-sky-800">3</div>
-                        <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1 text-lg">Analizza i Dettagli</h3>
+                     <div className="p-3 sm:p-4">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full flex items-center justify-center bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-400 font-bold text-xl sm:text-2xl border border-sky-200 dark:border-sky-800">3</div>
+                        <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1 text-base sm:text-lg">Analizza i Dettagli</h3>
                         <p className="text-sm text-slate-600 dark:text-slate-400">Clicca su ogni fondo in tabella per aprire una vista di dettaglio con tutti i dati storici.</p>
                     </div>
                 </div>
             </section>
             
-            <div className="text-center pt-6">
+            <div className="text-center pt-4 sm:pt-6 px-4">
                 <button
                     onClick={onStart}
-                    className="inline-flex items-center gap-x-2 px-8 py-4 bg-sky-600 text-white font-semibold rounded-lg shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-slate-900 transition-all duration-200 transform hover:scale-105"
+                    className="inline-flex items-center gap-x-2 px-6 py-3 sm:px-8 sm:py-4 bg-sky-600 text-white text-base sm:text-lg font-semibold rounded-lg shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-slate-900 transition-all duration-200 transform hover:scale-105 active:scale-95"
                 >
                     Inizia Subito
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" /></svg>

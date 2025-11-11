@@ -1,0 +1,168 @@
+/* Mobile-First Global Styles */
+
+/* Smooth scrolling for the whole page */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent text size adjustment on orientation change in iOS */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Improve tap highlighting on mobile */
+* {
+  -webkit-tap-highlight-color: rgba(14, 165, 233, 0.1);
+}
+
+/* Ensure buttons and interactive elements have proper touch targets (minimum 44x44px as per iOS guidelines) */
+button,
+a,
+input,
+select,
+textarea {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+/* Better scroll behavior on mobile */
+body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
+}
+
+/* Improve focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid #0284c7;
+  outline-offset: 2px;
+}
+
+/* Remove default button styling and ensure proper sizing */
+button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Optimize select dropdowns for mobile */
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Improve input field touch targets on mobile */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+textarea {
+  font-size: 16px; /* Prevents iOS zoom on focus */
+}
+
+/* Mobile-optimized scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Utility classes for mobile */
+@media (max-width: 639px) {
+  .mobile-full-width {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+  }
+  
+  .mobile-safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .mobile-safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Improved touch feedback */
+.touch-feedback {
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+.touch-feedback:active {
+  transform: scale(0.97);
+  opacity: 0.8;
+}
+
+/* Better modal overlay for mobile */
+@media (max-width: 639px) {
+  [role="dialog"] {
+    align-items: flex-end;
+  }
+}
+
+/* Prevent zoom on double tap for iOS */
+button,
+a {
+  touch-action: manipulation;
+}
+
+/* Loading state animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Safe area insets for notched devices */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}

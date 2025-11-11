@@ -115,21 +115,21 @@ const SelectedFundsBar: React.FC<SelectedFundsBarProps> = ({
         {/* Mobile Header */}
         <div className="px-3 py-2.5 bg-white/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-sky-600 dark:text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-              </svg>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                Selezionati
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 text-xs font-bold">
-                {selectedFunds.length}/{maxFunds}
-              </span>
-            </div>
-            <button
-              onClick={onClearAll}
-              className="px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors active:scale-95 flex items-center gap-1"
-            >
+          <div className="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-sky-600 dark:text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              Selezionati
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 text-sm font-semibold">
+              {selectedFunds.length}/{maxFunds}
+            </span>
+          </div>
+          <button
+            onClick={onClearAll}
+            className="px-3 py-1 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors active:scale-95 flex items-center gap-1.5"
+          >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -147,8 +147,8 @@ const SelectedFundsBar: React.FC<SelectedFundsBarProps> = ({
         </div>
 
         {/* Fund Chips - Mobile Scrollable */}
-        <div className="px-3 py-2.5 overflow-x-auto">
-          <div className="flex gap-2 pb-1" style={{ width: 'max-content' }}>
+        <div className="px-3 py-2.5">
+          <div className="flex flex-wrap gap-2">
             {selectedFunds.map((fund) => {
               const color = getColorForFund(fund.id, selectedFundIds);
               const fullLabel = formatFundLabel(fund);
@@ -160,7 +160,7 @@ const SelectedFundsBar: React.FC<SelectedFundsBarProps> = ({
                 <button
                   key={fund.id}
                   onClick={() => onToggleFund(fund.id)}
-                  className="group inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-all duration-200 active:scale-95 flex-shrink-0"
+                  className="group inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-all duration-200 active:scale-95"
                   title={fullLabel}
                   style={{
                     backgroundColor: chipBackground,
@@ -171,7 +171,7 @@ const SelectedFundsBar: React.FC<SelectedFundsBarProps> = ({
                     className="h-2.5 w-2.5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: color }}
                   />
-                  <span className="text-slate-800 dark:text-slate-200 font-medium whitespace-nowrap">
+                  <span className="text-slate-800 dark:text-slate-200 font-medium truncate max-w-[200px]">
                     {shortName}
                   </span>
                   <span className="text-slate-500 dark:text-slate-400 group-active:text-slate-700 dark:group-active:text-slate-200 transition-colors text-base leading-none font-bold">
@@ -183,16 +183,7 @@ const SelectedFundsBar: React.FC<SelectedFundsBarProps> = ({
           </div>
         </div>
 
-        {/* Scroll Hint - Mobile */}
-        {selectedFunds.length > 3 && (
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 sm:hidden pointer-events-none">
-            <div className="bg-gradient-to-l from-slate-100 dark:from-slate-900 to-transparent w-8 h-full flex items-center justify-end pr-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-400 dark:text-slate-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </div>
-        )}
+        {/* Removed scroll hint since chips now wrap */}
       </div>
     </div>
   );

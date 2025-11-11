@@ -82,7 +82,7 @@ const RendimentoCell: React.FC<{ value: number | null; label?: string; isMobile?
 
 const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig, selectedFundIds, toggleFundSelection, onFundClick }) => {
   return (
-    <>
+    <div className="w-full min-w-0 space-y-4">
         {/* Desktop Table */}
         <div className="hidden lg:block bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="overflow-x-auto">
@@ -221,16 +221,16 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
         </div>
         
         {/* Mobile Card List */}
-        <div className="lg:hidden space-y-3">
+        <div className="lg:hidden space-y-2.5 sm:space-y-3">
             {funds.length > 0 ? funds.map(fund => (
-                <div key={fund.id} className="relative bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-200 active:scale-[0.98]">
+                <div key={fund.id} className="relative bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-200 active:scale-[0.99]">
                     {/* Category Color Accent */}
                     <div className={`absolute left-0 top-0 bottom-0 w-1 ${CATEGORY_COLORS[fund.categoria]}`}></div>
                     
                     {/* Card Header with Checkbox */}
-                    <div className="flex items-start gap-2.5 p-3 pb-2">
+                    <div className="flex items-start gap-2 p-2.5 sm:p-3 pb-1.5 sm:pb-2">
                         <div 
-                            className="flex items-center justify-center w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-700 shrink-0 active:bg-slate-200 dark:active:bg-slate-600 transition-colors"
+                            className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 shrink-0 active:bg-slate-200 dark:active:bg-slate-600 transition-colors"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 toggleFundSelection(fund.id);
@@ -241,14 +241,14 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                                 checked={selectedFundIds.has(fund.id)}
                                 onChange={() => {}}
                                 disabled={!selectedFundIds.has(fund.id) && selectedFundIds.size >= 10}
-                                className="h-4.5 w-4.5 text-sky-600 bg-white border-slate-300 dark:bg-slate-700 dark:border-slate-500 rounded focus:ring-2 focus:ring-sky-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                className="h-5 w-5 text-sky-600 bg-white border-slate-300 dark:bg-slate-700 dark:border-slate-500 rounded focus:ring-2 focus:ring-sky-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                 aria-label={`Seleziona ${fund.linea}`}
                             />
                         </div>
                         
                         <div className="flex-grow min-w-0">
                             <div onClick={() => onFundClick(fund)} className="active:opacity-70 transition-opacity">
-                                <h3 className="text-sm font-bold text-sky-600 dark:text-sky-400 leading-snug mb-0.5 truncate">
+                                <h3 className="text-sm sm:text-base font-bold text-sky-600 dark:text-sky-400 leading-snug mb-0.5 truncate">
                                     {fund.linea}
                                 </h3>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 truncate mb-0.5">
@@ -264,7 +264,7 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                     </div>
 
                     {/* Badges Row */}
-                    <div className="flex flex-wrap gap-1.5 px-3 pb-2">
+                    <div className="flex flex-wrap gap-1.5 px-2.5 sm:px-3 pb-1.5 sm:pb-2">
                         <span className="px-2 py-0.5 inline-flex text-xs leading-4 font-semibold rounded-full bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300">
                             {CATEGORY_MAP[fund.categoria]}
                         </span>
@@ -273,20 +273,20 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                         </span>
                     </div>
 
-                    {/* Key Metrics Grid - More Compact */}
-                    <div className="grid grid-cols-2 gap-2 px-3 pb-2">
+                    {/* Key Metrics Grid */}
+                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2 px-2.5 sm:px-3 pb-1.5 sm:pb-2">
                         {/* Cost Metric */}
-                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2 sm:p-2.5">
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-0.5">Costo Annuo</p>
-                            <p className="text-base font-bold text-slate-800 dark:text-slate-200 tabular-nums">
+                            <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200 tabular-nums">
                                 {fund.costoAnnuo !== null ? `${fund.costoAnnuo.toFixed(2)}%` : 'N/A'}
                             </p>
                         </div>
                         
                         {/* Best Return Metric (5Y) */}
-                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2 sm:p-2.5">
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-0.5">Rend. 5A</p>
-                            <p className={`text-base font-bold tabular-nums ${
+                            <p className={`text-base sm:text-lg font-bold tabular-nums ${
                                 fund.rendimenti.ultimi5Anni === null 
                                     ? 'text-slate-400 dark:text-slate-500' 
                                     : fund.rendimenti.ultimi5Anni >= 0 
@@ -299,11 +299,11 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                     </div>
 
                     {/* All Performance Metrics - Compact Grid */}
-                    <div className="border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30 px-3 py-2.5">
-                        <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">
+                    <div className="border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30 px-2.5 sm:px-3 py-2 sm:py-2.5">
+                        <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">
                             Rendimenti Storici
                         </p>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                             {/* 1 Year */}
                             <div className="text-center">
                                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">1A</p>
@@ -348,7 +348,7 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                             
                             {/* 20 Years - if available, show in separate row */}
                             {fund.rendimenti.ultimi20Anni !== null && (
-                                <div className="text-center col-span-3 pt-1 border-t border-slate-200 dark:border-slate-700 mt-1">
+                                <div className="text-center col-span-3 pt-1.5 border-t border-slate-200 dark:border-slate-700 mt-1">
                                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">20A</p>
                                     <p className={`text-sm font-bold tabular-nums ${
                                         fund.rendimenti.ultimi20Anni >= 0 
@@ -365,25 +365,25 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                     {/* Tap to view details hint */}
                     <button
                         onClick={() => onFundClick(fund)}
-                        className="w-full py-2 text-center text-xs font-medium text-sky-600 dark:text-sky-400 bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:bg-slate-200 dark:active:bg-slate-700 flex items-center justify-center gap-1"
+                        className="w-full py-2.5 text-center text-xs font-medium text-sky-600 dark:text-sky-400 bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:bg-slate-200 dark:active:bg-slate-700 flex items-center justify-center gap-1.5"
                     >
                         <span>Vedi dettagli</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
                     </button>
                 </div>
             )) : (
-                <div className="text-center py-16 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="text-center py-12 sm:py-16 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 px-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p className="font-semibold text-lg mb-2">Nessun fondo trovato</p>
-                    <p className="text-sm">Prova a modificare i filtri per trovare quello che cerchi.</p>
+                    <p className="font-semibold text-base sm:text-lg mb-1.5 sm:mb-2">Nessun fondo trovato</p>
+                    <p className="text-xs sm:text-sm">Prova a modificare i filtri per trovare quello che cerchi.</p>
                 </div>
             )}
         </div>
-    </>
+    </div>
   );
 };
 
