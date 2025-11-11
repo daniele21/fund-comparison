@@ -64,6 +64,19 @@ const App: React.FC = () => {
   const currentPlan = user?.plan ?? 'free';
   const isFullAccess = currentPlan === 'full-access';
 
+  // When the user logs out, redirect to the playbook (home) and close any auth
+  // related UI that may be open. This ensures the app shows a clear home state
+  // after logout instead of leaving the dashboard visible.
+  useEffect(() => {
+    if (!user) {
+      // Close login modal, upgrade/payment dialogs and show the playbook
+      setShowLoginModal(false);
+      setShowUpgradeDialog(false);
+      setShowFakePayment(false);
+      setView('playbook');
+    }
+  }, [user]);
+
   useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
