@@ -1,4 +1,5 @@
 import type { PensionFund, UserProfile } from '../types';
+import { FUND_LOGIC_CONFIG } from '../config/fundLogicConfig';
 
 type ScoreOptions = {
   maxResults?: number;
@@ -22,28 +23,27 @@ export function computeShortlist(funds: PensionFund[], profile: UserProfile, opt
   if (!profile.horizonYears) return [];
 
   const horizon = profile.horizonYears;
+  const shortlistConfig = FUND_LOGIC_CONFIG.shortlist;
+  const {
+    weights,
+    horizonCategoryRules,
+    missingValues,
+    riskPreferenceMap,
+    categoryPatterns,
+    ageBias,
+  } = shortlistConfig;
 
-  // Tunable weights / thresholds
-  const WEIGHTS = {
-    cost: 0.5,
-    returns: 0.4,
-    riskBoostMax: 0.14, // max boost for strong risk alignment
-    hasFpnBoost: 0.18, // boost when user has contractual FPN and fund.type === 'FPN'
-    contractualCategoryBoost: 0.12, // boost when fund category matches contractualFpnCategory
-    ageConservatism: 0.06, // penalty to equity when over50
-  };
-
-  let targetCategories: string[] = [];
-  if (horizon <= 10) targetCategories = ['GAR', 'OBB', 'MISTO PRUDENTE'];
-  else if (horizon <= 20) targetCategories = ['BIL', 'OBB MISTO', 'MISTO'];
-  else targetCategories = ['AZN', 'AZ', 'CRESCITA', 'BIL'];
+  const categoryRule =
+    horizonCategoryRules.find(rule => horizon <= rule.maxYearsInclusive) ??
+    horizonCategoryRules[horizonCategoryRules.length - 1];
+  const targetCategories = categoryRule.categories;
 
   // Helper: normalized cost (lower is better). Use 0..1 range where 0 is worst, 1 is best for scores
-  const costs = funds.map(f => (f.isc?.isc35a == null ? 999 : f.isc.isc35a));
+  const costs = funds.map(f => (f.isc?.isc35a == null ? missingValues.cost : f.isc.isc35a));
   const minCost = Math.min(...costs);
   const maxCost = Math.max(...costs);
 
-  const returns10 = funds.map(f => (f.rendimenti.ultimi10Anni == null ? -999 : f.rendimenti.ultimi10Anni));
+  const returns10 = funds.map(f => (f.rendimenti.ultimi10Anni == null ? missingValues.returns10y : f.rendimenti.ultimi10Anni));
   const minR = Math.min(...returns10);
   const maxR = Math.max(...returns10);
 
@@ -62,22 +62,20 @@ export function computeShortlist(funds: PensionFund[], profile: UserProfile, opt
   });
 
   const scored = filteredAfterFpnPref.map(fund => {
-    const cost = fund.isc?.isc35a == null ? 999 : fund.isc.isc35a;
-    const ret10 = fund.rendimenti.ultimi10Anni == null ? -999 : fund.rendimenti.ultimi10Anni;
+    const cost = fund.isc?.isc35a == null ? missingValues.cost : fund.isc.isc35a;
+    const ret10 = fund.rendimenti.ultimi10Anni == null ? missingValues.returns10y : fund.rendimenti.ultimi10Anni;
 
     // normalized: higher is better for these components
     const costScore = 1 - normalized(cost, minCost, maxCost); // 1 best, 0 worst
     const returnScore = normalized(ret10, minR, maxR);
 
     // Stronger, graded risk preference effect
-    const categoryUpper = fund.categoria.toUpperCase();
-    const equityLike = /AZ|CRESCITA/.test(categoryUpper);
-    const mixedLike = /MISTO|BIL|OBB MISTO|OBB/.test(categoryUpper);
+    const categoryUpper = (fund.categoria ?? '').toString().toUpperCase();
+    const equityLike = categoryPatterns.equityLike.some(pattern => categoryUpper.includes(pattern));
+    const mixedLike = categoryPatterns.mixedLike.some(pattern => categoryUpper.includes(pattern));
 
     const riskPref = profile.riskPreference ?? 'medium';
-    // map risk pref to a numeric appetite
-    const riskMap: Record<string, number> = { low: 0, medium: 0.5, high: 1 };
-    const appetite = riskMap[riskPref] ?? 0.5;
+    const appetite = riskPreferenceMap[riskPref] ?? riskPreferenceMap.medium;
 
     // risk alignment score: if equity-like, aligned when appetite high; if conservative category, aligned when appetite low
     let riskAlignment = 0.5; // neutral
@@ -86,21 +84,26 @@ export function computeShortlist(funds: PensionFund[], profile: UserProfile, opt
     else riskAlignment = 1 - appetite;
 
     // scale to boost range [-riskBoostMax, +riskBoostMax]
-    const riskBoost = (riskAlignment - 0.5) * 2 * WEIGHTS.riskBoostMax; // centered at 0
+    const riskBoost = (riskAlignment - 0.5) * 2 * weights.riskBoostMax; // centered at 0
 
     // ageRange influence: slightly penalize equity for over50, favor equity slightly for under35
     let ageBoost = 0;
-    if (profile.ageRange === 'over50' && equityLike) ageBoost -= WEIGHTS.ageConservatism;
-    if (profile.ageRange === 'under35' && equityLike) ageBoost += WEIGHTS.ageConservatism / 2;
+    if (profile.ageRange === 'over50' && equityLike) ageBoost -= weights.ageConservatism;
+    if (profile.ageRange === 'under35' && equityLike) {
+      ageBoost += weights.ageConservatism * ageBias.under35BoostFactor;
+    }
 
-  // hasFpn influence: prefer funds of type 'FPN' when user has a contractual FPN
-  const fundTypeNorm = (fund.type ?? '').toString().toUpperCase().trim();
-  const hasFpnBoost = profile.hasFpn === true && fundTypeNorm === 'FPN' ? WEIGHTS.hasFpnBoost : 0;
+    // hasFpn influence: prefer funds of type 'FPN' when user has a contractual FPN
+    const fundTypeNorm = (fund.type ?? '').toString().toUpperCase().trim();
+    const hasFpnBoost = profile.hasFpn === true && fundTypeNorm === 'FPN' ? weights.hasFpnBoost : 0;
 
     // contract category preference: small boost if matches known contractual category
-  const contractualBoost = profile.contractualFpnCategory && (fund.categoria ?? '').toString() === profile.contractualFpnCategory ? WEIGHTS.contractualCategoryBoost : 0;
+    const contractualBoost =
+      profile.contractualFpnCategory && (fund.categoria ?? '').toString() === profile.contractualFpnCategory
+        ? weights.contractualCategoryBoost
+        : 0;
 
-    const score = WEIGHTS.cost * costScore + WEIGHTS.returns * returnScore + riskBoost + ageBoost + hasFpnBoost + contractualBoost;
+    const score = weights.cost * costScore + weights.returns * returnScore + riskBoost + ageBoost + hasFpnBoost + contractualBoost;
 
     return { fund, score };
   });

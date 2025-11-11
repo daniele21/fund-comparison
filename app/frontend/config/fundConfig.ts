@@ -1,15 +1,9 @@
 // Centralized configuration for fund labels and thresholds
 import type { FundCategory, AgeRange, UserProfile } from '../types';
+import { FUND_LOGIC_CONFIG } from './fundLogicConfig';
 
-export const COST_THRESHOLDS = {
-  veryCompetitive: 0.6,
-  average: 1.0,
-};
-
-export const PERFORMANCE_THRESHOLDS = {
-  aboveAverage: 4.0,
-  inLine: 2.0,
-};
+export const COST_THRESHOLDS = FUND_LOGIC_CONFIG.costThresholds;
+export const PERFORMANCE_THRESHOLDS = FUND_LOGIC_CONFIG.performanceThresholds;
 
 export function costLabelFromIsc35(isc35: number | null | undefined): string {
   if (isc35 == null) return 'Costo: dato non disponibile';
@@ -26,14 +20,8 @@ export function perfLabelFromRendimento10y(rendimento10y: number | null | undefi
 }
 
 // Risk score for each fund category (0 = safest, 100 = most aggressive)
-const CATEGORIA_RISK_SCORE: Record<FundCategory, number> = {
-  GAR: 10, // garantito: very safe
-  'OBB PURO': 25,
-  OBB: 30,
-  'OBB MISTO': 40,
-  BIL: 55, // bilanciato: balanced
-  AZN: 85, // azionario: high risk
-};
+const CATEGORIA_RISK_SCORE: Record<FundCategory, number> = FUND_LOGIC_CONFIG.categoryRiskScores;
+const { defaultIdealRisk, shortHorizonRisk, horizonRiskRules, ageFallbackRisk } = FUND_LOGIC_CONFIG.coherence;
 
 /**
  * Compute a coherence score (0-100) between a fund and user profile.
@@ -48,32 +36,22 @@ export function computeCoherenceScore(
   const fundRisk = CATEGORIA_RISK_SCORE[fundCategoria];
 
   // Derive ideal risk score from horizonYears and ageRange
-  let idealRisk = 50; // default: balanced
+  let idealRisk = defaultIdealRisk; // default: balanced
 
   const { horizonYears, ageRange } = profile;
 
   // Horizon is the primary factor
   if (horizonYears != null) {
-    if (horizonYears > 20) {
-      idealRisk = 75; // long horizon → azionario OK
-    } else if (horizonYears > 15) {
-      idealRisk = 65;
-    } else if (horizonYears > 10) {
-      idealRisk = 50; // bilanciato
-    } else if (horizonYears > 5) {
-      idealRisk = 35; // obbligazionario misto
-    } else {
-      idealRisk = 20; // garantito/obbligazionario puro
+    idealRisk = shortHorizonRisk;
+    for (const rule of horizonRiskRules) {
+      if (horizonYears > rule.minYearsExclusive) {
+        idealRisk = rule.idealRisk;
+        break;
+      }
     }
   } else if (ageRange) {
     // Fallback to ageRange if horizonYears is missing
-    if (ageRange === 'under35') {
-      idealRisk = 70;
-    } else if (ageRange === '35-50') {
-      idealRisk = 50;
-    } else {
-      idealRisk = 30;
-    }
+    idealRisk = ageFallbackRisk[ageRange] ?? idealRisk;
   }
 
   // Score inversely proportional to distance
