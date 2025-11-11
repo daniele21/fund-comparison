@@ -1,0 +1,240 @@
+import React, { useMemo, useState } from 'react';
+import type { PensionFund, UserProfile } from '../../types';
+import { useGuidedComparator } from './GuidedComparatorContext';
+import { SelectedFundInsightsPanel } from './SelectedFundInsightsPanel';
+import { costLabelFromIsc35, perfLabelFromRendimento10y, matchLabelFromFund, computeCoherenceScore, colorForCost, colorForPerf, colorForCoherence } from '../../config/fundConfig';
+
+type CheckMyFundFlowProps = {
+  funds: PensionFund[];
+};
+
+export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
+  const { profile, setProfile, setSelectedFundId } = useGuidedComparator();
+  const [search, setSearch] = useState('');
+
+  const matchingFunds = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (term.length < 3) return [];
+    return funds.filter(fund => {
+      const haystack = `${fund.linea} ${fund.pip} ${fund.societa ?? ''}`.toLowerCase();
+      return haystack.includes(term);
+    });
+  }, [funds, search]);
+
+  const [fund, setFund] = useState<PensionFund | null>(null);
+
+  const handleSelectFund = (selected: PensionFund) => {
+    setFund(selected);
+    setSelectedFundId(selected.id);
+  };
+
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white/90 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Controlla il tuo fondo pensione</h2>
+      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+        Scrivi il nome del tuo fondo o della compagnia. Se non lo ricordi, lo trovi sull’estratto conto o
+        sulla documentazione che ricevi ogni anno.
+      </p>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <div className="space-y-4">
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Nome del fondo o della compagnia</span>
+            <input
+              type="text"
+              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-inner focus:border-sky-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
+              placeholder="Es. FONCHIM, COMETA, Alleanza Previdenza…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </label>
+
+          {matchingFunds.length > 0 && (
+            <ul className="max-h-44 space-y-1 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 text-sm shadow-inner dark:border-slate-800 dark:bg-slate-900">
+              {matchingFunds.slice(0, 8).map(result => (
+                <li key={result.id}>
+                  <button
+                    type="button"
+                    className="w-full rounded-md px-2 py-1 text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                    onClick={() => handleSelectFund(result)}
+                  >
+                    <strong className="block text-sm text-slate-900 dark:text-slate-100">{result.linea}</strong>
+                    <span className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                      {result.societa ?? (result.type === 'FPN' ? result.pip : 'Compagnia non indicata')}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/40">
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Per contestualizzare</h3>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <label className="text-sm text-slate-600 dark:text-slate-300">
+                Età
+                <select
+                  className="mt-2 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
+                  value={profile.ageRange ?? ''}
+                  onChange={e =>
+                    setProfile(prev => ({ ...prev, ageRange: e.target.value ? (e.target.value as typeof profile.ageRange) : undefined }))
+                  }
+                >
+                  <option value="">Seleziona…</option>
+                  <option value="under35">&lt; 35 anni</option>
+                  <option value="35-50">35–50 anni</option>
+                  <option value="over50">&gt; 50 anni</option>
+                </select>
+              </label>
+
+              <label className="text-sm text-slate-600 dark:text-slate-300">
+                Anni alla pensione
+                <input
+                  type="number"
+                  min={0}
+                  max={50}
+                  className="mt-2 w-full rounded-md border border-slate-200 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
+                  value={profile.horizonYears ?? ''}
+                  onChange={e =>
+                    setProfile(prev => ({
+                      ...prev,
+                      horizonYears: e.target.value ? Number(e.target.value) : undefined,
+                    }))
+                  }
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          {fund ? (
+            <FundXrayCard fund={fund} profile={profile} />
+          ) : (
+            <div className="text-sm text-slate-500 dark:text-slate-400">
+              Seleziona un fondo dall’elenco per vedere costi, rendimenti e coerenza con il tuo orizzonte.
+            </div>
+          )}
+        </div>
+
+        <div className="lg:col-span-1">
+          <SelectedFundInsightsPanel funds={funds} />
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const FundXrayCard: React.FC<{ fund: PensionFund; profile: UserProfile }> = ({ fund, profile }) => {
+  const isc35 = fund.isc?.isc35a;
+  const rendimento10y = fund.rendimenti.ultimi10Anni;
+
+  const costLabel = costLabelFromIsc35(isc35);
+  const perfLabel = perfLabelFromRendimento10y(rendimento10y);
+  const matchLabel = matchLabelFromFund(fund);
+  // compute once per render
+  const coherenceScore = useMemo(() => computeCoherenceScore(fund.categoria, profile), [fund.categoria, profile]);
+  const costColors = colorForCost(isc35);
+  const perfColors = colorForPerf(rendimento10y);
+  const coherenceColors = colorForCoherence(coherenceScore);
+
+  return (
+    <div className="space-y-3">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{fund.linea}</h3>
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            {fund.societa ?? (fund.type === 'FPN' ? fund.pip : 'Compagnia non indicata')}
+          </p>
+        </div>
+
+        {/* KPI badges on the right for larger screens; stack below title on very small screens */}
+        <div className="flex gap-2 items-center">
+          <div className={`${costColors.badgeBg} flex items-center gap-3 rounded-md px-3 py-1`}>
+            <span className={`h-2 w-2 rounded-full ${costColors.dot}`} />
+            <div className="leading-tight">
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{isc35 != null ? `${isc35.toFixed(2)}%` : '—'}</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400">ISC (35y)</div>
+            </div>
+          </div>
+
+          <div className={`${perfColors.badgeBg} flex items-center gap-3 rounded-md px-3 py-1`}>
+            <span className={`h-2 w-2 rounded-full ${perfColors.dot}`} />
+            <div className="leading-tight">
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{rendimento10y != null ? `${rendimento10y.toFixed(2)}%` : '—'}</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400">Rend. medio 10y</div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <ul className="space-y-4">
+        <XrayRow color="yellow" title={costLabel}>
+          ISC 35 anni: {isc35 != null ? `${isc35.toFixed(2)}%` : 'dato non disponibile'}. Costi contenuti favoriscono rendimenti netti migliori.
+        </XrayRow>
+        <XrayRow color="green" title={perfLabel}>
+          Rendimento medio 10y: {rendimento10y != null ? `${rendimento10y.toFixed(2)}%` : 'dato mancante'}.
+        </XrayRow>
+        <XrayRow color="sky" title={matchLabel}>
+          {profile.horizonYears || profile.ageRange ? (
+            <>
+              Questo fondo {fund.categoria} ha un punteggio di coerenza di <strong>{coherenceScore}/100</strong> rispetto al tuo profilo.
+              {coherenceScore >= 60 ? ' Sembra in linea con il tuo orizzonte.' : ' Potresti valutare fondi più adatti al tuo orizzonte.'}
+              <div className="mt-2 w-full">
+                <CoherenceGauge score={coherenceScore} showNumber colorClass={coherenceColors.dot} />
+              </div>
+            </>
+          ) : (
+            <>
+              La coerenza dipende da quanti anni ti separano dalla pensione e dalla tua tolleranza alle oscillazioni.
+            </>
+          )}
+        </XrayRow>
+      </ul>
+      <p className="text-xs text-slate-500">
+        Questo è uno strumento informativo e non costituisce una raccomandazione personalizzata di investimento.
+      </p>
+    </div>
+  );
+};
+
+const COLOR_MAP: Record<'green' | 'yellow' | 'sky', string> = {
+  green: 'bg-emerald-500',
+  yellow: 'bg-amber-400',
+  sky: 'bg-sky-500',
+};
+
+const XrayRow: React.FC<{ color: keyof typeof COLOR_MAP; title: string; children: React.ReactNode }> = ({
+  color,
+  title,
+  children,
+}) => (
+  <li className="flex gap-2 items-start">
+    <span className={`mt-1 h-2 w-2 rounded-full ${COLOR_MAP[color]}`} />
+    <div>
+      <strong className="text-sm text-slate-900 dark:text-slate-100">{title}</strong>
+      <p className="text-[12px] text-slate-600 dark:text-slate-300">{children}</p>
+    </div>
+  </li>
+);
+
+// Small visual gauge for coherence score
+const CoherenceGauge: React.FC<{ score: number; showNumber?: boolean; colorClass?: string }> = ({ score, showNumber = false, colorClass }) => {
+  const clamped = Math.max(0, Math.min(100, score));
+  const defaultColor = clamped >= 80 ? 'bg-emerald-500' : clamped >= 60 ? 'bg-amber-400' : 'bg-red-500';
+  const color = colorClass ?? defaultColor;
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 rounded-md bg-slate-100 dark:bg-slate-800" style={{ height: 6 }}>
+        <div
+          className={`${color} h-1.5 rounded-md`}
+          style={{ width: `${clamped}%`, height: 6 }}
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={clamped}
+        />
+      </div>
+      {showNumber && <div className="text-[11px] text-slate-600 dark:text-slate-300 w-10 text-right">{clamped}%</div>}
+    </div>
+  );
+};

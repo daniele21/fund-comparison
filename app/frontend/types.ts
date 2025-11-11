@@ -41,3 +41,20 @@ export interface AuthUser {
   plan?: 'free' | 'full-access';
   roles?: string[];
 }
+
+export type EntryMode = 'check-fund' | 'choose-fund' | 'learn' | null;
+
+export type AgeRange = 'under35' | '35-50' | 'over50';
+
+export type RiskPreference = 'low' | 'medium' | 'high';
+
+export type WorkerType = 'dipendente' | 'autonomo' | 'altro';
+
+export type UserProfile = {
+  ageRange?: AgeRange;
+  horizonYears?: number;
+  riskPreference?: RiskPreference;
+  workerType?: WorkerType;
+  hasFpn?: boolean;
+  monthlyContribution?: number;
+};

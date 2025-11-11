@@ -16,6 +16,8 @@ import { useAuth } from './auth';
 import UpgradeDialog from './components/UpgradeDialog';
 import FakePaymentDialog from './components/FakePaymentDialog';
 import FeedbackWidget from './components/feedback/FeedbackWidget';
+import { GuidedFundComparator } from './components/guided/GuidedFundComparator';
+import { useGuidedComparator } from './components/guided/GuidedComparatorContext';
 
 type View = 'playbook' | 'dashboard';
 
@@ -249,6 +251,34 @@ const App: React.FC = () => {
     setSelectedType('all');
   };
 
+  const handlePresetSelected = (presetId: string) => {
+    setPage(1);
+    setSearchTerm('');
+    switch (presetId) {
+      case 'cheapest-35y':
+        setSelectedCategory('all');
+        setSelectedCompany('all');
+        setSelectedType('all');
+        setSortConfig({ key: 'costoAnnuo', direction: 'ascending' });
+        break;
+      case 'best-10y-returns':
+        setSortConfig({ key: 'ultimi10Anni', direction: 'descending' });
+        break;
+      case 'near-retirement':
+        setSelectedCategory('GAR');
+        setSelectedType('FPN');
+        setSortConfig({ key: 'costoAnnuo', direction: 'ascending' });
+        break;
+      case 'just-starting':
+        setSelectedCategory('AZN');
+        setSelectedType('PIP');
+        setSortConfig({ key: 'ultimi10Anni', direction: 'descending' });
+        break;
+      default:
+        break;
+    }
+  };
+
   // Pagination state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -276,120 +306,118 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
       <Header theme={theme} toggleTheme={toggleTheme} onGoToPlaybook={handleGoToPlaybook} onLoginRequest={openLoginModal} />
       <main className="container mx-auto p-4 sm:p-5 md:p-8 pt-20 sm:pt-24 md:pt-28">
-        <div className="space-y-12">
-          
-          <section>
-            <div className="flex justify-between items-center mb-5">
-              <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Visual Comparison</h2>
-            </div>
-            
-            {/* Selected Funds Bar - Sticky below header */}
-            <SelectedFundsBar
-              selectedFunds={selectedFunds}
-              selectedFundIds={selectedFundIdsArray}
-              onToggleFund={toggleFundSelection}
-              onClearAll={resetSelection}
-            />
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <PerformanceChart selectedFunds={selectedFunds} theme={theme} />
-              <CostChart selectedFunds={selectedFunds} theme={theme} />
-            </div>
-          </section>
-
-          <div className="space-y-8">
-            <FilterControls
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              categories={categories}
-              selectedCompany={selectedCompany}
-              setSelectedCompany={setSelectedCompany}
-              companies={companies}
-              selectedType={selectedType}
-              setSelectedType={setSelectedType}
-              onReset={resetFilters}
-              totalFunds={pensionFundsData.length}
-            />
-            
-            {/* Active Filters Chips */}
-            <ActiveFiltersChips
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              selectedCompany={selectedCompany}
-              setSelectedCompany={setSelectedCompany}
-              selectedType={selectedType}
-              setSelectedType={setSelectedType}
-              onResetAll={resetFilters}
-            />
-            
+        <GuidedFundComparator funds={pensionFundsData} onPresetSelected={handlePresetSelected}>
+          <div className="space-y-12">
             <section>
-                <div className="flex justify-between items-baseline mb-5">
-                    <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Risultati</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                        {filteredAndSortedFunds.length} {filteredAndSortedFunds.length === 1 ? 'fondo trovato' : 'fondi trovati'} — {selectedFundIds.size} {selectedFundIds.size === 1 ? 'selezionato' : 'selezionati'}
-                    </p>
-                </div>
-                {showUpgradeNotice && (
-                  <div className="mb-5 rounded-xl border border-sky-200 bg-sky-50 p-4 text-slate-700 shadow-sm dark:border-sky-700/70 dark:bg-slate-800/60 dark:text-slate-200">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="text-base font-semibold text-slate-900 dark:text-slate-100">Piano Free attivo</p>
-                        <p className="text-sm text-slate-600 dark:text-slate-300">
-                          Visualizzi i primi {FREE_PLAN_LIMIT} risultati. Passa al piano Full Access per esplorare l&apos;elenco completo dei fondi.
-                        </p>
-                      </div>
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        {!user && (
+              <div className="flex justify-between items-center mb-5">
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Visual Comparison</h2>
+              </div>
+              
+              <SelectedFundsBar
+                selectedFunds={selectedFunds}
+                selectedFundIds={selectedFundIdsArray}
+                onToggleFund={toggleFundSelection}
+                onClearAll={resetSelection}
+              />
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <PerformanceChart selectedFunds={selectedFunds} theme={theme} />
+                <CostChart selectedFunds={selectedFunds} theme={theme} />
+              </div>
+            </section>
+
+            <div className="space-y-8">
+              <FilterControls
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                categories={categories}
+                selectedCompany={selectedCompany}
+                setSelectedCompany={setSelectedCompany}
+                companies={companies}
+                selectedType={selectedType}
+                setSelectedType={setSelectedType}
+                onReset={resetFilters}
+                totalFunds={pensionFundsData.length}
+              />
+              
+              <ActiveFiltersChips
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                selectedCompany={selectedCompany}
+                setSelectedCompany={setSelectedCompany}
+                selectedType={selectedType}
+                setSelectedType={setSelectedType}
+                onResetAll={resetFilters}
+              />
+              
+              <section>
+                  <div className="flex justify-between items-baseline mb-5">
+                      <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Risultati</h2>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                          {filteredAndSortedFunds.length} {filteredAndSortedFunds.length === 1 ? 'fondo trovato' : 'fondi trovati'} — {selectedFundIds.size} {selectedFundIds.size === 1 ? 'selezionato' : 'selezionati'}
+                      </p>
+                  </div>
+                  {showUpgradeNotice && (
+                    <div className="mb-5 rounded-xl border border-sky-200 bg-sky-50 p-4 text-slate-700 shadow-sm dark:border-sky-700/70 dark:bg-slate-800/60 dark:text-slate-200">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-base font-semibold text-slate-900 dark:text-slate-100">Piano Free attivo</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-300">
+                            Visualizzi i primi {FREE_PLAN_LIMIT} risultati. Passa al piano Full Access per esplorare l&apos;elenco completo dei fondi.
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                          {!user && (
+                            <button
+                              onClick={handleUpgradeLogin}
+                              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                            >
+                              Accedi
+                            </button>
+                          )}
                           <button
-                            onClick={handleUpgradeLogin}
-                            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                            onClick={() => setShowUpgradeDialog(true)}
+                            className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
                           >
-                            Accedi
+                            Scopri Full Access
                           </button>
-                        )}
-                        <button
-                          onClick={() => setShowUpgradeDialog(true)}
-                          className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
-                        >
-                          Scopri Full Access
-                        </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-                <FundTable
-                  funds={/* paginated slice applied below */ visibleFunds.slice((page - 1) * pageSize, page * pageSize)}
-                  sortConfig={sortConfig}
-                  setSortConfig={setSortConfig}
-                  selectedFundIds={selectedFundIds}
-                  toggleFundSelection={toggleFundSelection}
-                  onFundClick={handleFundClick}
-                />
+                  )}
+                  <GuidedFundTable
+                    funds={visibleFunds.slice((page - 1) * pageSize, page * pageSize)}
+                    sortConfig={sortConfig}
+                    setSortConfig={setSortConfig}
+                    selectedFundIds={selectedFundIds}
+                    toggleFundSelection={toggleFundSelection}
+                    onFundClick={handleFundClick}
+                  />
 
-                {/* Pagination controls */}
-                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="order-2 sm:order-1 text-sm text-slate-600 dark:text-slate-300 text-center sm:text-left">
-                    Mostrati {Math.min(visibleFunds.length, page * pageSize) - (page - 1) * pageSize} di {visibleFunds.length}
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="order-2 sm:order-1 text-sm text-slate-600 dark:text-slate-300 text-center sm:text-left">
+                      Mostrati {Math.min(visibleFunds.length, page * pageSize) - (page - 1) * pageSize} di {visibleFunds.length}
+                    </div>
+                    <div className="order-1 sm:order-2 flex flex-wrap items-center gap-2 justify-center sm:justify-end">
+                      <label className="text-sm text-slate-600 dark:text-slate-300">Per pagina</label>
+                      <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }} className="text-sm px-2 py-1 border rounded bg-white dark:bg-slate-800">
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                      </select>
+                      <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))} className="px-3 py-1 bg-white dark:bg-slate-800 border rounded disabled:opacity-50">Prev</button>
+                      <span className="text-sm">{page}</span>
+                      <button disabled={page * pageSize >= visibleFunds.length} onClick={() => setPage(p => p + 1)} className="px-3 py-1 bg-white dark:bg-slate-800 border rounded disabled:opacity-50">Next</button>
+                    </div>
                   </div>
-                  <div className="order-1 sm:order-2 flex flex-wrap items-center gap-2 justify-center sm:justify-end">
-                    <label className="text-sm text-slate-600 dark:text-slate-300">Per pagina</label>
-                    <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }} className="text-sm px-2 py-1 border rounded bg-white dark:bg-slate-800">
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={20}>20</option>
-                    </select>
-                    <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))} className="px-3 py-1 bg-white dark:bg-slate-800 border rounded disabled:opacity-50">Prev</button>
-                    <span className="text-sm">{page}</span>
-                    <button disabled={page * pageSize >= visibleFunds.length} onClick={() => setPage(p => p + 1)} className="px-3 py-1 bg-white dark:bg-slate-800 border rounded disabled:opacity-50">Next</button>
-                  </div>
-                </div>
-            </section>
+              </section>
+            </div>
           </div>
-        </div>
+        </GuidedFundComparator>
       </main>
       <FundDetailModal fund={modalFund} onClose={handleCloseModal} theme={theme} />
       <UpgradeDialog
@@ -419,6 +447,17 @@ const App: React.FC = () => {
       <FeedbackWidget onRequireLogin={openLoginModal} />
     </div>
   );
+};
+
+const GuidedFundTable: React.FC<React.ComponentProps<typeof FundTable>> = ({ onFundClick, ...rest }) => {
+  const { setSelectedFundId } = useGuidedComparator();
+
+  const handleFundClick = (fund: PensionFund) => {
+    setSelectedFundId(fund.id);
+    onFundClick(fund);
+  };
+
+  return <FundTable {...rest} onFundClick={handleFundClick} />;
 };
 
 export default App;
