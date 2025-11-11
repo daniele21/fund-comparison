@@ -17,7 +17,7 @@ import UpgradeDialog from './components/UpgradeDialog';
 import FakePaymentDialog from './components/FakePaymentDialog';
 import FeedbackWidget from './components/feedback/FeedbackWidget';
 import { GuidedFundComparator } from './components/guided/GuidedFundComparator';
-import { useGuidedComparator } from './components/guided/GuidedComparatorContext';
+import { GuidedComparatorProvider, useGuidedComparator, MAX_SELECTED_FUNDS } from './components/guided/GuidedComparatorContext';
 
 type View = 'playbook' | 'dashboard';
 
@@ -49,7 +49,7 @@ const getSortValue = (fund: PensionFund, key: SortableKey): string | number | nu
 
 const FREE_PLAN_LIMIT = 10;
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [view, setView] = useState<View>('playbook');
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   
@@ -57,12 +57,13 @@ const App: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<FundCategory | 'all'>('all');
   const [selectedCompany, setSelectedCompany] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<'FPN' | 'FPA' | 'PIP' | 'all'>('all');
-  const [selectedFundIds, setSelectedFundIds] = useState<Set<string>>(new Set());
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ultimoAnno', direction: 'descending' });
   const [modalFund, setModalFund] = useState<PensionFund | null>(null);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [showFakePayment, setShowFakePayment] = useState(false);
   const { user, loading: authLoading, authMode } = useAuth();
+  const { selectedFundIds, toggleSelectedFund, clearSelectedFunds } = useGuidedComparator();
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const currentPlan = user?.plan ?? 'free';
   const isFullAccess = currentPlan === 'full-access';
 
@@ -131,6 +132,8 @@ const App: React.FC = () => {
     };
   }, []);
   
+  const selectedFundIdsSet = useMemo(() => new Set(selectedFundIds), [selectedFundIds]);
+
   const filteredFunds = useMemo(() => {
     return pensionFundsData.filter(fund => {
       if (selectedType !== 'all' && fund.type !== selectedType) {
@@ -161,8 +164,8 @@ const App: React.FC = () => {
 
     // Special-case: allow sorting by whether a fund is selected
     if (key === 'selected') {
-      const aSel = selectedFundIds.has(a.id) ? 1 : 0;
-      const bSel = selectedFundIds.has(b.id) ? 1 : 0;
+      const aSel = selectedFundIdsSet.has(a.id) ? 1 : 0;
+      const bSel = selectedFundIdsSet.has(b.id) ? 1 : 0;
       // put selected first when descending, last when ascending
       return (aSel - bSel) * dir * -1;
     }
@@ -185,7 +188,7 @@ const App: React.FC = () => {
   });
 
   return sorted;
-}, [filteredFunds, sortConfig]);
+}, [filteredFunds, sortConfig, selectedFundIds]);
 
   const visibleFunds = useMemo(() => {
     // For pagination we will compute a paginated slice later. Here return the full
@@ -208,32 +211,20 @@ const App: React.FC = () => {
   }, [pensionFundsData]);
 
   const selectedFunds = useMemo(() => {
-    return Array.from(selectedFundIds)
+    return selectedFundIds
       .map(fundId => fundById.get(fundId))
       .filter((fund): fund is PensionFund => Boolean(fund));
   }, [selectedFundIds, fundById]);
 
-  const selectedFundIdsArray = useMemo(() => {
-    return Array.from(selectedFundIds);
-  }, [selectedFundIds]);
-
   const toggleFundSelection = (fundId: string) => {
-    setSelectedFundIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(fundId)) {
-        newSet.delete(fundId);
-      } else {
-        if (newSet.size >= 10) {
-            return prev;
-        }
-        newSet.add(fundId);
-      }
-      return newSet;
-    });
+    if (!selectedFundIdsSet.has(fundId) && selectedFundIds.length >= MAX_SELECTED_FUNDS) {
+      return;
+    }
+    toggleSelectedFund(fundId);
   };
   
   const resetSelection = () => {
-    setSelectedFundIds(new Set());
+    clearSelectedFunds();
   };
 
   const handleFundClick = (fund: PensionFund) => {
@@ -304,7 +295,22 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
-      <Header theme={theme} toggleTheme={toggleTheme} onGoToPlaybook={handleGoToPlaybook} onLoginRequest={openLoginModal} />
+      <Header
+        theme={theme}
+        toggleTheme={toggleTheme}
+        onGoToPlaybook={handleGoToPlaybook}
+        onLoginRequest={openLoginModal}
+        onVisibilityChange={setIsHeaderVisible}
+      />
+      {/* Selected funds bar shown directly under the header for quick access */}
+      <SelectedFundsBar
+        selectedFunds={selectedFunds}
+        selectedFundIds={selectedFundIds}
+        onToggleFund={toggleFundSelection}
+        onClearAll={resetSelection}
+        isHeaderVisible={isHeaderVisible}
+        maxFunds={MAX_SELECTED_FUNDS}
+      />
       <main className="container mx-auto p-4 sm:p-5 md:p-8 pt-20 sm:pt-24 md:pt-28">
         <GuidedFundComparator funds={pensionFundsData} onPresetSelected={handlePresetSelected}>
           <div className="space-y-12">
@@ -313,16 +319,13 @@ const App: React.FC = () => {
                 <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Visual Comparison</h2>
               </div>
               
-              <SelectedFundsBar
-                selectedFunds={selectedFunds}
-                selectedFundIds={selectedFundIdsArray}
-                onToggleFund={toggleFundSelection}
-                onClearAll={resetSelection}
-              />
-              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <PerformanceChart selectedFunds={selectedFunds} theme={theme} />
-                <CostChart selectedFunds={selectedFunds} theme={theme} />
+                {/* VisualComparison chooses guided-selected funds when available, otherwise falls back to app selection */}
+                <VisualComparison
+                  appSelectedFunds={selectedFunds}
+                  fundById={fundById}
+                  theme={theme}
+                />
               </div>
             </section>
 
@@ -356,9 +359,9 @@ const App: React.FC = () => {
               
               <section>
                   <div className="flex justify-between items-baseline mb-5">
-                      <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Risultati</h2>
+                      <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Fondi</h2>
                       <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                          {filteredAndSortedFunds.length} {filteredAndSortedFunds.length === 1 ? 'fondo trovato' : 'fondi trovati'} — {selectedFundIds.size} {selectedFundIds.size === 1 ? 'selezionato' : 'selezionati'}
+                          {filteredAndSortedFunds.length} {filteredAndSortedFunds.length === 1 ? 'fondo trovato' : 'fondi trovati'} — {selectedFundIds.length} {selectedFundIds.length === 1 ? 'selezionato' : 'selezionati'}
                       </p>
                   </div>
                   {showUpgradeNotice && (
@@ -393,7 +396,7 @@ const App: React.FC = () => {
                     funds={visibleFunds.slice((page - 1) * pageSize, page * pageSize)}
                     sortConfig={sortConfig}
                     setSortConfig={setSortConfig}
-                    selectedFundIds={selectedFundIds}
+                    selectedFundIds={selectedFundIdsSet}
                     toggleFundSelection={toggleFundSelection}
                     onFundClick={handleFundClick}
                   />
@@ -449,6 +452,12 @@ const App: React.FC = () => {
   );
 };
 
+const App: React.FC = () => (
+  <GuidedComparatorProvider>
+    <AppContent />
+  </GuidedComparatorProvider>
+);
+
 const GuidedFundTable: React.FC<React.ComponentProps<typeof FundTable>> = ({ onFundClick, ...rest }) => {
   const { setSelectedFundId } = useGuidedComparator();
 
@@ -458,6 +467,29 @@ const GuidedFundTable: React.FC<React.ComponentProps<typeof FundTable>> = ({ onF
   };
 
   return <FundTable {...rest} onFundClick={handleFundClick} />;
+};
+
+// VisualComparison: prefer guided-selected funds when available.
+const VisualComparison: React.FC<{
+  appSelectedFunds: PensionFund[];
+  fundById: Map<string, PensionFund>;
+  theme: string;
+}> = ({ appSelectedFunds, fundById, theme }) => {
+  const { selectedFundIds } = useGuidedComparator();
+
+  const guidedSelected = React.useMemo(() => {
+    if (!selectedFundIds || selectedFundIds.length === 0) return null;
+    return selectedFundIds.map(id => fundById.get(id)).filter((f): f is PensionFund => !!f);
+  }, [selectedFundIds, fundById]);
+
+  const fundsToShow = guidedSelected && guidedSelected.length > 0 ? guidedSelected : appSelectedFunds;
+
+  return (
+    <>
+      <PerformanceChart selectedFunds={fundsToShow} theme={theme} />
+      <CostChart selectedFunds={fundsToShow} theme={theme} />
+    </>
+  );
 };
 
 export default App;

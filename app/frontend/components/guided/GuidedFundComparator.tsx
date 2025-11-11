@@ -1,6 +1,5 @@
 import React from 'react';
 import type { PensionFund } from '../../types';
-import { GuidedComparatorProvider } from './GuidedComparatorContext';
 import { EntryModeSelector } from './EntryModeSelector';
 import { QuestionChipsBar } from './QuestionChipsBar';
 import { CheckMyFundFlow } from './CheckMyFundFlow';
@@ -37,10 +36,8 @@ const GuidedLayoutInner: React.FC<
 
 export const GuidedFundComparator: React.FC<GuidedFundComparatorProps> = ({ funds, onPresetSelected, children }) => {
   return (
-    <GuidedComparatorProvider>
-      <GuidedLayoutInner funds={funds} onPresetSelected={onPresetSelected}>
-        {children}
-      </GuidedLayoutInner>
-    </GuidedComparatorProvider>
+    <GuidedLayoutInner funds={funds} onPresetSelected={onPresetSelected}>
+      {children}
+    </GuidedLayoutInner>
   );
 };

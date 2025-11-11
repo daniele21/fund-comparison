@@ -56,5 +56,7 @@ export type UserProfile = {
   riskPreference?: RiskPreference;
   workerType?: WorkerType;
   hasFpn?: boolean;
+  /** Optional: category of the contractual FPN (if known) to prefer similar funds */
+  contractualFpnCategory?: FundCategory;
   monthlyContribution?: number;
 };

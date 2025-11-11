@@ -8,23 +8,29 @@ interface SelectedFundsBarProps {
   selectedFundIds: string[];
   onToggleFund: (fundId: string) => void;
   onClearAll: () => void;
+  isHeaderVisible?: boolean;
+  maxFunds?: number;
 }
 
 const SelectedFundsBar: React.FC<SelectedFundsBarProps> = ({
   selectedFunds,
   selectedFundIds,
   onToggleFund,
-  onClearAll
+  onClearAll,
+  isHeaderVisible = true,
+  maxFunds = 10
 }) => {
   if (selectedFunds.length === 0) {
     return null;
   }
 
-  const maxFunds = 10;
-  const percentFilled = (selectedFunds.length / maxFunds) * 100;
+  const percentFilled = Math.min(100, (selectedFunds.length / maxFunds) * 100);
+  const stickyTopClass = isHeaderVisible
+    ? 'top-[4.5rem] sm:top-[4.75rem] md:top-[5.5rem]'
+    : 'top-0';
 
   return (
-    <div className="sticky top-0 z-20 mb-6">
+    <div className={`sticky ${stickyTopClass} z-30 mb-6 transition-[top] duration-300`}>
       {/* Desktop/Tablet View */}
       <div className="hidden sm:block rounded-xl bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 px-4 md:px-5 py-4 shadow-lg border border-slate-200 dark:border-slate-700">
         <div className="flex items-center justify-between mb-3">

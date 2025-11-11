@@ -6,9 +6,10 @@ interface HeaderProps {
         toggleTheme: () => void;
         onGoToPlaybook?: () => void;
         onLoginRequest?: () => void;
+        onVisibilityChange?: (visible: boolean) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onLoginRequest }) => {
+const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onLoginRequest, onVisibilityChange }) => {
     const { user, loading, login, logout, authMode } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isHeaderVisible, setIsHeaderVisible] = useState(true);
@@ -40,6 +41,10 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    useEffect(() => {
+        onVisibilityChange?.(isHeaderVisible);
+    }, [isHeaderVisible, onVisibilityChange]);
 
     const handleLogin = async () => {
         if (authMode !== 'google') {
