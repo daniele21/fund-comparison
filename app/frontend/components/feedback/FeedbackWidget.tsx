@@ -90,7 +90,11 @@ type FeedbackFormErrors = Partial<Record<keyof FeedbackFormState, string>> & { g
 
 const initialState: FeedbackFormState = { message: '', feedbackType: 'generic' }
 
-export const FeedbackWidget = () => {
+type FeedbackWidgetProps = {
+	onRequireLogin?: () => void
+}
+
+export const FeedbackWidget: React.FC<FeedbackWidgetProps> = ({ onRequireLogin }) => {
 	const { config } = useAppConfig()
 	const { user, login } = useAuth()
 
@@ -152,6 +156,14 @@ export const FeedbackWidget = () => {
 		return nextErrors
 	}
 
+	const requestLogin = () => {
+		if (onRequireLogin) {
+			onRequireLogin()
+		} else if (typeof login === 'function') {
+			login()
+		}
+	}
+
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		const trimmed: FeedbackFormState = {
@@ -196,13 +208,10 @@ export const FeedbackWidget = () => {
 					intent: 'error',
 				})
 				// If a login method is available, open it
-				if (typeof login === 'function') {
-					// small delay so the toast is visible before redirecting
-					setTimeout(() => {
-						closeDialog()
-						login()
-					}, 400)
-				}
+				setTimeout(() => {
+					closeDialog()
+					requestLogin()
+				}, 400)
 			} else {
 				setErrors({ general: 'Invio non riuscito. Riprova tra poco.' })
 				notify({
@@ -345,7 +354,7 @@ export const FeedbackWidget = () => {
 									</div>
 								</div>
 								<div className="space-y-2">
-									<Button type="button" size="sm" className="w-full px-4 font-semibold" onClick={() => { closeDialog(); login(); }}>
+					<Button type="button" size="sm" className="w-full px-4 font-semibold" onClick={() => { closeDialog(); requestLogin(); }}>
 										Accedi e continua
 									</Button>
 									<Button type="button" variant="ghost" size="sm" className="w-full text-sm" onClick={closeDialog}>

@@ -68,11 +68,12 @@ def test_feedback_submission_delivery_failure(client):
     assert response.json()["detail"] == "Failed to deliver feedback message."
 
 
-def test_feedback_requires_auth_when_enabled(client, monkeypatch):
+def test_feedback_does_not_require_auth_even_when_flag_enabled(client, monkeypatch):
     monkeypatch.setattr(settings, "feedback_require_auth", True)
-    response = client.post("/feedback", json={"message": "Need auth"})
-    assert response.status_code == 401
-    assert response.json()["detail"] == "Authentication required to send feedback."
+    with patch("api.routes.feedback.submit_feedback", new=AsyncMock()) as mock_submit:
+        response = client.post("/feedback", json={"message": "Open form feedback"})
+    assert response.status_code == 201
+    mock_submit.assert_awaited_once()
 
 
 def test_feedback_includes_user_metadata_when_authenticated(client, auth_headers, monkeypatch):

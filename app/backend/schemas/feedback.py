@@ -11,6 +11,10 @@ class FeedbackPayload(BaseModel):
     name: Optional[str] = Field(None, max_length=80)
     email: Optional[EmailStr] = None
     message: str = Field(..., min_length=10, max_length=2000)
+    feedback_type: Literal["generic", "missing_fund", "wrong_data", "other"] = Field(
+        default="generic",
+        description="Type of feedback: generic, missing_fund, wrong_data, or other"
+    )
     page_url: Optional[str] = Field(None, max_length=2048)
     user_agent: Optional[str] = Field(None, max_length=512)
     metadata: Optional[Dict[str, Any]] = None

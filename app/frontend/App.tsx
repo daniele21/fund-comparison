@@ -258,7 +258,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
-      <Header theme={theme} toggleTheme={toggleTheme} onGoToPlaybook={handleGoToPlaybook} />
+      <Header theme={theme} toggleTheme={toggleTheme} onGoToPlaybook={handleGoToPlaybook} onLoginRequest={openLoginModal} />
       <main className="container mx-auto p-4 sm:p-5 md:p-8 pt-20 sm:pt-24 md:pt-28">
         <div className="space-y-12">
           
@@ -400,7 +400,7 @@ const App: React.FC = () => {
           }
         }}
       />
-      <FeedbackWidget />
+      <FeedbackWidget onRequireLogin={openLoginModal} />
     </div>
   );
 };

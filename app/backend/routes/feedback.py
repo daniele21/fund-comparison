@@ -29,10 +29,6 @@ async def create_feedback(
     request: Request,
     claims: AuthClaims | None = Depends(optional_auth),
 ) -> FeedbackResponse:
-    require_auth = settings.FEEDBACK_REQUIRE_AUTH
-    if require_auth and claims is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required to send feedback.")
-
     feedback = payload
     user_agent = request.headers.get("user-agent")
     if user_agent and not payload.user_agent:

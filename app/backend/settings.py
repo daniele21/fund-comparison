@@ -6,6 +6,7 @@ for existing code that imports from settings.py.
 """
 
 import os
+import logging
 from typing import Any, Dict, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -22,6 +23,8 @@ from config.environments import (
     get_production_config,
     validate_production_config
 )
+
+logger = logging.getLogger(__name__)
 
 # Dynamically choose an env file so developers can keep per-environment files like
 # `.env.development` without having to copy them to `.env` every time. The
@@ -114,6 +117,11 @@ class Settings(BaseSettings):
         # Load component configurations
         self._auth_config = get_auth_config()
         self._auth_config.environment = environment
+        try:
+            mode_value = getattr(self._auth_config, "auth_mode", None)
+            logger.info("Authentication mode initialized: %s", getattr(mode_value, "value", mode_value))
+        except Exception:
+            logger.debug("Unable to log authentication mode", exc_info=True)
         
         self._database_config = get_database_config()
         self._database_config.environment = environment

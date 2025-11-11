@@ -8,7 +8,7 @@ This configuration is optimized for production deployment with:
 - Secure defaults
 """
 
-from config.auth import AuthConfig, JWTConfig, SecurityPolicyConfig, GoogleOAuthConfig
+from config.auth import AuthConfig, JWTConfig, SecurityPolicyConfig, GoogleOAuthConfig, AuthMode
 from config.database import DatabaseConfig, get_production_config as get_prod_db_config
 from config.features import FeatureFlagsConfig, get_production_flags_config
 from config.logging import LoggingConfig, get_production_logging_config
@@ -46,6 +46,8 @@ def get_production_config() -> dict:
         session_timeout_minutes=30
     )
     
+    auth_config.auth_mode = AuthMode.GOOGLE
+
     # Production OAuth settings - must be configured via env vars
     auth_config.google_oauth = GoogleOAuthConfig(
         client_id="GOOGLE_CLIENT_ID_FROM_ENV",  # Must be overridden
@@ -116,6 +118,13 @@ PRODUCTION_ENV_TEMPLATE = """
 
 # Environment
 APP_ENV=production
+
+# Authentication Mode (google, invite_code, none)
+APP_AUTH_MODE=google
+# Invitation-code auth settings (used when APP_AUTH_MODE=invite_code)
+APP_AUTH_INVITE_CODES=
+APP_AUTH_INVITE_PLAN=full-access
+APP_AUTH_INVITE_REQUIRE_EMAIL=true
 
 # API Settings
 APP_DEBUG=false

@@ -1,13 +1,22 @@
-from fastapi import APIRouter, Depends, Response, Request, HTTPException
+from typing import Optional
+from fastapi import APIRouter, Response, Request, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
+from pydantic import BaseModel, EmailStr
 import logging
-import os
-import time
-import jwt
 
-from backend.services.auth_service import build_login_url, exchange_code, get_current_user, logout_user, OAUTH_PROVIDERS, get_provider, _get_redirect_uri
+from backend.services.auth_service import (
+    build_login_url,
+    exchange_code,
+    get_current_user,
+    logout_user,
+    OAUTH_PROVIDERS,
+    get_provider,
+    _get_redirect_uri,
+    create_session_token,
+)
 from backend.services import user_service
 from backend.schemas.user import UserProfileUpdate, UserProfileCreate
+from config.auth import AuthMode
 
 try:
     from google.auth.exceptions import DefaultCredentialsError
@@ -20,6 +29,46 @@ from backend.settings import settings
 router = APIRouter()
 
 
+class InviteLoginPayload(BaseModel):
+    code: str
+    email: Optional[EmailStr] = None
+    name: Optional[str] = None
+
+
+def _normalize_plan_value(value: Optional[str], default: str = "full-access") -> str:
+    if not value:
+        return default
+    normalized = value.strip().lower().replace(" ", "-")
+    return normalized or default
+
+
+def _require_auth_mode(*modes: AuthMode):
+    auth_config = settings.auth_config
+    if auth_config.auth_mode not in modes:
+        raise HTTPException(status_code=404, detail="Endpoint not available for current authentication mode")
+    return auth_config
+
+
+@router.get("/config")
+async def auth_configuration():
+    """Expose auth mode details so the frontend can adjust UX."""
+    auth_config = settings.auth_config
+    google_configured = bool(auth_config.get_oauth_provider("google")) if auth_config else False
+    return {
+        "mode": auth_config.auth_mode.value if auth_config else AuthMode.GOOGLE.value,
+        "google": {
+            "enabled": auth_config.auth_mode == AuthMode.GOOGLE if auth_config else True,
+            "configured": google_configured,
+        },
+        "invite": {
+            "enabled": auth_config.auth_mode == AuthMode.INVITE_CODE if auth_config else False,
+            "requiresEmail": bool(getattr(auth_config, "invitation_requires_email", True)) if auth_config else True,
+            "hasCodes": bool(getattr(auth_config, "invitation_codes", []) or []),
+            "defaultPlan": getattr(auth_config, "invitation_default_plan", "full-access"),
+        },
+    }
+
+
 @router.get("/{provider}/login")
 async def oauth_login(provider: str, redirect: str):
     """
@@ -30,6 +79,8 @@ async def oauth_login(provider: str, redirect: str):
     This endpoint redirects the browser to the provider's OAuth consent screen.
     After the user authorizes, the provider redirects back to /{provider}/callback.
     """
+    _require_auth_mode(AuthMode.GOOGLE)
+
     # Log provider/client info to help debug invalid_client issues
     try:
         prov = get_provider(provider)
@@ -61,6 +112,8 @@ async def oauth_callback(provider: str, code: str, state: str, response: Respons
         closes the popup. If there is no opener it redirects the top-level page
         to the frontend URL.
         """
+
+        _require_auth_mode(AuthMode.GOOGLE)
 
         # Exchange auth code for session token
         session = await exchange_code(provider, code, state)
@@ -196,6 +249,73 @@ async def oauth_callback(provider: str, code: str, state: str, response: Respons
         return resp
 
 
+@router.post("/invite/login")
+async def invite_login(payload: InviteLoginPayload):
+    """Authenticate a user via invitation code when invite_code mode is enabled."""
+    auth_config = _require_auth_mode(AuthMode.INVITE_CODE)
+    codes = {code.strip().lower() for code in auth_config.invitation_codes if code}
+    if not codes:
+        raise HTTPException(status_code=500, detail="No invitation codes configured")
+
+    provided_code = (payload.code or "").strip().lower()
+    if not provided_code or provided_code not in codes:
+        raise HTTPException(status_code=401, detail="Invalid invitation code")
+
+    if auth_config.invitation_requires_email and not payload.email:
+        raise HTTPException(status_code=400, detail="Email is required to redeem this invitation")
+
+    email_value = (payload.email or f"invitee+{provided_code}@example.com").lower()
+    user_id = email_value
+    plan_value = _normalize_plan_value(auth_config.invitation_default_plan, "full-access")
+    display_name = payload.name or (email_value.split("@")[0] if email_value else "Invited User")
+
+    # Issue session token
+    token = create_session_token(
+        user_id=user_id,
+        email=email_value,
+        name=display_name,
+        picture=None,
+        provider="invite_code",
+        roles=["user"],
+        plan=plan_value,
+    )
+
+    try:
+        profile = UserProfileCreate(
+            id=user_id,
+            email=email_value,
+            name=display_name,
+            plan=plan_value,
+        )
+        await user_service.upsert_user(profile, mark_login=True)
+    except Exception as exc:  # noqa: BLE001
+        if DefaultCredentialsError and isinstance(exc, DefaultCredentialsError):
+            logger.warning("Skipping Firestore profile upsert during invite login: %s", exc)
+        else:
+            logger.exception("Failed to persist invite login user", exc_info=True)
+
+    user_payload = {
+        "id": user_id,
+        "email": email_value,
+        "name": display_name,
+        "picture": None,
+        "roles": ["user"],
+        "plan": plan_value,
+    }
+
+    resp = JSONResponse({"token": token, "user": user_payload})
+    is_prod = getattr(settings, 'ENV', '').lower() == 'production'
+    resp.set_cookie(
+        key="session",
+        value=token,
+        httponly=True,
+        samesite=("strict" if is_prod else "lax"),
+        max_age=60 * 60 * 24 * 7,
+        secure=is_prod,
+    )
+    return resp
+
+
 @router.get("/me")
 async def me(request: Request):
     """Get current user information from session."""
@@ -263,41 +383,15 @@ async def fake_upgrade(request: Request):
             raise HTTPException(status_code=500, detail="Unable to upgrade plan") from exc
 
     # Refresh session cookie with upgraded plan
-    jwt_secret = os.getenv("APP_JWT_SECRET", "dev-secret-key")
-    jwt_algorithm = "HS256"
-    jwt_expire_minutes = 60
-
-    auth_config = settings.auth_config
-    if auth_config and auth_config.jwt:
-        jwt_secret = auth_config.jwt.secret_key
-        jwt_algorithm = auth_config.jwt.algorithm
-        jwt_expire_minutes = auth_config.jwt.access_token_expire_minutes
-
-    issued_at = int(time.time())
-    expires_at = issued_at + jwt_expire_minutes * 60
-    roles = user.get("roles") or ["user"]
-
-    claims = {
-        "sub": user["id"],
-        "email": user.get("email"),
-        "name": user.get("name"),
-        "picture": user.get("picture"),
-        "provider": user.get("provider"),
-        "roles": roles,
-        "plan": new_plan,
-        "iat": issued_at,
-        "exp": expires_at,
-    }
-
-    if auth_config and auth_config.jwt:
-        aud = getattr(auth_config.jwt, "audience", None)
-        iss = getattr(auth_config.jwt, "issuer", None)
-        if aud:
-            claims["aud"] = aud
-        if iss:
-            claims["iss"] = iss
-
-    upgraded_token = jwt.encode(claims, jwt_secret, algorithm=jwt_algorithm)
+    upgraded_token = create_session_token(
+        user_id=str(user["id"]),
+        email=user.get("email"),
+        name=user.get("name"),
+        picture=user.get("picture"),
+        provider=user.get("provider") or "manual",
+        roles=user.get("roles") or ["user"],
+        plan=new_plan,
+    )
 
     response = JSONResponse({"plan": new_plan, "token": upgraded_token})
 

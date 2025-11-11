@@ -5,10 +5,11 @@ interface HeaderProps {
         theme: string;
         toggleTheme: () => void;
         onGoToPlaybook?: () => void;
+        onLoginRequest?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook }) => {
-    const { user, loading, login, logout } = useAuth();
+const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onLoginRequest }) => {
+    const { user, loading, login, logout, authMode } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isHeaderVisible, setIsHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
@@ -41,6 +42,13 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook }) =
     }, []);
 
     const handleLogin = async () => {
+        if (authMode !== 'google') {
+            if (onLoginRequest) {
+                onLoginRequest();
+            }
+            setMobileMenuOpen(false);
+            return;
+        }
         await login();
         setMobileMenuOpen(false);
     };

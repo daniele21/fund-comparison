@@ -1,15 +1,25 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import type { AuthUser } from './types';
+
+type AuthMode = 'google' | 'invite_code' | 'none';
+
+type InviteLoginOptions = {
+  code: string;
+  email?: string;
+  name?: string;
+};
 
 type AuthContextValue = {
   user: AuthUser | null;
   loading: boolean;
-  login: () => Promise<void>;
+  login: (options?: InviteLoginOptions) => Promise<void>;
   logout: () => Promise<void>;
   refresh: (tokenOverride?: string) => Promise<AuthUser | null>;
   setToken: (token?: string) => void;
   updateUser: (updater: (prev: AuthUser | null) => AuthUser | null) => void;
   token?: string;
+  authMode: AuthMode;
+  inviteRequiresEmail: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -62,6 +72,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [sessionToken, setSessionToken] = useState<string | undefined>(() => {
     return readStoredToken();
   });
+  const [authMode, setAuthMode] = useState<AuthMode>('google');
+  const [inviteRequiresEmail, setInviteRequiresEmail] = useState(true);
   const userRef = React.useRef<AuthUser | null>(null);
 
   const persistToken = (token?: string) => {
@@ -84,6 +96,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
   };
+
+  const loadAuthConfig = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/config`, {
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' },
+      });
+      if (!res.ok) {
+        throw new Error(`status ${res.status}`);
+      }
+      const data = await res.json();
+      const mode = typeof data?.mode === 'string' ? (data.mode as AuthMode) : 'google';
+      setAuthMode(mode);
+      const requiresEmail = data?.invite?.requiresEmail;
+      if (typeof requiresEmail === 'boolean') {
+        setInviteRequiresEmail(requiresEmail);
+      } else {
+        setInviteRequiresEmail(true);
+      }
+    } catch (err) {
+      console.warn('[Auth] Unable to load auth config:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAuthConfig();
+  }, [loadAuthConfig]);
 
   useEffect(() => {
     let mounted = true;
@@ -173,7 +212,78 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
-  const login = async () => {
+  const loginWithInvite = async (options: InviteLoginOptions) => {
+    const payload = {
+      code: options.code?.trim(),
+      email: options.email?.trim() || undefined,
+      name: options.name?.trim() || undefined,
+    };
+
+    if (!payload.code) {
+      throw new Error('Inserisci un codice invito valido.');
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/invite/login`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        let message = 'Codice invito non valido o già utilizzato.';
+        try {
+          const errorBody = await res.json();
+          if (errorBody?.detail) {
+            message = String(errorBody.detail);
+          }
+        } catch (parseErr) {
+          console.warn('[Auth] Unable to parse invite login error:', parseErr);
+        }
+        throw new Error(message);
+      }
+
+      const result = await res.json();
+      const tokenFromResponse = typeof result?.token === 'string' ? result.token : undefined;
+      if (tokenFromResponse) {
+        persistToken(tokenFromResponse);
+      }
+
+      const refreshed = await fetchMe(tokenFromResponse);
+      if (refreshed) {
+        setUser(refreshed);
+        userRef.current = refreshed;
+      } else if (result?.user) {
+        const plan = typeof result.user.plan === 'string' && result.user.plan.toLowerCase() === 'full-access' ? 'full-access' : 'free';
+        const fallbackUser = { ...result.user, plan } as AuthUser;
+        setUser(fallbackUser);
+        userRef.current = fallbackUser;
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        throw err;
+      }
+      throw new Error('Impossibile completare l\'accesso con invito.');
+    }
+  };
+
+  const login = async (options?: InviteLoginOptions) => {
+    if (authMode === 'none') {
+      return;
+    }
+
+    if (authMode === 'invite_code') {
+      if (!options) {
+        throw new Error('Fornisci il codice invito per accedere.');
+      }
+      await loginWithInvite(options);
+      return;
+    }
+
     // Open popup to provider login endpoint. The backend will postMessage back the token and set cookie.
     const provider = 'google';
     const redirect = window.location.origin; // Backend will use this to postMessage
@@ -214,8 +324,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (settled) return;
         settled = true;
         clearInterval(checkInterval);
-  // Try one more time to fetch user
-        // Try one more time to fetch user
         fetchMe(sessionToken).then(u => {
           if (u) {
             setUser(u);
@@ -267,6 +375,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setToken: persistToken,
       updateUser: (updater) => setUser((prev) => updater(prev)),
       token: sessionToken,
+      authMode,
+      inviteRequiresEmail,
     }}>
       {children}
     </AuthContext.Provider>

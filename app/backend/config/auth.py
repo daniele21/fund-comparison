@@ -8,7 +8,9 @@ This module contains all authentication-related configuration including:
 - Session management
 """
 
+import os
 from typing import List, Optional
+from enum import Enum
 from pydantic import Field, validator
 from .base import BaseConfig, Environment
 
@@ -207,6 +209,14 @@ class RoleConfig(BaseConfig):
     )
 
 
+class AuthMode(str, Enum):
+    """Supported high-level authentication modes."""
+
+    GOOGLE = "google"  # OAuth-only (current behavior)
+    INVITE_CODE = "invite_code"  # Manual login via invitation codes
+    NONE = "none"  # Open access, no authentication required
+
+
 class AuthConfig(BaseConfig):
     """Main authentication configuration."""
     
@@ -219,6 +229,12 @@ class AuthConfig(BaseConfig):
     jwt: JWTConfig = Field(default_factory=JWTConfig)
     security_policy: SecurityPolicyConfig = Field(default_factory=SecurityPolicyConfig)
     roles: RoleConfig = Field(default_factory=RoleConfig)
+
+    # High-level authentication strategy
+    auth_mode: AuthMode = Field(
+        default=AuthMode.GOOGLE,
+        description="Primary authentication mechanism (google, invite_code, none)"
+    )
     
     # OAuth providers
     google_oauth: Optional[GoogleOAuthConfig] = Field(
@@ -274,6 +290,22 @@ class AuthConfig(BaseConfig):
         default="lax",
         description="SameSite cookie policy"
     )
+
+    # Invitation-code authentication configuration
+    invitation_codes: List[str] = Field(
+        default_factory=list,
+        description="Accepted invitation codes when auth_mode=invite_code"
+    )
+
+    invitation_default_plan: str = Field(
+        default="full-access",
+        description="Plan granted to invite-code users"
+    )
+
+    invitation_requires_email: bool = Field(
+        default=True,
+        description="Require an email address when redeeming an invitation code"
+    )
     
     @validator('cors_origins')
     def validate_cors_origins(cls, v):
@@ -315,9 +347,42 @@ class AuthConfig(BaseConfig):
 
 
 # Default configuration instances
+def _parse_bool(value: Optional[str]) -> Optional[bool]:
+    if value is None:
+        return None
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _parse_csv(value: Optional[str]) -> List[str]:
+    if not value:
+        return []
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
 def get_auth_config() -> AuthConfig:
     """Get authentication configuration from environment variables."""
-    return AuthConfig()
+    config = AuthConfig()
+
+    env_mode = os.getenv("APP_AUTH_MODE")
+    if env_mode:
+        try:
+            config.auth_mode = AuthMode(env_mode.strip().lower())
+        except ValueError:
+            raise ValueError("APP_AUTH_MODE must be one of: google, invite_code, none")
+
+    invite_codes = _parse_csv(os.getenv("APP_AUTH_INVITE_CODES") or os.getenv("APP_INVITATION_CODES"))
+    if invite_codes:
+        config.invitation_codes = invite_codes
+
+    invite_plan = os.getenv("APP_AUTH_INVITE_PLAN")
+    if invite_plan:
+        config.invitation_default_plan = invite_plan.strip()
+
+    invite_requires_email = _parse_bool(os.getenv("APP_AUTH_INVITE_REQUIRE_EMAIL"))
+    if invite_requires_email is not None:
+        config.invitation_requires_email = invite_requires_email
+
+    return config
 
 
 def get_jwt_config() -> JWTConfig:

@@ -11,7 +11,7 @@ import re
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-from config.auth import AuthConfig, JWTConfig, SecurityPolicyConfig, GoogleOAuthConfig
+from config.auth import AuthConfig, JWTConfig, SecurityPolicyConfig, GoogleOAuthConfig, AuthMode
 from config.database import DatabaseConfig, FirestoreConfig, RedisConfig
 from config.features import FeatureFlagsConfig, FeatureFlag, FeatureFlagStrategy
 from config.logging import LoggingConfig, LogHandler, LogLevel, LogFormat
@@ -142,6 +142,12 @@ def json_to_auth_config(json_data: Dict[str, Any]) -> AuthConfig:
     cookies_data = auth_data.get("cookies", {})
     
     # Create auth config
+    mode_value = auth_data.get("mode", AuthMode.GOOGLE.value)
+    try:
+        auth_mode = AuthMode(mode_value)
+    except ValueError:
+        auth_mode = AuthMode.GOOGLE
+
     auth_config = AuthConfig(
         environment=Environment(json_data.get("environment", "development")),
         jwt=jwt_config,
@@ -152,7 +158,11 @@ def json_to_auth_config(json_data: Dict[str, Any]) -> AuthConfig:
         cookie_domain=cookies_data.get("domain"),
         cookie_secure=cookies_data.get("secure", False),
         cookie_httponly=cookies_data.get("httponly", True),
-        cookie_samesite=cookies_data.get("samesite", "lax")
+        cookie_samesite=cookies_data.get("samesite", "lax"),
+        auth_mode=auth_mode,
+        invitation_codes=auth_data.get("invitation_codes", []),
+        invitation_default_plan=auth_data.get("invitation_default_plan", "full-access"),
+        invitation_requires_email=auth_data.get("invitation_requires_email", True),
     )
     
     return auth_config

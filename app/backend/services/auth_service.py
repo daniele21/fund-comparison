@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import jwt
 import os
 import secrets
@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from ..settings import settings
 from ..services import user_service
 from ..schemas.user import UserProfileCreate
+from config.auth import AuthMode
 import logging
 
 logger = logging.getLogger("uvicorn.error")
@@ -83,6 +84,87 @@ OAUTH_PROVIDERS: Dict[str, OAuthProvider] = {
         client_secret_env="GOOGLE_CLIENT_SECRET",
     )
 }
+
+
+def _normalize_plan(plan: Optional[str], fallback: str = "free") -> str:
+    if not plan:
+        return fallback
+    normalized = str(plan).strip().lower().replace(" ", "-")
+    return normalized or fallback
+
+
+def _build_anonymous_user(plan: Optional[str] = None) -> Dict[str, Any]:
+    """Return a synthetic user payload for no-auth environments."""
+    fallback_plan = plan or "full-access"
+    return {
+        "id": os.getenv("APP_AUTH_NOAUTH_USER_ID", "anonymous"),
+        "email": os.getenv("APP_AUTH_NOAUTH_EMAIL", "demo@example.com"),
+        "name": os.getenv("APP_AUTH_NOAUTH_NAME", "Demo User"),
+        "picture": None,
+        "roles": ["user"],
+        "plan": _normalize_plan(fallback_plan, fallback_plan),
+    }
+
+
+def _get_jwt_runtime_settings() -> tuple[str, str, int, Optional[str], Optional[str]]:
+    """Return secret, algorithm, expiration (minutes), audience, issuer."""
+    jwt_secret = (
+        os.getenv("APP_JWT_SECRET")
+        or os.getenv("APP_JWT_SECRET_KEY")
+        or "dev-secret-key"
+    )
+    jwt_algorithm = os.getenv("APP_JWT_ALGORITHM", "HS256")
+    jwt_expire_minutes = int(os.getenv("APP_JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+    jwt_audience = os.getenv("APP_JWT_AUDIENCE")
+    jwt_issuer = os.getenv("APP_JWT_ISSUER")
+
+    auth_config = getattr(settings, "auth_config", None)
+    if auth_config and auth_config.jwt:
+        jwt_secret = auth_config.jwt.secret_key
+        jwt_algorithm = auth_config.jwt.algorithm
+        jwt_expire_minutes = auth_config.jwt.access_token_expire_minutes
+        jwt_audience = getattr(auth_config.jwt, "audience", jwt_audience)
+        jwt_issuer = getattr(auth_config.jwt, "issuer", jwt_issuer)
+
+    return jwt_secret, jwt_algorithm, jwt_expire_minutes, jwt_audience, jwt_issuer
+
+
+def create_session_token(
+    *,
+    user_id: str,
+    email: Optional[str],
+    name: Optional[str],
+    picture: Optional[str],
+    provider: str,
+    roles: Optional[List[str]] = None,
+    plan: Optional[str] = None,
+    extra_claims: Optional[Dict[str, Any]] = None,
+) -> str:
+    """Create a signed JWT containing session data for the user."""
+
+    jwt_secret, jwt_algorithm, jwt_expire_minutes, jwt_audience, jwt_issuer = _get_jwt_runtime_settings()
+    issued_at = int(time.time())
+    normalized_plan = _normalize_plan(plan or "free", plan or "free")
+    claims: Dict[str, Any] = {
+        "sub": user_id,
+        "email": email,
+        "name": name,
+        "picture": picture,
+        "provider": provider,
+        "roles": roles or ["user"],
+        "plan": normalized_plan,
+        "iat": issued_at,
+        "exp": issued_at + jwt_expire_minutes * 60,
+    }
+
+    if jwt_audience:
+        claims["aud"] = jwt_audience
+    if jwt_issuer:
+        claims["iss"] = jwt_issuer
+    if extra_claims:
+        claims.update(extra_claims)
+
+    return jwt.encode(claims, jwt_secret, algorithm=jwt_algorithm)
 
 
 def get_provider(provider_name: str) -> OAuthProvider:
@@ -289,31 +371,15 @@ async def exchange_code(provider_name: str, code: str, state: str) -> Session:
             normalized_user.get("id"),
         )
     
-    # Get JWT config
-    jwt_secret = os.getenv("APP_JWT_SECRET", "dev-secret-key")
-    jwt_algorithm = "HS256"
-    jwt_expire_minutes = 60
-    
-    auth_config = settings.auth_config
-    if auth_config and auth_config.jwt:
-        jwt_secret = auth_config.jwt.secret_key
-        jwt_algorithm = auth_config.jwt.algorithm
-        jwt_expire_minutes = auth_config.jwt.access_token_expire_minutes
-    
-    # Create JWT with user information
-    claims = {
-        "sub": normalized_user["id"],
-        "email": normalized_user["email"],
-        "name": normalized_user.get("name"),
-        "picture": normalized_user.get("picture"),
-        "provider": provider_name,
-        "roles": ["user"],  # Default role, customize as needed
-        "plan": "free",     # Default plan, customize as needed
-        "iat": int(time.time()),
-        "exp": int(time.time()) + jwt_expire_minutes * 60,
-    }
-    
-    token = jwt.encode(claims, jwt_secret, algorithm=jwt_algorithm)
+    token = create_session_token(
+        user_id=normalized_user["id"],
+        email=normalized_user.get("email"),
+        name=normalized_user.get("name"),
+        picture=normalized_user.get("picture"),
+        provider=provider_name,
+        roles=["user"],
+        plan="free",
+    )
     
     return Session(token=token)
 
@@ -388,6 +454,12 @@ async def get_current_user(request) -> Optional[dict]:
     Returns:
         User dict or None
     """
+    auth_config = getattr(settings, "auth_config", None)
+    auth_mode = getattr(auth_config, "auth_mode", AuthMode.GOOGLE)
+    if auth_mode == AuthMode.NONE:
+        default_plan = getattr(auth_config, "invitation_default_plan", "full-access") if auth_config else "full-access"
+        return _build_anonymous_user(default_plan)
+
     # Try Authorization header first (Bearer token)
     auth_header = request.headers.get("authorization", "")
     session_token = None
@@ -426,7 +498,7 @@ async def get_current_user(request) -> Optional[dict]:
             "name": payload.get("name"),
             "picture": payload.get("picture"),
             "roles": payload.get("roles", []),
-            "plan": payload.get("plan"),
+            "plan": _normalize_plan(payload.get("plan"), "free"),
         }
     except jwt.ExpiredSignatureError:
         return None
