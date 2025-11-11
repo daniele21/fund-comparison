@@ -16,6 +16,7 @@ import { useAuth } from './auth';
 import UpgradeDialog from './components/UpgradeDialog';
 import FakePaymentDialog from './components/FakePaymentDialog';
 import FeedbackWidget from './components/feedback/FeedbackWidget';
+import Footer from './components/Footer';
 import { GuidedFundComparator } from './components/guided/GuidedFundComparator';
 import { GuidedComparatorProvider, useGuidedComparator, MAX_SELECTED_FUNDS } from './components/guided/GuidedComparatorContext';
 
@@ -444,6 +445,7 @@ const AppContent: React.FC = () => {
         }}
       />
       <FeedbackWidget onRequireLogin={openLoginModal} />
+      <Footer />
     </div>
   );
 };
