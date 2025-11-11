@@ -25,12 +25,9 @@ const SelectedFundsBar: React.FC<SelectedFundsBarProps> = ({
   }
 
   const percentFilled = Math.min(100, (selectedFunds.length / maxFunds) * 100);
-  const stickyTopClass = isHeaderVisible
-    ? 'top-[4.5rem] sm:top-[4.75rem] md:top-[5.5rem]'
-    : 'top-0';
 
   return (
-    <div className={`sticky ${stickyTopClass} z-30 mb-6 transition-[top] duration-300`}>
+    <div className={`mb-6 transition-[top] duration-300`}>
       {/* Desktop/Tablet View */}
       <div className="hidden sm:block rounded-xl bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 px-4 md:px-5 py-4 shadow-lg border border-slate-200 dark:border-slate-700">
         <div className="flex items-center justify-between mb-3">

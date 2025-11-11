@@ -302,15 +302,6 @@ const AppContent: React.FC = () => {
         onLoginRequest={openLoginModal}
         onVisibilityChange={setIsHeaderVisible}
       />
-      {/* Selected funds bar shown directly under the header for quick access */}
-      <SelectedFundsBar
-        selectedFunds={selectedFunds}
-        selectedFundIds={selectedFundIds}
-        onToggleFund={toggleFundSelection}
-        onClearAll={resetSelection}
-        isHeaderVisible={isHeaderVisible}
-        maxFunds={MAX_SELECTED_FUNDS}
-      />
       <main className="px-3 pb-16 pt-6 sm:px-4 sm:pb-20 sm:pt-20 md:px-6 md:pt-24 lg:px-8 overflow-x-hidden">
         <div className="mx-auto w-full max-w-full lg:max-w-7xl min-w-0">
           <GuidedFundComparator funds={pensionFundsData} onPresetSelected={handlePresetSelected}>
@@ -488,14 +479,27 @@ const VisualComparison: React.FC<{
   }, [selectedFundIds, fundById]);
 
   const fundsToShow = guidedSelected && guidedSelected.length > 0 ? guidedSelected : appSelectedFunds;
+  const { toggleSelectedFund, clearSelectedFunds } = useGuidedComparator();
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-      <div className="min-w-0 overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-white p-2 sm:p-3 md:p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/50">
-        <PerformanceChart selectedFunds={fundsToShow} theme={theme} />
-      </div>
-      <div className="min-w-0 overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-white p-2 sm:p-3 md:p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/50">
-        <CostChart selectedFunds={fundsToShow} theme={theme} />
+    <div>
+      {/* Place SelectedFundsBar here so it appears above the charts (inside VisualComparison)") */}
+      <SelectedFundsBar
+        selectedFunds={fundsToShow}
+        selectedFundIds={selectedFundIds}
+        onToggleFund={(id: string) => toggleSelectedFund(id)}
+        onClearAll={() => clearSelectedFunds()}
+        isHeaderVisible={false}
+        maxFunds={MAX_SELECTED_FUNDS}
+      />
+
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+        <div className="min-w-0 overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-white p-2 sm:p-3 md:p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/50">
+          <PerformanceChart selectedFunds={fundsToShow} theme={theme} />
+        </div>
+        <div className="min-w-0 overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-white p-2 sm:p-3 md:p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/50">
+          <CostChart selectedFunds={fundsToShow} theme={theme} />
+        </div>
       </div>
     </div>
   );
