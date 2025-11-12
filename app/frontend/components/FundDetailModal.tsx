@@ -49,6 +49,12 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
     return null;
   }
 
+  // Normalize website for display and linking (ensure protocol)
+  const normalizedSite = fund.sitoWeb
+    ? (fund.sitoWeb.startsWith('http://') || fund.sitoWeb.startsWith('https://') ? fund.sitoWeb : `https://${fund.sitoWeb}`)
+    : null;
+  const displaySite = normalizedSite ? normalizedSite.replace(/^https?:\/\//, '').replace(/\/$/, '') : '';
+
   return (
     <div
       role="dialog"
@@ -75,6 +81,45 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
               {fund.linea}
             </h2>
             <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400 mt-1">{fund.pip}</p>
+            
+            {/* FPN-specific info in header */}
+            {fund.type === 'FPN' && (fund.categoriaContratto || normalizedSite) && (
+              <div className="mt-2 sm:mt-3">
+                {fund.categoriaContratto && (
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Categorie Contrattuali:</p>
+                )}
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  {fund.categoriaContratto && (
+                    <>
+                      {fund.categoriaContratto.split(',').map((categoria, index) => (
+                        <div key={index} className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{categoria.trim()}</span>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  {normalizedSite && (
+                    <a
+                      href={normalizedSite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-600 text-white rounded-full hover:bg-sky-700 transition text-xs font-medium"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                      </svg>
+                      Visita sito
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           <button
             onClick={onClose}

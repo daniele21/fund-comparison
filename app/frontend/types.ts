@@ -21,6 +21,8 @@ export interface PensionFund {
     ultimi10Anni: number | null;
     ultimi20Anni: number | null;
   };
+  categoriaContratto: string | null; // Category/Contract reference (FPN funds only)
+  sitoWeb: string | null; // Website (FPN funds only)
 }
 
 export type FundCategory = 'GAR' | 'BIL' | 'AZN' | 'OBB MISTO' | 'OBB PURO' | 'OBB';
@@ -56,7 +58,7 @@ export type UserProfile = {
   riskPreference?: RiskPreference;
   workerType?: WorkerType;
   hasFpn?: boolean;
-  /** Optional: category of the contractual FPN (if known) to prefer similar funds */
-  contractualFpnCategory?: FundCategory;
+  /** Optional: contractual category name (e.g., "Metalmeccanici") to prefer matching FPN funds */
+  contractualFpnCategory?: string;
   monthlyContribution?: number;
 };

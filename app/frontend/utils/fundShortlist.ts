@@ -54,10 +54,29 @@ export function computeShortlist(funds: PensionFund[], profile: UserProfile, opt
     return targetCategories.some(catTarget => cat.includes(catTarget));
   });
 
-  // If the user explicitly indicates they do NOT have a contractual FPN, exclude FPN-type funds entirely.
+  // FPN filtering logic:
+  // 1. If user has NO FPN (hasFpn === false), exclude all FPN funds
+  // 2. If user has FPN and selected a specific category, only include FPN funds matching that category
+  // 3. If user has FPN but no specific category selected, include all FPN funds
   const filteredAfterFpnPref = filtered.filter(fund => {
     const fundTypeNorm = (fund.type ?? '').toString().toUpperCase().trim();
-    if (profile.hasFpn === false && fundTypeNorm === 'FPN') return false;
+    
+    // Case 1: User explicitly does NOT have FPN - exclude all FPN funds
+    if (profile.hasFpn === false && fundTypeNorm === 'FPN') {
+      return false;
+    }
+    
+    // Case 2: User HAS FPN and selected a specific contractual category
+    if (profile.hasFpn === true && profile.contractualFpnCategory && fundTypeNorm === 'FPN') {
+      // Only include this FPN fund if it matches the selected category
+      if (fund.categoriaContratto) {
+        const fundContracts = fund.categoriaContratto.split(',').map(c => c.trim());
+        return fundContracts.includes(profile.contractualFpnCategory);
+      }
+      // If FPN fund has no categoriaContratto, exclude it
+      return false;
+    }
+    
     return true;
   });
 
@@ -98,10 +117,14 @@ export function computeShortlist(funds: PensionFund[], profile: UserProfile, opt
     const hasFpnBoost = profile.hasFpn === true && fundTypeNorm === 'FPN' ? weights.hasFpnBoost : 0;
 
     // contract category preference: small boost if matches known contractual category
-    const contractualBoost =
-      profile.contractualFpnCategory && (fund.categoria ?? '').toString() === profile.contractualFpnCategory
-        ? weights.contractualCategoryBoost
-        : 0;
+    // Check if the selected contractual category matches any of the fund's categoriaContratto values
+    let contractualBoost = 0;
+    if (profile.contractualFpnCategory && fund.categoriaContratto) {
+      const fundContracts = fund.categoriaContratto.split(',').map(c => c.trim());
+      if (fundContracts.includes(profile.contractualFpnCategory)) {
+        contractualBoost = weights.contractualCategoryBoost;
+      }
+    }
 
     const score = weights.cost * costScore + weights.returns * returnScore + riskBoost + ageBoost + hasFpnBoost + contractualBoost;
 
