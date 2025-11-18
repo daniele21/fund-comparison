@@ -53,7 +53,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
   ].filter(Boolean).length;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 p-4 min-w-0 overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 p-4 min-w-0 overflow-visible">
       {/* Desktop - All in one row */}
       <div className="hidden sm:flex items-center gap-3 flex-wrap">
         <div className="flex-1 min-w-0 min-w-[200px]">
@@ -286,7 +286,7 @@ const CompanyQuickSearch: React.FC<CompanyQuickSearchProps> = ({
       </div>
 
       {isOpen && matches.length > 0 && (
-        <ul className="absolute z-40 mt-1 w-full max-h-48 overflow-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-lg text-xs">
+        <ul className="absolute z-50 mt-1 w-full max-h-48 overflow-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-lg text-xs">
           <li className="px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer text-slate-500 dark:text-slate-400" onClick={() => clearSelection()}>
             Tutte le società
           </li>
