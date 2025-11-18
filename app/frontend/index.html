@@ -11,7 +11,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
     <script>
       // Set theme before page loads to prevent FOUC
       if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -19,8 +18,12 @@
       } else {
         document.documentElement.classList.remove('dark')
       }
-      
-      tailwind.config = {
+
+      // Provide a safe tailwind config object before the CDN script runs.
+      // Using window.tailwind = window.tailwind || {} avoids ReferenceError when
+      // the CDN hasn't defined `tailwind` yet.
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
         darkMode: 'class', // Enable class-based dark mode
         theme: {
           extend: {
@@ -31,6 +34,7 @@
         },
       };
     </script>
+    <script src="https://cdn.tailwindcss.com"></script>
   <script type="importmap">
 {
   "imports": {
