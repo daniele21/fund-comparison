@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react'
+import React, { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react'
 import type { ButtonHTMLAttributes } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { MessageCircle, X } from 'lucide-react'

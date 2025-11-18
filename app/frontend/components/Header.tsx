@@ -108,29 +108,12 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
 
       {!loading && user && (
                 <div className="flex items-center gap-2">
-          {authMode === 'google' ? (
-            user.picture ? (
-              <img src={user.picture} alt={user.name || user.email} className="h-9 w-9 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700" />
-            ) : (
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center text-sm font-semibold text-blue-700 dark:text-blue-200 ring-2 ring-blue-200 dark:ring-blue-700">
-                {(user.name || user.email || 'U').charAt(0).toUpperCase()}
-              </div>
-            )
-          ) : (
-            // hide personal avatar for non-google auth
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center text-sm font-semibold text-blue-700 dark:text-blue-200 ring-2 ring-blue-200 dark:ring-blue-700">U</div>
-          )}
+          {/* Avatar/logo intentionally removed per request - keep username and logout only */}
           <div className="hidden sm:flex flex-col items-start">
             <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
               {authMode === 'google' ? (user.name ?? user.email) : ''}
             </span>
-            <span className="mt-1 inline-flex items-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 px-2.5 py-0.5 text-xs font-semibold">
-              {user.plan === 'full-access' ? 'Full Access' : 'Free'}
-            </span>
           </div>
-          <span className="sm:hidden inline-flex items-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 px-2.5 py-0.5 text-xs font-semibold">
-            {user.plan === 'full-access' ? 'Full Access' : 'Free'}
-          </span>
                     <button
                         onClick={handleLogout}
                         className="px-3 py-1.5 bg-rose-500 text-white text-sm font-semibold rounded-lg hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500 w-full sm:w-auto transition-colors"
@@ -153,7 +136,7 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
           </svg>
           <div className="leading-tight">
             <span className="text-lg sm:text-xl md:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight block">
-              Fondo Pensione Comparator
+              Comparatore Fondi Pensione
             </span>
             <span className="text-xs text-slate-500 dark:text-slate-400 block sm:hidden">
               Confronta e scegli il fondo migliore per te
@@ -224,23 +207,10 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
 
             {!loading && user && (
               <div className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3">
-                {authMode === 'google' ? (
-                  authMode === 'google' && (user.picture ? (
-                    <img src={user.picture} alt={user.name || user.email} className="h-10 w-10 rounded-full object-cover" />
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-700 dark:text-slate-200">
-                      {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+                    {/* Avatar/logo removed in mobile menu as well */}
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{authMode === 'google' ? (user.name ?? user.email) : ''}</p>
                     </div>
-                  ))
-                ) : (
-                  <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-700 dark:text-slate-200">U</div>
-                )}
-                <div>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{authMode === 'google' ? (user.name ?? user.email) : ''}</p>
-                  <span className="mt-1 inline-flex items-center rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-200 px-2 py-0.5 text-xs font-semibold">
-                    {user.plan === 'full-access' ? 'Full Access' : 'Free'}
-                  </span>
-                </div>
               </div>
             )}
           </div>
