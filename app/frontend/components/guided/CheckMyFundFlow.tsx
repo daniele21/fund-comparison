@@ -66,9 +66,12 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <strong className="text-sm text-slate-900 dark:text-slate-100">{result.linea}</strong>
-                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 sm:text-[11px]">{result.societa ?? (result.type === 'FPN' ? result.pip : '')}</span>
+                        <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 sm:text-[11px]">{result.type}</span>
                       </div>
-                      {result.societa && <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 sm:text-[12px]">{result.societa}</div>}
+                      <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 sm:text-[12px]">
+                        {result.pip}
+                        {result.societa && ` • ${result.societa}`}
+                      </div>
                     </button>
                   </li>
                 ))}
