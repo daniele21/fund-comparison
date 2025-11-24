@@ -19,11 +19,9 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundCli
     const categoriesSet = new Set<string>();
     funds.forEach(fund => {
       if (fund.type === 'FPN' && fund.categoriaContratto) {
-        // Split by comma and trim each category
-        fund.categoriaContratto.split(',').forEach(cat => {
-          const trimmed = cat.trim();
-          if (trimmed) categoriesSet.add(trimmed);
-        });
+        // Don't split - each categoriaContratto is a single category description
+        const trimmed = fund.categoriaContratto.trim();
+        if (trimmed) categoriesSet.add(trimmed);
       }
     });
     return Array.from(categoriesSet).sort();
@@ -256,17 +254,13 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundCli
                         </div>
                       </div>
 
-                      {/* FPN contract categories badges - if available */}
+                      {/* FPN contract category - if available */}
                       {fund.type === 'FPN' && fund.categoriaContratto && (
                         <div className="mt-2 pt-2 border-t-2 border-slate-300 dark:border-slate-600">
-                          <p className="text-[9px] uppercase font-bold text-slate-700 dark:text-slate-200 mb-1 tracking-wide">Categorie Contrattuali</p>
-                          <div className="flex flex-wrap gap-1">
-                            {fund.categoriaContratto.split(',').map((cat, idx) => (
-                              <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 border-2 border-blue-300 dark:border-blue-700">
-                                {cat.trim()}
-                              </span>
-                            ))}
-                          </div>
+                          <p className="text-[9px] uppercase font-bold text-slate-700 dark:text-slate-200 mb-1 tracking-wide">Categoria Contrattuale</p>
+                          <p className="text-[10px] text-slate-600 dark:text-slate-300 leading-snug">
+                            {fund.categoriaContratto}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -280,3 +274,4 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundCli
     </section>
   );
 };
+
