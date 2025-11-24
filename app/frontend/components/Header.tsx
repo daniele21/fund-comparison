@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../auth';
+import StaiTunedBadge from './StaiTunedBadge';
 
 interface HeaderProps {
         theme: string;
@@ -147,6 +148,7 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
         {/* Desktop navigation */}
         <div className="hidden md:flex items-center gap-3">
           {navActions}
+          <StaiTunedBadge />
         </div>
 
         {/* Mobile buttons */}
@@ -204,6 +206,10 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
             </div>
 
             <div className="space-y-3">{navActions}</div>
+
+            <div className="flex justify-center mt-3">
+              <StaiTunedBadge />
+            </div>
 
             {!loading && user && (
               <div className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3">
