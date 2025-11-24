@@ -1,4 +1,6 @@
 import React from 'react';
+import Footer from './Footer';
+import StaiTunedBadge from './StaiTunedBadge';
 
 interface PlaybookProps {
   onStart: () => void;
@@ -54,6 +56,10 @@ const InfoCard: React.FC<{
 const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
+        {/* Header with StaiTuned Badge and Theme Toggle */}
+        <div className="absolute top-3 left-3 sm:top-4 sm:left-4 md:top-6 md:left-6 lg:top-8 lg:left-12 z-50">
+            <StaiTunedBadge />
+        </div>
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-6 md:right-6 lg:top-8 lg:right-12 z-50">
             <button
                 onClick={toggleTheme}
@@ -206,6 +212,8 @@ const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
                 </button>
             </div>
         </main>
+        
+        <Footer />
     </div>
   );
 };
