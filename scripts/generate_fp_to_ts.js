@@ -2,8 +2,13 @@
 /*
   Script: generate_fp_to_ts.js
   Reads FP_data_rendimenti (1).csv and FP_costi (1).csv from data/ folder,
-  merges them, and generates app/frontend/data/funds.ts matching the backup format.
+  merges them with website data from fondi_info.csv and category data from 
+  Fondi di Categoria.csv, then generates app/frontend/data/funds.ts.
 
+  Data sources:
+  - fondi_info.csv: Website URLs for all fund types (FPN, FPA, PIP) indexed by TYPE and N.ALBO
+  - Fondi di Categoria.csv: Category contract info for FPN funds only
+  
   Usage:
     node scripts/generate_fp_to_ts.js
 */
@@ -70,13 +75,51 @@ function normalizeDecimal(value) {
   return value.replace(',', '.');
 }
 
+// Read and parse fondi_info.csv for website data indexed by TYPE and N.ALBO
+function readFondiInfo() {
+  const dataDir = path.join(__dirname, '..', 'data');
+  const fondiInfoPath = path.join(dataDir, 'fondi_info.csv');
+  
+  if (!fs.existsSync(fondiInfoPath)) {
+    console.warn('Warning: fondi_info.csv not found, skipping website data');
+    return new Map();
+  }
+
+  let content = fs.readFileSync(fondiInfoPath, 'utf8');
+  // Remove BOM if present
+  if (content.charCodeAt(0) === 0xFEFF) {
+    content = content.slice(1);
+  }
+  
+  const rows = parseCsvRows(content);
+  
+  const fondiInfoMap = new Map();
+  // rows already has header removed by parseCsvRows
+  // Parse rows with TYPE;N. ALBO;FONDO;Sito
+  rows.forEach((row, index) => {
+    if (row.length >= 4) {
+      const type = row[0].trim();
+      const nAlbo = row[1].trim();
+      const website = row[3].trim();
+      
+      // Create key as TYPE|N.ALBO for exact matching
+      const key = `${type}|${nAlbo}`;
+      fondiInfoMap.set(key, website);
+    }
+  });
+  
+  console.log(`Loaded ${fondiInfoMap.size} website entries from fondi_info.csv`);
+  
+  return fondiInfoMap;
+}
+
 // Read and parse Fondi di Categoria CSV for FPN fund metadata
 function readCategoryData() {
   const dataDir = path.join(__dirname, '..', 'data');
   const categoryPath = path.join(dataDir, 'Fondi di Categoria.csv');
   
   if (!fs.existsSync(categoryPath)) {
-    console.warn('Warning: Fondi di Categoria.csv not found, skipping category/website data');
+    console.warn('Warning: Fondi di Categoria.csv not found, skipping category data');
     return new Map();
   }
 
@@ -89,7 +132,6 @@ function readCategoryData() {
     if (row.length >= 3) {
       const fondoName = row[0].trim();
       const categoria = row[1].trim();
-      const website = row[2].trim();
       
       // Create multiple keys for matching variations
       const keys = [
@@ -100,7 +142,7 @@ function readCategoryData() {
       ];
       
       keys.forEach(key => {
-        categoryMap.set(key, { categoria, website });
+        categoryMap.set(key, categoria);
       });
     }
   });
@@ -147,6 +189,8 @@ function readAndMap() {
   const rendimentiPath = path.join(dataDir, 'FP_data_rendimenti (1).csv');
   const costiPath = path.join(dataDir, 'FP_costi (1).csv');
   
+  // Read website data from fondi_info.csv for all fund types
+  const fondiInfoMap = readFondiInfo();
   // Read category data for FPN funds
   const categoryMap = readCategoryData();
 
@@ -189,17 +233,25 @@ function readAndMap() {
         ...costiRow.slice(6, 10).map(normalizeDecimal)  // costi columns (ISC 2a, 5a, 10a, 35a)
       ];
       
-      // Add category and website data for FPN funds only
-      if (rendRow[0] === 'FPN') {
+      const type = rendRow[0];
+      const nAlbo = rendRow[1];
+      
+      // Get website from fondi_info.csv using TYPE|N.ALBO key
+      const fondiInfoKey = `${type.trim()}|${nAlbo.trim()}`;
+      const website = fondiInfoMap.get(fondiInfoKey) || '';
+      
+      // Add category contratto for FPN funds only (from Fondi di Categoria.csv)
+      if (type === 'FPN') {
         const fundName = rendRow[2]; // FONDO column
-        const categoryData = matchCategoryData(fundName, categoryMap);
-        merged.push(categoryData ? categoryData.categoria : '');
-        merged.push(categoryData ? categoryData.website : '');
+        const categoria = matchCategoryData(fundName, categoryMap);
+        merged.push(categoria || '');
       } else {
-        // For FPA and PIP, add empty strings
-        merged.push('');
+        // For FPA and PIP, add empty string for categoria_contratto
         merged.push('');
       }
+      
+      // Add website for all fund types
+      merged.push(website);
       
       allRows.push(merged);
     }

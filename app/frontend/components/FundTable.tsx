@@ -120,9 +120,27 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                                     />
                                 </td>
                                 <td className="px-3 py-4 whitespace-nowrap max-w-sm" onClick={(e) => { e.stopPropagation(); onFundClick(fund); }}>
-                                    <div className="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300 truncate transition-colors" title={fund.linea}>{fund.linea}</div>
-                                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate" title={fund.pip}>{fund.pip}</div>
-                                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400 truncate" title={fund.societa ?? ''}>{fund.societa}</div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300 truncate transition-colors" title={fund.linea}>{fund.linea}</div>
+                                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate" title={fund.pip}>{fund.pip}</div>
+                                            <div className="text-xs font-medium text-slate-600 dark:text-slate-400 truncate" title={fund.societa ?? ''}>{fund.societa}</div>
+                                        </div>
+                                        {fund.sitoWeb && (
+                                            <a
+                                                href={fund.sitoWeb.startsWith('http://') || fund.sitoWeb.startsWith('https://') ? fund.sitoWeb : `https://${fund.sitoWeb}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="shrink-0 p-1.5 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/30 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 transition-colors"
+                                                title="Visita sito web"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                            </a>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium">
                                     <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
@@ -228,9 +246,9 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                     <div className={`absolute left-0 top-0 bottom-0 w-1 ${CATEGORY_COLORS[fund.categoria]}`}></div>
                     
                     {/* Card Header with Checkbox */}
-                    <div className="flex items-start gap-2 p-2.5 sm:p-3 pb-1.5 sm:pb-2">
+                    <div className="flex items-start gap-3 p-3 sm:p-4 pb-2 sm:pb-2.5">
                         <div 
-                            className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 shrink-0 active:bg-slate-200 dark:active:bg-slate-600 transition-colors"
+                            className="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 shrink-0 active:scale-95 transition-all shadow-sm border border-slate-200 dark:border-slate-600"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 toggleFundSelection(fund.id);
@@ -241,21 +259,21 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                                 checked={selectedFundIds.has(fund.id)}
                                 onChange={() => {}}
                                 disabled={!selectedFundIds.has(fund.id) && selectedFundIds.size >= 10}
-                                className="h-5 w-5 text-sky-600 bg-white border-slate-300 dark:bg-slate-700 dark:border-slate-500 rounded focus:ring-2 focus:ring-sky-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                className="h-5 w-5 text-sky-600 bg-white border-slate-300 dark:bg-slate-700 dark:border-slate-500 rounded-md focus:ring-2 focus:ring-sky-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all"
                                 aria-label={`Seleziona ${fund.linea}`}
                             />
                         </div>
                         
                         <div className="flex-grow min-w-0">
                             <div onClick={() => onFundClick(fund)} className="active:opacity-70 transition-opacity">
-                                <h3 className="text-sm sm:text-base font-bold text-sky-600 dark:text-sky-400 leading-snug mb-0.5 truncate">
+                                <h3 className="text-[15px] sm:text-base font-bold text-slate-900 dark:text-slate-50 leading-snug mb-1 truncate">
                                     {fund.linea}
                                 </h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 truncate mb-0.5">
+                                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate mb-1 font-medium">
                                     {fund.pip}
                                 </p>
                                 {fund.societa && (
-                                    <p className="text-xs text-slate-600 dark:text-slate-300 font-medium truncate">
+                                    <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 font-semibold truncate">
                                         {fund.societa}
                                     </p>
                                 )}
@@ -264,13 +282,38 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                     </div>
 
                     {/* Badges Row */}
-                    <div className="flex flex-wrap gap-1.5 px-2.5 sm:px-3 pb-1.5 sm:pb-2">
-                        <span className="px-2 py-0.5 inline-flex text-xs leading-4 font-semibold rounded-full bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300">
-                            {CATEGORY_MAP[fund.categoria]}
-                        </span>
-                        <span className="px-2 py-0.5 inline-flex text-xs leading-4 font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300">
-                            {fund.type}
-                        </span>
+                    <div className="flex flex-wrap items-center gap-2 px-3 sm:px-4 pb-2.5 sm:pb-3">
+                        {/* Fund Type Badge with Icon */}
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-sm border border-indigo-400/20 h-[26px]">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                            </svg>
+                            <span className="text-[11px] font-bold tracking-wide uppercase leading-none whitespace-nowrap">{fund.type}</span>
+                        </div>
+                        
+                        {/* Category Badge */}
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/30 dark:to-blue-900/30 text-sky-700 dark:text-sky-300 shadow-sm border border-sky-200 dark:border-sky-700/50 h-[26px]">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">{CATEGORY_MAP[fund.categoria]}</span>
+                        </div>
+                        
+                        {/* Website Link Badge */}
+                        {fund.sitoWeb && (
+                            <a
+                                href={fund.sitoWeb.startsWith('http://') || fund.sitoWeb.startsWith('https://') ? fund.sitoWeb : `https://${fund.sitoWeb}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shadow-sm border border-emerald-400/20 transition-all active:scale-95 h-[26px]"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                                <span className="text-[11px] font-bold tracking-wide uppercase leading-none whitespace-nowrap">Sito</span>
+                            </a>
+                        )}
                     </div>
 
                     {/* Key Metrics Grid */}

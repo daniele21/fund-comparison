@@ -82,8 +82,8 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
             </h2>
             <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400 mt-1">{fund.pip}</p>
             
-            {/* FPN-specific info in header */}
-            {fund.type === 'FPN' && (fund.categoriaContratto || normalizedSite) && (
+            {/* Fund info in header - categories for FPN, website for all */}
+            {(fund.categoriaContratto || normalizedSite) && (
               <div className="mt-2 sm:mt-3">
                 {fund.categoriaContratto && (
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Categorie Contrattuali:</p>
