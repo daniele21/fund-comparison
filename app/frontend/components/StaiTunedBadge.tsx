@@ -1,9 +1,15 @@
 import React from 'react';
 
-const StaiTunedBadge: React.FC = () => {
+interface StaiTunedBadgeProps {
+  location?: 'header' | 'footer' | 'playbook-header' | 'playbook-footer';
+}
+
+const StaiTunedBadge: React.FC<StaiTunedBadgeProps> = ({ location = 'footer' }) => {
+  const trackingUrl = `https://staituned.com?utm_source=fondi-pensione&utm_medium=badge&utm_campaign=webapp-branding&utm_content=${location}`;
+  
   return (
     <a
-      href="https://staituned.com"
+      href={trackingUrl}
       target="_blank"
       rel="noopener noreferrer"
       className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md hover:scale-105 transition-all cursor-pointer"

@@ -148,7 +148,7 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
         {/* Desktop navigation */}
         <div className="hidden md:flex items-center gap-3">
           {navActions}
-          <StaiTunedBadge />
+          <StaiTunedBadge location="header" />
         </div>
 
         {/* Mobile buttons */}
@@ -208,7 +208,7 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
             <div className="space-y-3">{navActions}</div>
 
             <div className="flex justify-center mt-3">
-              <StaiTunedBadge />
+              <StaiTunedBadge location="header" />
             </div>
 
             {!loading && user && (

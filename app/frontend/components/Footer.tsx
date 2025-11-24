@@ -40,7 +40,7 @@ const Footer: React.FC = () => {
           </div>
           
           {/* Center: Built by stAI tuned */}
-          <StaiTunedBadge />
+          <StaiTunedBadge location="footer" />
 
           {/* Right: Copyright */}
           <div className="text-center sm:text-right text-slate-500 dark:text-slate-500 font-medium">
