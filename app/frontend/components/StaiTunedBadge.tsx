@@ -16,7 +16,7 @@ const StaiTunedBadge: React.FC<StaiTunedBadgeProps> = ({ location = 'footer' }) 
       title="Visit stAI tuned website"
     >
       <span className="text-[10px] text-slate-700 dark:text-slate-300 font-medium leading-tight">
-        Realizzato con <strong className="font-bold text-blue-600 dark:text-blue-400">GenAI</strong>
+        Powered by <strong className="font-bold text-blue-600 dark:text-blue-400">GenAI</strong> 
       </span>
       <img
         src="/icons/logo-text-light-mode.png"

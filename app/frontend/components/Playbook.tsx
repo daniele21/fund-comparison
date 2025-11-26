@@ -81,10 +81,13 @@ const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
         <div className="relative isolate overflow-hidden">
              <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100 via-white to-slate-50 dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-950"></div>
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32 text-center">
-                <div className="inline-flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-950/50 p-3 sm:p-4 rounded-2xl mb-5 sm:mb-6 border border-blue-200 dark:border-blue-800/50 shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 sm:h-10 sm:w-10 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
+                <div className="inline-flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-950/50 p-10 sm:p-12 rounded-3xl mb-12 sm:mb-14 border border-blue-200 dark:border-blue-800/50 shadow-sm">
+                    <img
+                        src="/icons/Logo%20Verticale_trasparente.png"
+                        alt="Logo verticale"
+                        className="h-36 w-36 sm:h-64 sm:w-64 object-contain"
+                        loading="lazy"
+                    />
                 </div>
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight leading-tight px-2 mb-5 sm:mb-6">
                     Costruisci la Tua Pensione Oggi,<br className="hidden sm:block"/>Assicura il Tuo Domani.
