@@ -1,7 +1,5 @@
 import React from 'react';
 import type { PensionFund } from '../../types';
-import { EntryModeSelector } from './EntryModeSelector';
-import { QuestionChipsBar } from './QuestionChipsBar';
 import { CheckMyFundFlow } from './CheckMyFundFlow';
 import { ChooseFundFlow } from './ChooseFundFlow';
 import { LearnAccordion } from './LearnAccordion';
@@ -22,9 +20,6 @@ const GuidedLayoutInner: React.FC<
 
   return (
     <div className="space-y-6 min-w-0">
-      <EntryModeSelector />
-      {/* <QuestionChipsBar onPresetSelected={onPresetSelected} /> */}
-
       {entryMode === 'check-fund' && <CheckMyFundFlow funds={funds} />}
       {entryMode === 'choose-fund' && <ChooseFundFlow funds={funds} onFundClick={onFundClick} theme={theme} />}
       {entryMode === 'learn' && <LearnAccordion />}
