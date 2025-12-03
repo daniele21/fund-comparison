@@ -27,6 +27,7 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
   const handleSelectFund = (selected: PensionFund) => {
     setFund(selected);
     setSelectedFundId(selected.id);
+    setSearch(''); // Clear search input to hide the dropdown
   };
 
   return (
@@ -79,12 +80,14 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
             )}
 
             <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/40">
-              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Per contestualizzare</h3>
-              <div className="mt-3 space-y-3">
-                <label className="block text-sm text-slate-600 dark:text-slate-300">
-                  Età
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Per contestualizzare</h3>
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+                <label className="flex flex-col min-w-0">
+                  <span className="text-sm text-slate-600 dark:text-slate-300 font-medium truncate" title="Età">
+                    Età
+                  </span>
                   <select
-                    className="mt-2 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="mt-2 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900 truncate"
                     value={profile.ageRange ?? ''}
                     onChange={e =>
                       setProfile(prev => ({ ...prev, ageRange: e.target.value ? (e.target.value as typeof profile.ageRange) : undefined }))
@@ -97,8 +100,10 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
                   </select>
                 </label>
 
-                <label className="block text-sm text-slate-600 dark:text-slate-300">
-                  Anni alla pensione
+                <label className="flex flex-col min-w-0">
+                  <span className="text-sm text-slate-600 dark:text-slate-300 font-medium truncate" title="Anni alla pensione">
+                    Anni alla pensione
+                  </span>
                   <input
                     type="number"
                     min={0}

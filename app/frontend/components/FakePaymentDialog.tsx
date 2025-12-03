@@ -126,8 +126,8 @@ const FakePaymentDialog: React.FC<FakePaymentDialogProps> = ({ open, onClose, on
         </div>
 
         <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">
-          Inserisci dati fittizi per completare l&apos;upgrade. Nessun pagamento reale viene effettuato: confermando abiliterai il piano Full
-          Access sul tuo profilo.
+          Inserisci dati fittizi per completare l&apos;upgrade. Nessun pagamento reale viene effettuato: confermando abiliterai il piano full
+          access sul tuo profilo.
         </p>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>

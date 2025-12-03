@@ -1,11 +1,20 @@
 import React from 'react';
-import StaiTunedBadge from './StaiTunedBadge';
+import FinancialSuiteBadge from './FinancialSuiteBadge';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  sidebarCollapsed?: boolean;
+  hasSidebar?: boolean;
+}
+
+const Footer: React.FC<FooterProps> = ({ sidebarCollapsed = false, hasSidebar = false }) => {
   return (
-    <footer className="mt-6 border-t border-slate-200 dark:border-slate-800 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-950">
+    <footer 
+      className={`mt-8 mb-4 border-t border-slate-200 dark:border-slate-800 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-950 transition-all duration-300 ${
+        hasSidebar ? (sidebarCollapsed ? 'md:ml-20' : 'md:ml-56 lg:ml-60') : ''
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-400">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4 text-xs text-slate-600 dark:text-slate-400">
           {/* Left: Data attribution */}
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
             <span className="text-center sm:text-left">
@@ -39,9 +48,11 @@ const Footer: React.FC = () => {
             </a>
           </div>
           
-          {/* Center: Built by stAI tuned */}
-          <StaiTunedBadge location="footer" />
-
+          {/* Center: Badge */}
+          <div className="flex items-center justify-center">
+            <FinancialSuiteBadge location="footer" />
+          </div>
+          
           {/* Right: Copyright */}
           <div className="text-center sm:text-right text-slate-500 dark:text-slate-500 font-medium">
             © {new Date().getFullYear()} Financial Suite

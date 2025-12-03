@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../auth';
-// import StaiTunedBadge from './StaiTunedBadge';
 
 interface HeaderProps {
         theme: string;
@@ -21,16 +20,34 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
     const ticking = useRef(false);
 
     useEffect(() => {
+        const checkAndUpdateVisibility = () => {
+            const isMobile = window.innerWidth < 768;
+            
+            // Always show header on desktop
+            if (!isMobile) {
+                setIsHeaderVisible(true);
+                return true;
+            }
+            return false;
+        };
+
         const handleScroll = () => {
             if (!ticking.current) {
                 window.requestAnimationFrame(() => {
+                    // Skip scroll logic on desktop
+                    if (checkAndUpdateVisibility()) {
+                        ticking.current = false;
+                        return;
+                    }
+                    
+                    // Mobile scroll behavior
                     const currentScrollY = window.scrollY;
                     
                     // Show header when scrolling up or at top
                     if (currentScrollY < lastScrollY.current || currentScrollY < 10) {
                         setIsHeaderVisible(true);
                     } 
-                    // Hide header when scrolling down and past threshold
+                    // Hide header when scrolling down and past threshold (mobile only)
                     else if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
                         setIsHeaderVisible(false);
                     }
@@ -42,8 +59,20 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
             }
         };
 
+        const handleResize = () => {
+            checkAndUpdateVisibility();
+        };
+
+        // Initial check
+        checkAndUpdateVisibility();
+
         window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
+        window.addEventListener('resize', handleResize, { passive: true });
+        
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleResize);
+        };
     }, []);
 
     useEffect(() => {
@@ -69,22 +98,6 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
 
     const navActions = (
         <>
-            {onGoToPlaybook && (
-                <button
-                    onClick={() => {
-                        onGoToPlaybook();
-                        setMobileMenuOpen(false);
-                    }}
-                    aria-label="Torna alla guida"
-                    title="Torna alla guida"
-                    className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-900 focus:ring-blue-500 transition-all duration-200"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                </button>
-            )}
-
             <button
                 onClick={toggleTheme}
                 aria-label="Toggle dark mode"
@@ -133,7 +146,8 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
     <header className={`bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 fixed top-0 left-0 right-0 z-20 backdrop-blur-md transition-all duration-300 shadow-sm ${
       isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
     }`}>
-      <div className="container mx-auto px-4 md:px-8 py-3 md:py-4 flex items-center justify-between">
+      <div className="w-full px-4 md:px-8 py-3 md:py-4 flex items-center justify-between">
+        {/* Left side: Logo and Title */}
         <div className="flex items-center gap-3">
           <img src="/icons/Favicon_sfondo%20bianco.png" alt="Logo" className="h-9 w-9 sm:h-12 sm:w-12 object-contain" />
           <div className="leading-tight">
@@ -146,10 +160,9 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
           </div>
         </div>
 
-        {/* Desktop navigation */}
+        {/* Right side: Action buttons */}
         <div className="hidden md:flex items-center gap-3">
           {navActions}
-          {/* <StaiTunedBadge location="header" /> */}
         </div>
 
         {/* Mobile buttons */}
@@ -231,10 +244,6 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
                 </div>
               </div>
             )}
-
-            <div className="flex justify-center mt-3">
-              {/* <StaiTunedBadge location="header" /> */}
-            </div>
 
             {!loading && user && (
               <div className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3">

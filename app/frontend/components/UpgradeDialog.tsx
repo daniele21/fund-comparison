@@ -42,7 +42,7 @@ const UpgradeDialog: React.FC<UpgradeDialogProps> = ({ open, onClose, onRequestL
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">Upgrade</p>
             <h2 id="upgrade-dialog-title" className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">
-              Passa al piano Full Access
+              Passa al piano full access
             </h2>
           </div>
           <button

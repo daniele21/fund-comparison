@@ -1,5 +1,4 @@
 import React from 'react';
-// import StaiTunedBadge from './StaiTunedBadge';
 
 const InfoCard: React.FC<{
   title: string;
@@ -49,14 +48,10 @@ const InfoCard: React.FC<{
 const PlaybookContent: React.FC = () => {
   return (
     <div className="relative px-2 sm:px-4 md:px-6 lg:px-0">
-      {/* <div className="absolute -left-6 -top-4 sm:-left-10 sm:-top-6">
-        <StaiTunedBadge location="playbook-sidebar" />
-      </div> */}
-
       <div className="space-y-16 sm:space-y-20 lg:space-y-24">
         <section className="pt-4">
           <div className="text-center max-w-2xl mx-auto px-4">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">Perché è una Scelta Intelligente</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">Perché è una scelta intelligente</h2>
             <p className="mt-3 sm:mt-4 text-base sm:text-lg leading-7 sm:leading-8 text-slate-600 dark:text-slate-300">I vantaggi chiave che rendono la pensione integrativa un potente strumento finanziario.</p>
           </div>
           <div className="mt-8 sm:mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
@@ -77,7 +72,7 @@ const PlaybookContent: React.FC = () => {
 
         <section>
           <div className="text-center max-w-2xl mx-auto px-4">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">I Compromessi da Considerare</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">I compromessi da considerare</h2>
             <p className="mt-3 sm:mt-4 text-base sm:text-lg leading-7 sm:leading-8 text-slate-600 dark:text-slate-300">È un ottimo strumento, ma è importante capirne i limiti prima di impegnarsi.</p>
           </div>
           <div className="mt-8 sm:mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
@@ -92,11 +87,11 @@ const PlaybookContent: React.FC = () => {
 
         <section>
           <div className="text-center max-w-2xl mx-auto px-4">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">Capire le Diverse Opzioni</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">Capire le diverse opzioni</h2>
             <p className="mt-3 sm:mt-4 text-base sm:text-lg leading-7 sm:leading-8 text-slate-600 dark:text-slate-300">I fondi pensione si dividono in diverse tipologie e livelli di rischio. Ecco cosa devi sapere.</p>
           </div>
           <div className="mt-10 sm:mt-12 md:mt-16">
-            <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 text-slate-900 dark:text-slate-100 px-4">Le Tipologie di Fondo Pensione</h3>
+            <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 text-slate-900 dark:text-slate-100 px-4">Le tipologie di fondo pensione</h3>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
               <InfoCard title="Fondi Negoziali (FPN)" accent="slate" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}>
                 Detti anche &quot;chiusi&quot;, sono istituiti per specifiche categorie di lavoratori (es. Cometa per i metalmeccanici). Vantaggio chiave: contributo obbligatorio del datore. Hanno costi tipicamente più bassi.
@@ -110,7 +105,7 @@ const PlaybookContent: React.FC = () => {
             </div>
           </div>
           <div className="mt-10 sm:mt-12 md:mt-16">
-            <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 text-slate-900 dark:text-slate-100 px-4">Le Linee di Investimento (Livelli di Rischio)</h3>
+            <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 text-slate-900 dark:text-slate-100 px-4">Le linee di investimento (livelli di rischio)</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
               <InfoCard title="Garantita (GAR)" accent="slate" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 20.944A12.02 12.02 0 0012 22a12.02 12.02 0 009-1.056A11.955 11.955 0 0121.944 12a11.955 11.955 0 01-2.326-8.984z" /></svg>}>
                 <b>Basso Rischio.</b> Mira a proteggere il capitale, spesso garantendo un rendimento minimo o il capitale a scadenza. Ideale per chi è vicino alla pensione.
@@ -130,22 +125,22 @@ const PlaybookContent: React.FC = () => {
 
         <section className="bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-slate-800/50 dark:via-slate-800/30 dark:to-slate-800/50 py-12 sm:py-16 md:py-20 rounded-xl sm:rounded-2xl px-4 border border-blue-100 dark:border-slate-700 shadow-lg">
           <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-blue-700 dark:text-blue-400 md:text-4xl">Come Questo Strumento Ti Aiuta</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-blue-700 dark:text-blue-400 md:text-4xl">Come questo strumento ti aiuta</h2>
           </div>
           <div className="mt-8 sm:mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-center">
             <div className="p-4 sm:p-5 bg-white/80 dark:bg-slate-900/50 rounded-xl backdrop-blur-sm border border-blue-100 dark:border-slate-700 shadow-sm">
               <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-xl sm:text-2xl shadow-md">1</div>
-              <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 text-base sm:text-lg">Filtra e Trova</h3>
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 text-base sm:text-lg">Filtra e trova</h3>
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Usa i filtri per restringere la ricerca per categoria di rischio o società di gestione.</p>
             </div>
             <div className="p-4 sm:p-5 bg-white/80 dark:bg-slate-900/50 rounded-xl backdrop-blur-sm border border-blue-100 dark:border-slate-700 shadow-sm">
               <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-xl sm:text-2xl shadow-md">2</div>
-              <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 text-base sm:text-lg">Confronta Visivamente</h3>
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 text-base sm:text-lg">Confronta visivamente</h3>
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Seleziona fino a 10 fondi per vedere performance e costi in grafici di facile lettura.</p>
             </div>
             <div className="p-4 sm:p-5 bg-white/80 dark:bg-slate-900/50 rounded-xl backdrop-blur-sm border border-blue-100 dark:border-slate-700 shadow-sm">
               <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-xl sm:text-2xl shadow-md">3</div>
-              <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 text-base sm:text-lg">Analizza i Dettagli</h3>
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 text-base sm:text-lg">Analizza i dettagli</h3>
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Clicca su ogni fondo in tabella per aprire una vista di dettaglio con tutti i dati storici.</p>
             </div>
           </div>

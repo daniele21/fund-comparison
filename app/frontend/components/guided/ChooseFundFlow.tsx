@@ -48,11 +48,13 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundCli
 
 
       <div className="mt-4">
-  <div className="grid gap-3 sm:gap-4 grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-[auto_auto_auto_auto_auto]">
-          <label className="text-sm sm:text-base font-bold text-slate-900 dark:text-white min-[480px]:col-span-1 lg:col-span-1">
-            Età
+  <div className="grid gap-3 sm:gap-4 grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-5">
+          <label className="flex flex-col min-w-0">
+            <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate" title="Età">
+              Età
+            </span>
             <select
-              className="mt-2 w-full rounded-lg sm:rounded-xl border-2 border-slate-400 bg-white px-3 py-2.5 text-sm sm:text-base font-medium text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white focus:border-blue-600 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              className="mt-2 w-full rounded-lg sm:rounded-xl border-2 border-slate-400 bg-white px-3 py-2.5 text-sm sm:text-base font-medium text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white focus:border-blue-600 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 truncate"
               value={profile.ageRange ?? ''}
               onChange={e =>
                 setProfile(prev => ({ ...prev, ageRange: e.target.value ? (e.target.value as typeof prev.ageRange) : undefined }))
@@ -65,8 +67,10 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundCli
             </select>
           </label>
 
-          <label className="text-sm sm:text-base font-bold text-slate-900 dark:text-white min-[480px]:col-span-1 lg:col-span-1">
-            Anni alla pensione
+          <label className="flex flex-col min-w-0">
+            <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate" title="Anni alla pensione">
+              Anni alla pensione
+            </span>
             <input
               type="number"
               min={0}
@@ -81,10 +85,12 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundCli
               }
             />
           </label>
-          <label className="text-sm sm:text-base font-bold text-slate-900 dark:text-white min-[480px]:col-span-1 lg:col-span-1">
-            Rischio
+          <label className="flex flex-col min-w-0">
+            <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate" title="Rischio">
+              Rischio
+            </span>
             <select
-              className="mt-2 w-full rounded-lg sm:rounded-xl border-2 border-slate-400 bg-white px-3 py-2.5 text-sm sm:text-base font-medium text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white focus:border-blue-600 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              className="mt-2 w-full rounded-lg sm:rounded-xl border-2 border-slate-400 bg-white px-3 py-2.5 text-sm sm:text-base font-medium text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white focus:border-blue-600 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 truncate"
               value={profile.riskPreference ?? ''}
               onChange={e =>
                 setProfile(prev => ({
@@ -100,10 +106,12 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundCli
             </select>
           </label>
 
-          <label className="text-sm sm:text-base font-bold text-slate-900 dark:text-white min-[480px]:col-span-1 lg:col-span-1">
-            FPN contrattuale
+          <label className="flex flex-col min-w-0">
+            <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate" title="FPN contrattuale">
+              FPN contrattuale
+            </span>
             <select
-              className="mt-2 w-full rounded-lg sm:rounded-xl border-2 border-slate-400 bg-white px-3 py-2.5 text-sm sm:text-base font-medium text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white focus:border-blue-600 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              className="mt-2 w-full rounded-lg sm:rounded-xl border-2 border-slate-400 bg-white px-3 py-2.5 text-sm sm:text-base font-medium text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white focus:border-blue-600 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 truncate"
               value={profile.hasFpn === undefined ? '' : profile.hasFpn ? 'yes' : 'no'}
               onChange={e =>
                 setProfile(prev => ({
@@ -121,10 +129,12 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundCli
           </label>
           {/* Categoria contrattuale - shown inline when available */}
           {profile.hasFpn === true && fpnCategories.length > 0 && (
-            <label className="text-sm sm:text-base font-bold text-slate-900 dark:text-white min-[480px]:col-span-1 lg:col-span-1">
-              Categoria contrattuale (opz.)
+            <label className="flex flex-col min-w-0">
+              <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate" title="Categoria contrattuale (opz.)">
+                Categoria contrat. (opz.)
+              </span>
               <select
-                className="mt-2 w-full rounded-lg sm:rounded-xl border-2 border-slate-400 bg-white px-2 py-2 text-sm sm:text-base font-medium text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white focus:border-blue-600 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                className="mt-2 w-full rounded-lg sm:rounded-xl border-2 border-slate-400 bg-white px-2 py-2 text-sm sm:text-base font-medium text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white focus:border-blue-600 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 truncate"
                 value={profile.contractualFpnCategory ?? ''}
                 onChange={e =>
                   setProfile(prev => ({

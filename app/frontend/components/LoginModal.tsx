@@ -88,7 +88,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
           onChange={(e) => setForm((prev) => ({ ...prev, code: e.target.value }))}
           required
           className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
-          placeholder="Es. TEAM-ALPHA"
+          placeholder="Es. 15187715"
         />
       </label>
       {/* <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
