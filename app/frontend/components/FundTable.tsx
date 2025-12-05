@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { PensionFund, SortConfig, SortableKey } from '../types';
 import { CATEGORY_MAP, CATEGORY_COLORS } from '../constants';
+import { motion, useInView } from 'framer-motion';
 
 interface FundTableProps {
   funds: PensionFund[];
@@ -19,6 +20,58 @@ const SortIcon: React.FC<{ direction?: 'ascending' | 'descending' }> = ({ direct
     return <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>;
   }
   return <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>;
+};
+
+// Animated table row component
+const AnimatedTableRow: React.FC<{
+  children: React.ReactNode;
+  index: number;
+  className?: string;
+  onClick?: () => void;
+}> = ({ children, index, className, onClick }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.1 });
+
+  return (
+    <motion.tr
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.05,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      className={className}
+      onClick={onClick}
+    >
+      {children}
+    </motion.tr>
+  );
+};
+
+// Animated mobile card component
+const AnimatedMobileCard: React.FC<{
+  children: React.ReactNode;
+  index: number;
+}> = ({ children, index }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.1 });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.05,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+    >
+      {children}
+    </motion.div>
+  );
 };
 
 const SortableHeader: React.FC<{
@@ -103,8 +156,9 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                     </thead>
                     <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                         {funds.length > 0 ? funds.map((fund, index) => (
-                            <tr 
-                                key={fund.id} 
+                            <AnimatedTableRow
+                                key={fund.id}
+                                index={index}
                                 className={`transition-all duration-200 ease-in-out hover:bg-blue-50 dark:hover:bg-blue-900/10 cursor-pointer hover:shadow-sm ${
                                     index % 2 === 0 ? 'bg-white dark:bg-slate-950' : 'bg-slate-50 dark:bg-slate-900'
                                 }`}
@@ -160,7 +214,7 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                                 <RendimentoCell value={fund.rendimenti.ultimi5Anni} />
                                 <RendimentoCell value={fund.rendimenti.ultimi10Anni} />
                                 <RendimentoCell value={fund.rendimenti.ultimi20Anni} />
-                            </tr>
+                            </AnimatedTableRow>
                         )) : (
                             <tr>
                                 <td colSpan={10} className="text-center py-16 text-slate-500 dark:text-slate-400">
@@ -240,8 +294,9 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
         
         {/* Mobile Card List */}
         <div className="lg:hidden space-y-2.5 sm:space-y-3">
-            {funds.length > 0 ? funds.map(fund => (
-                <div key={fund.id} className="relative bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-200 active:scale-[0.99]">
+            {funds.length > 0 ? funds.map((fund, index) => (
+                <AnimatedMobileCard key={fund.id} index={index}>
+                    <div className="relative bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-200 active:scale-[0.99]">
                     {/* Category Color Accent */}
                     <div className={`absolute left-0 top-0 bottom-0 w-1 ${CATEGORY_COLORS[fund.categoria]}`}></div>
                     
@@ -416,6 +471,7 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                         </svg>
                     </button>
                 </div>
+                </AnimatedMobileCard>
             )) : (
                 <div className="text-center py-12 sm:py-16 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 px-4">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

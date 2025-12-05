@@ -1,4 +1,5 @@
 import React from 'react';
+import { AnimatedButton } from './animations/AnimatedButton';
 
 type PlaybookContentProps = {
   onNavigate?: (section: 'have-fund' | 'choose-fund' | 'learn') => void;

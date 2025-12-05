@@ -1,5 +1,8 @@
 /* Mobile-First Global Styles */
 
+/* Import Animation Utilities */
+@import './styles/animations.css';
+
 /* CSS Custom Properties for Professional Color Scheme */
 :root {
   --color-primary-50: #eff6ff;

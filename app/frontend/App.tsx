@@ -20,6 +20,11 @@ import Footer from './components/Footer';
 import { GuidedFundComparator } from './components/guided/GuidedFundComparator';
 import { GuidedComparatorProvider, useGuidedComparator, MAX_SELECTED_FUNDS } from './components/guided/GuidedComparatorContext';
 import PlaybookContent from './components/PlaybookContent';
+import { ToastProvider } from './components/animations/ToastNotifications';
+import { PageTransition } from './components/animations/PageTransition';
+import { ScrollReveal, ScrollProgress } from './components/animations/ScrollReveal';
+import { AnimatedButton } from './components/animations/AnimatedButton';
+import { FloatingCompareButton } from './components/animations/FloatingCompareButton';
 
 type View = 'playbook' | 'dashboard';
 type DashboardSection = 'playbook' | 'have-fund' | 'choose-fund' | 'learn';
@@ -360,17 +365,20 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
-      <Header
-        theme={theme}
-        toggleTheme={toggleTheme}
-        onGoToPlaybook={handleGoToPlaybook}
-        onLoginRequest={openLoginModal}
-        onVisibilityChange={setIsHeaderVisible}
-        navItems={navItems}
-        activeNavId={activeSection}
-        onSelectNav={setActiveSection}
-      />
+    <>
+      <ToastProvider />
+      <ScrollProgress position="top" height={3} color="bg-gradient-to-r from-sky-600 to-cyan-600" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
+        <Header
+          theme={theme}
+          toggleTheme={toggleTheme}
+          onGoToPlaybook={handleGoToPlaybook}
+          onLoginRequest={openLoginModal}
+          onVisibilityChange={setIsHeaderVisible}
+          navItems={navItems}
+          activeNavId={activeSection}
+          onSelectNav={setActiveSection}
+        />
       
       {/* Layout with Sidebar */}
       <div className="flex pt-16 min-h-[calc(100vh-4rem)]">
@@ -486,18 +494,19 @@ const AppContent: React.FC = () => {
             className="px-6 sm:px-8 lg:px-12 xl:px-16 py-10 sm:py-12 space-y-8 sm:space-y-10 max-w-[1800px]"
             style={{ paddingTop: '2rem', paddingBottom: '2rem' }}
           >
-            {activeSection === 'playbook' ? (
-              <section className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-5 sm:py-6 md:px-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
-                <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
-                  <div>
-                    <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-slate-500 dark:text-slate-400">{sectionCopy.playbook.eyebrow}</p>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mt-1">{sectionCopy.playbook.title}</h2>
-                    <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-3xl">{sectionCopy.playbook.description}</p>
+            <PageTransition pageKey={activeSection} variant="slideUp">
+              {activeSection === 'playbook' ? (
+                <section className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-5 sm:py-6 md:px-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+                  <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-slate-500 dark:text-slate-400">{sectionCopy.playbook.eyebrow}</p>
+                      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mt-1">{sectionCopy.playbook.title}</h2>
+                      <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-3xl">{sectionCopy.playbook.description}</p>
+                    </div>
                   </div>
-                </div>
-                <PlaybookContent onNavigate={(section) => setActiveSection(section)} />
-              </section>
-            ) : (
+                  <PlaybookContent onNavigate={(section) => setActiveSection(section)} />
+                </section>
+              ) : (
               <div className="space-y-6 sm:space-y-8 md:space-y-10">
                 <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-5 sm:py-6 md:px-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
                   <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -515,52 +524,59 @@ const AppContent: React.FC = () => {
                 </div>
                 <GuidedFundComparator funds={pensionFundsData} onPresetSelected={handlePresetSelected} onFundClick={handleFundClick} theme={theme}>
                   <div className="space-y-6 sm:space-y-8 md:space-y-10">
-                    <section className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-4 sm:py-5 md:px-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 min-w-0 overflow-hidden">
-                      <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Visual Comparison</h2>
-                          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Andamento e costi dei fondi selezionati, sempre aggiornati.</p>
+                    <ScrollReveal variant="slideUp" duration={0.6} threshold={0.2}>
+                      <section id="visual-comparison" className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-4 sm:py-5 md:px-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 min-w-0 overflow-hidden scroll-mt-20">
+                        <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Visual Comparison</h2>
+                            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Andamento e costi dei fondi selezionati, sempre aggiornati.</p>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="mt-5">
-                        <VisualComparison
-                          appSelectedFunds={selectedFunds}
-                          fundById={fundById}
-                          theme={theme}
-                        />
-                      </div>
-                    </section>
+                        <div className="mt-5">
+                          <VisualComparison
+                            appSelectedFunds={selectedFunds}
+                            fundById={fundById}
+                            theme={theme}
+                          />
+                        </div>
+                      </section>
+                    </ScrollReveal>
 
                     <div className="space-y-6 min-w-0">
-                      <FilterControls
-                        searchTerm={searchTerm}
-                        setSearchTerm={setSearchTerm}
-                        selectedCategory={selectedCategory}
-                        setSelectedCategory={setSelectedCategory}
-                        categories={categories}
-                        selectedCompany={selectedCompany}
-                        setSelectedCompany={setSelectedCompany}
-                        companies={companies}
-                        selectedType={selectedType}
-                        setSelectedType={setSelectedType}
-                        onReset={resetFilters}
-                        totalFunds={pensionFundsData.length}
-                      />
+                      <ScrollReveal variant="slideUp" duration={0.6} delay={0.1} threshold={0.2}>
+                        <FilterControls
+                          searchTerm={searchTerm}
+                          setSearchTerm={setSearchTerm}
+                          selectedCategory={selectedCategory}
+                          setSelectedCategory={setSelectedCategory}
+                          categories={categories}
+                          selectedCompany={selectedCompany}
+                          setSelectedCompany={setSelectedCompany}
+                          companies={companies}
+                          selectedType={selectedType}
+                          setSelectedType={setSelectedType}
+                          onReset={resetFilters}
+                          totalFunds={pensionFundsData.length}
+                        />
+                      </ScrollReveal>
 
-                      <ActiveFiltersChips
-                        searchTerm={searchTerm}
-                        setSearchTerm={setSearchTerm}
-                        selectedCategory={selectedCategory}
-                        setSelectedCategory={setSelectedCategory}
-                        selectedCompany={selectedCompany}
-                        setSelectedCompany={setSelectedCompany}
-                        selectedType={selectedType}
-                        setSelectedType={setSelectedType}
-                        onResetAll={resetFilters}
-                      />
+                      <ScrollReveal variant="fadeIn" duration={0.5} delay={0.15} threshold={0.2}>
+                        <ActiveFiltersChips
+                          searchTerm={searchTerm}
+                          setSearchTerm={setSearchTerm}
+                          selectedCategory={selectedCategory}
+                          setSelectedCategory={setSelectedCategory}
+                          selectedCompany={selectedCompany}
+                          setSelectedCompany={setSelectedCompany}
+                          selectedType={selectedType}
+                          setSelectedType={setSelectedType}
+                          onResetAll={resetFilters}
+                        />
+                      </ScrollReveal>
 
-                      <section className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-4 sm:py-5 md:px-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 min-w-0 overflow-hidden">
+                      <ScrollReveal variant="slideUp" duration={0.6} delay={0.2} threshold={0.1}>
+                        <section className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-4 sm:py-5 md:px-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 min-w-0 overflow-hidden">
                         <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4">
                           <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Fondi</h2>
                           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
@@ -578,19 +594,23 @@ const AppContent: React.FC = () => {
                               </div>
                               <div className="flex flex-col gap-2 sm:flex-row sm:items-center w-full sm:w-auto">
                                 {!user && (
-                                  <button
+                                  <AnimatedButton
                                     onClick={handleUpgradeLogin}
-                                    className="w-full sm:w-auto rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full sm:w-auto"
                                   >
                                     Accedi
-                                  </button>
+                                  </AnimatedButton>
                                 )}
-                                <button
+                                <AnimatedButton
                                   onClick={() => setShowUpgradeDialog(true)}
-                                  className="w-full sm:w-auto rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
+                                  variant="primary"
+                                  size="sm"
+                                  className="w-full sm:w-auto"
                                 >
                                   Scopri full access
-                                </button>
+                                </AnimatedButton>
                               </div>
                             </div>
                           </div>
@@ -615,19 +635,68 @@ const AppContent: React.FC = () => {
                               <option value={10}>10</option>
                               <option value={20}>20</option>
                             </select>
-                            <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))} className="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-white dark:bg-slate-800 border dark:border-slate-700 rounded disabled:opacity-50 disabled:cursor-not-allowed">Prev</button>
+                            <AnimatedButton 
+                              disabled={page === 1} 
+                              onClick={() => setPage(p => Math.max(1, p - 1))} 
+                              variant="ghost"
+                              size="sm"
+                            >
+                              Prev
+                            </AnimatedButton>
                             <span className="text-xs sm:text-sm font-medium">{page}</span>
-                            <button disabled={page * pageSize >= visibleFunds.length} onClick={() => setPage(p => p + 1)} className="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-white dark:bg-slate-800 border dark:border-slate-700 rounded disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+                            <AnimatedButton 
+                              disabled={page * pageSize >= visibleFunds.length} 
+                              onClick={() => setPage(p => p + 1)}
+                              variant="ghost"
+                              size="sm"
+                            >
+                              Next
+                            </AnimatedButton>
                           </div>
                         </div>
                       </section>
+                      </ScrollReveal>
                     </div>
                   </div>
                 </GuidedFundComparator>
               </div>
             )}
+            </PageTransition>
           </div>
         </main>
+
+        {/* Floating Compare Button */}
+        <FloatingCompareButton
+          selectedCount={selectedFundIds.length}
+          maxCount={10}
+          onClick={() => {
+            console.log('FloatingCompareButton clicked! Selected:', selectedFundIds.length); // Debug log
+            
+            // If we're in playbook section, switch to comparison view first
+            if (activeSection === 'playbook') {
+              setActiveSection('have-fund');
+              // Wait for the view to render, then scroll to Visual Comparison
+              setTimeout(() => {
+                const visualSection = document.getElementById('visual-comparison');
+                console.log('Visual section found:', !!visualSection); // Debug
+                if (visualSection) {
+                  visualSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }, 400); // Increased timeout to ensure render
+            } else {
+              // We're already in comparison view, scroll directly to Visual Comparison
+              const visualSection = document.getElementById('visual-comparison');
+              console.log('Visual section found:', !!visualSection); // Debug
+              if (visualSection) {
+                visualSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              } else {
+                console.error('Visual comparison section not found!');
+              }
+            }
+          }}
+          show={activeSection !== 'playbook'}
+          position="bottom-right"
+        />
       </div>
       
       <FundDetailModal fund={modalFund} onClose={handleCloseModal} theme={theme} />
@@ -658,7 +727,8 @@ const AppContent: React.FC = () => {
       />
       <FeedbackWidget onRequireLogin={openLoginModal} />
       <Footer sidebarCollapsed={sidebarCollapsed} hasSidebar={true} />
-    </div>
+      </div>
+    </>
   );
 };
 
