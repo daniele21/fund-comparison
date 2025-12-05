@@ -1,5 +1,9 @@
 import React from 'react';
 
+type PlaybookContentProps = {
+  onNavigate?: (section: 'have-fund' | 'choose-fund' | 'learn') => void;
+};
+
 const InfoCard: React.FC<{
   title: string;
   icon: React.ReactNode;
@@ -45,7 +49,7 @@ const InfoCard: React.FC<{
   );
 };
 
-const PlaybookContent: React.FC = () => {
+const PlaybookContent: React.FC<PlaybookContentProps> = ({ onNavigate }) => {
   return (
     <div className="relative px-2 sm:px-4 md:px-6 lg:px-0">
       <div className="space-y-16 sm:space-y-20 lg:space-y-24">
@@ -143,6 +147,91 @@ const PlaybookContent: React.FC = () => {
               <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 text-base sm:text-lg">Analizza i dettagli</h3>
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Clicca su ogni fondo in tabella per aprire una vista di dettaglio con tutti i dati storici.</p>
             </div>
+          </div>
+        </section>
+
+        <section className="py-12 sm:py-16 md:py-20">
+          <div className="text-center max-w-2xl mx-auto px-4 mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">Pronto a iniziare?</h2>
+            <p className="mt-3 sm:mt-4 text-base sm:text-lg leading-7 sm:leading-8 text-slate-600 dark:text-slate-300">
+              Scegli il percorso più adatto alla tua situazione.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 px-4">
+            {/* Check - Ho già un fondo */}
+            <button
+              onClick={() => onNavigate?.('have-fund')}
+              className="group relative overflow-hidden rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-6 sm:p-8 text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-blue-400 dark:border-blue-800 dark:from-blue-950/50 dark:to-blue-900/50 dark:hover:border-blue-600"
+            >
+              <div className="relative z-10">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 mb-4 rounded-xl flex items-center justify-center bg-blue-500 text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">Check</h3>
+                <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 mb-4">
+                  Scopri se il tuo fondo pensione attuale sta performando bene rispetto al mercato.
+                </p>
+                <div className="inline-flex items-center text-blue-600 dark:text-blue-400 font-semibold group-hover:gap-2 transition-all duration-300">
+                  Verifica ora
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </div>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-400/0 to-blue-600/0 group-hover:from-blue-400/10 group-hover:to-blue-600/10 transition-all duration-300" />
+            </button>
+
+            {/* Capire - Voglio capire come funzionano */}
+            <button
+              onClick={() => onNavigate?.('learn')}
+              className="group relative overflow-hidden rounded-2xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-6 sm:p-8 text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-purple-400 dark:border-purple-800 dark:from-purple-950/50 dark:to-purple-900/50 dark:hover:border-purple-600"
+            >
+              <div className="relative z-10">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 mb-4 rounded-xl flex items-center justify-center bg-purple-500 text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">Capire</h3>
+                <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 mb-4">
+                  Impara a leggere ISC, rendimenti e categorie di rischio con spiegazioni semplici.
+                </p>
+                <div className="inline-flex items-center text-purple-600 dark:text-purple-400 font-semibold group-hover:gap-2 transition-all duration-300">
+                  Esplora ora
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </div>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-400/0 to-purple-600/0 group-hover:from-purple-400/10 group-hover:to-purple-600/10 transition-all duration-300" />
+            </button>
+
+            {/* Decisione - Devo scegliere un fondo */}
+            <button
+              onClick={() => onNavigate?.('choose-fund')}
+              className="group relative overflow-hidden rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 sm:p-8 text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-emerald-400 dark:border-emerald-800 dark:from-emerald-950/50 dark:to-emerald-900/50 dark:hover:border-emerald-600"
+            >
+              <div className="relative z-10">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 mb-4 rounded-xl flex items-center justify-center bg-emerald-500 text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">Decisione</h3>
+                <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 mb-4">
+                  Trova il fondo perfetto per il tuo profilo e orizzonte temporale con una shortlist personalizzata.
+                </p>
+                <div className="inline-flex items-center text-emerald-600 dark:text-emerald-400 font-semibold group-hover:gap-2 transition-all duration-300">
+                  Inizia ora
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </div>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/0 to-emerald-600/0 group-hover:from-emerald-400/10 group-hover:to-emerald-600/10 transition-all duration-300" />
+            </button>
           </div>
         </section>
       </div>

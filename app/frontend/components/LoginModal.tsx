@@ -169,7 +169,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
                 disabled={busy || loading}
                 className="w-full inline-flex items-center justify-center gap-x-2 px-4 py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 disabled:opacity-60"
               >
-                {busy || loading ? 'Apertura login...' : 'Accedi con Google'}
+                {busy || loading ? 'Apertura login...' : 'Accedi con codice invito'}
               </button>
 
               <button

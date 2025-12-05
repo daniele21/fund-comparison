@@ -240,11 +240,11 @@ export const FeedbackWidget: React.FC<FeedbackWidgetProps> = ({ onRequireLogin }
 			<Dialog.Trigger asChild>
 				<button
 					type="button"
-					className="group fixed bottom-24 md:bottom-20 right-6 z-30 flex items-center justify-center gap-0 hover:gap-3 rounded-full hover:rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-14 w-14 hover:w-auto hover:px-4 hover:py-2.5 text-sm font-semibold shadow-xl shadow-blue-600/40 hover:shadow-2xl hover:shadow-blue-600/50 transition-all duration-300 ease-out active:scale-95 fc-feedback-opaque overflow-hidden cursor-pointer"
+					className="group fixed bottom-20 md:bottom-20 right-4 md:right-6 z-30 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-12 w-12 md:h-14 md:w-14 md:hover:w-auto md:hover:px-4 md:hover:py-2.5 md:hover:rounded-xl md:hover:gap-3 text-sm font-semibold shadow-xl shadow-blue-600/40 hover:shadow-2xl hover:shadow-blue-600/50 transition-all duration-300 ease-out active:scale-95 fc-feedback-opaque overflow-hidden cursor-pointer"
 					aria-label="Apri il feedback"
 				>
-					<MessageCircle className="h-6 w-6 group-hover:h-5 group-hover:w-5 transition-all duration-300 ease-out flex-shrink-0" aria-hidden="true" />
-					<span className="max-w-0 group-hover:max-w-xs opacity-0 group-hover:opacity-100 whitespace-nowrap transition-all duration-300 ease-out overflow-hidden">
+					<MessageCircle className="h-5 w-5 md:h-6 md:w-6 md:group-hover:h-5 md:group-hover:w-5 transition-all duration-300 ease-out flex-shrink-0" aria-hidden="true" />
+					<span className="max-w-0 md:group-hover:max-w-xs opacity-0 md:group-hover:opacity-100 whitespace-nowrap transition-all duration-300 ease-out overflow-hidden">
 						Non trovi il tuo fondo? Segnalacelo
 					</span>
 				</button>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import FinancialSuiteBadge from './FinancialSuiteBadge';
 
 interface FooterProps {
@@ -7,6 +7,21 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({ sidebarCollapsed = false, hasSidebar = false }) => {
+  // Load iubenda script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.text = `(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src="https://cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);`;
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup script on unmount
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
+
   return (
     <footer 
       className={`mt-8 mb-4 border-t border-slate-200 dark:border-slate-800 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-950 transition-all duration-300 ${
@@ -45,6 +60,22 @@ const Footer: React.FC<FooterProps> = ({ sidebarCollapsed = false, hasSidebar = 
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-2.5l7.51-3.49L17.5 6.5 9.99 9.99 6.5 17.5zm5.5-6.6c.61 0 1.1.49 1.1 1.1s-.49 1.1-1.1 1.1-1.1-.49-1.1-1.1.49-1.1 1.1-1.1z" />
               </svg>
               <span className="font-medium">CC BY 4.0</span>
+            </a>
+            <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
+            <a 
+              href="https://www.iubenda.com/privacy-policy/32249970" 
+              className="iubenda-white iubenda-noiframe iubenda-embed iubenda-noiframe text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline decoration-1 underline-offset-2 transition-colors" 
+              title="Privacy Policy"
+            >
+              Privacy Policy
+            </a>
+            <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
+            <a 
+              href="https://www.iubenda.com/privacy-policy/32249970/cookie-policy" 
+              className="iubenda-white iubenda-noiframe iubenda-embed iubenda-noiframe text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline decoration-1 underline-offset-2 transition-colors" 
+              title="Cookie Policy"
+            >
+              Cookie Policy
             </a>
           </div>
           

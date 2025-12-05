@@ -54,7 +54,7 @@ const FREE_PLAN_LIMIT = 10;
 
 const AppContent: React.FC = () => {
   const [view, setView] = useState<View>('playbook');
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
   const [activeSection, setActiveSection] = useState<DashboardSection>('playbook');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
@@ -95,6 +95,11 @@ const AppContent: React.FC = () => {
       localStorage.setItem('theme', 'light');
     }
   }, [theme]);
+
+  // Scroll to top when navigating between sections
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeSection]);
 
   const toggleTheme = () => {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
@@ -157,25 +162,29 @@ const AppContent: React.FC = () => {
       eyebrow: 'Capire',
     },
     playbook: {
-      title: 'Playbook',
+      title: 'Guida',
       description: 'Approfondisci la guida strategica che hai visto in apertura, sempre disponibile nella tua area riservata.',
       eyebrow: 'Guida',
     },
   }), []);
 
   const navItems: { id: DashboardSection; label: string }[] = [
-    { id: 'playbook', label: 'Playbook' },
-    { id: 'have-fund', label: 'Ho già un fondo pensione' },
-    { id: 'choose-fund', label: 'Devo scegliere un fondo' },
-    { id: 'learn', label: 'Voglio capire come funzionano' },
+    { id: 'playbook', label: 'Guida' },
+    { id: 'have-fund', label: 'Check' },
+    { id: 'choose-fund', label: 'Decisione' },
+    { id: 'learn', label: 'Capire' },
   ];
 
   const navButtonClasses = (id: DashboardSection) =>
-    `w-full text-left rounded-xl border px-4 py-3 text-sm font-semibold transition-all duration-200 ${
+    `group relative w-full text-left rounded-xl transition-all duration-200 ${
       activeSection === id
-        ? 'bg-gradient-to-r from-slate-900 to-slate-700 text-white shadow-lg shadow-slate-300/40 dark:from-slate-50 dark:to-slate-200 dark:text-slate-900 border-transparent scale-[1.01]'
-        : 'bg-white text-slate-700 hover:border-slate-200 hover:bg-slate-50 hover:shadow-md dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700/80'
-    } ${sidebarCollapsed ? 'flex items-center justify-center px-2 py-3' : 'flex items-center gap-3'}`;
+        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-200/50 dark:shadow-blue-900/30 border-transparent'
+        : 'bg-slate-50/50 text-slate-700 border border-slate-200/50 hover:bg-white hover:border-slate-300 hover:shadow-md dark:bg-slate-800/50 dark:text-slate-200 dark:border-slate-700/50 dark:hover:bg-slate-800 dark:hover:border-slate-600'
+    } ${
+      sidebarCollapsed 
+        ? 'flex items-center justify-center p-3' 
+        : 'flex items-center gap-3 px-4 py-3'
+    }`;
 
   const filteredFunds = useMemo(() => {
     return pensionFundsData.filter(fund => {
@@ -351,7 +360,7 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
       <Header
         theme={theme}
         toggleTheme={toggleTheme}
@@ -362,58 +371,121 @@ const AppContent: React.FC = () => {
         activeNavId={activeSection}
         onSelectNav={setActiveSection}
       />
-      <div className="pt-24 pb-16">
-
-          <div className="w-full min-h-[calc(100vh-6rem)] flex gap-6 lg:gap-8">
-            <aside
-              className={`hidden md:block flex-shrink-0 sticky top-20 self-start h-[calc(100vh-5rem)] ${sidebarCollapsed ? 'w-20' : 'w-72'}`}
-            >
-              <nav
-                className="flex h-full flex-col bg-white/95 dark:bg-slate-900/80 border-r border-slate-200 dark:border-slate-800 pr-3 pl-2 pt-4"
-                aria-label="Navigazione dashboard"
+      
+      {/* Layout with Sidebar */}
+      <div className="flex pt-16 min-h-[calc(100vh-4rem)]">
+        {/* Fixed Sidebar Navigation */}
+        <aside
+          className={`hidden md:block fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-slate-200 dark:border-slate-800 shadow-lg transition-all duration-300 z-10 ${
+            sidebarCollapsed ? 'w-20' : 'w-56 lg:w-60'
+          }`}
+        >
+          <nav
+            className="h-full flex flex-col"
+            aria-label="Navigazione dashboard"
+          >
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200/50 dark:border-slate-800/50 bg-gradient-to-r from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-800/50">
+              {!sidebarCollapsed && (
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Menu
+                  </span>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => setSidebarCollapsed(prev => !prev)}
+                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all duration-200 hover:scale-110 active:scale-95"
+                aria-label={sidebarCollapsed ? 'Espandi menu' : 'Comprimi menu'}
+                title={sidebarCollapsed ? 'Espandi menu' : 'Comprimi menu'}
               >
-              <div className="flex items-center justify-between pb-2">
-                {!sidebarCollapsed && (
-                  <div className="px-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                    Navigazione
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => setSidebarCollapsed(prev => !prev)}
-                  className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-2 py-1
-                             text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50
-                             dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                  aria-label={sidebarCollapsed ? 'Espandi menu' : 'Comprimi menu'}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-4 w-4 transition-transform duration-300 ${
+                    sidebarCollapsed ? 'rotate-180' : ''
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  {sidebarCollapsed ? '»' : '«'}
-                </button>
-              </div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+            </div>
 
-              <div className="mt-2 flex-1 space-y-3 overflow-y-auto pr-1">
-                {navItems.map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveSection(item.id)}
-                    className={navButtonClasses(item.id)}
-                  >
-                    <span className={sidebarCollapsed ? 'hidden' : 'block'}>{item.label}</span>
-                    <span
-                      className={
-                        sidebarCollapsed
-                          ? 'block text-sm font-semibold text-slate-600 dark:text-slate-200'
-                          : 'hidden'
-                      }
-                    >
-                      {item.label.slice(0, 1)}
+            {/* Navigation Items */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {navItems.map((item, index) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveSection(item.id)}
+                  className={navButtonClasses(item.id)}
+                  title={sidebarCollapsed ? item.label : undefined}
+                >
+                  {/* Icon with active indicator dot */}
+                  <span className={`relative flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${sidebarCollapsed ? 'mx-auto' : ''}`}>
+                    {index === 0 && (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                      </svg>
+                    )}
+                    {index === 1 && (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                      </svg>
+                    )}
+                    {index === 2 && (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
+                      </svg>
+                    )}
+                    {index === 3 && (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+                      </svg>
+                    )}
+                    {/* Active indicator dot for collapsed sidebar */}
+                    {activeSection === item.id && sidebarCollapsed && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full ring-2 ring-blue-600 animate-pulse"></span>
+                    )}
+                  </span>
+                  
+                  {/* Label */}
+                  {!sidebarCollapsed && (
+                    <span className="flex-1 text-left font-medium">{item.label}</span>
+                  )}
+
+                  {/* Active indicator */}
+                  {activeSection === item.id && !sidebarCollapsed && (
+                    <span className="flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
                     </span>
-                  </button>
-                ))}
-              </div>
-            </nav>
-          </aside>
-          <main className="flex-1 min-w-0 space-y-6 sm:space-y-8 md:space-y-10 ml-0 md:ml-4 lg:ml-6">
+                  )}
+                </button>
+              ))}
+            </div>
+          </nav>
+        </aside>
+
+        {/* Main Content with margin for sidebar */}
+        <main 
+          className={`flex-1 min-w-0 transition-all duration-300 ${
+            sidebarCollapsed ? 'md:ml-20' : 'md:ml-56 lg:ml-60'
+          }`}
+        >
+          <div 
+            className="px-6 sm:px-8 lg:px-12 xl:px-16 py-10 sm:py-12 space-y-8 sm:space-y-10 max-w-[1800px]"
+            style={{ paddingTop: '2rem', paddingBottom: '2rem' }}
+          >
             {activeSection === 'playbook' ? (
               <section className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-5 sm:py-6 md:px-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
                 <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
@@ -423,7 +495,7 @@ const AppContent: React.FC = () => {
                     <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-3xl">{sectionCopy.playbook.description}</p>
                   </div>
                 </div>
-                <PlaybookContent />
+                <PlaybookContent onNavigate={(section) => setActiveSection(section)} />
               </section>
             ) : (
               <div className="space-y-6 sm:space-y-8 md:space-y-10">
@@ -499,9 +571,9 @@ const AppContent: React.FC = () => {
                           <div className="mb-4 sm:mb-5 rounded-lg sm:rounded-xl border border-sky-200 bg-sky-50 p-3 sm:p-4 text-slate-700 shadow-sm dark:border-sky-700/70 dark:bg-slate-800/60 dark:text-slate-200">
                             <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
                               <div>
-                                <p className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100">Piano Free attivo</p>
+                                <p className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100">Piano free attivo</p>
                                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1">
-                                  Visualizzi i primi {FREE_PLAN_LIMIT} risultati. Passa al piano Full Access per esplorare l&apos;elenco completo dei fondi.
+                                  Visualizzi i primi {FREE_PLAN_LIMIT} risultati. Passa al piano full access per esplorare l&apos;elenco completo dei fondi.
                                 </p>
                               </div>
                               <div className="flex flex-col gap-2 sm:flex-row sm:items-center w-full sm:w-auto">
@@ -517,7 +589,7 @@ const AppContent: React.FC = () => {
                                   onClick={() => setShowUpgradeDialog(true)}
                                   className="w-full sm:w-auto rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
                                 >
-                                  Scopri Full Access
+                                  Scopri full access
                                 </button>
                               </div>
                             </div>
@@ -554,9 +626,10 @@ const AppContent: React.FC = () => {
                 </GuidedFundComparator>
               </div>
             )}
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
+      
       <FundDetailModal fund={modalFund} onClose={handleCloseModal} theme={theme} />
       <UpgradeDialog
         open={showUpgradeDialog}
@@ -584,7 +657,7 @@ const AppContent: React.FC = () => {
         }}
       />
       <FeedbackWidget onRequireLogin={openLoginModal} />
-      <Footer />
+      <Footer sidebarCollapsed={sidebarCollapsed} hasSidebar={true} />
     </div>
   );
 };
