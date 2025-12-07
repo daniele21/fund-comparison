@@ -97,6 +97,40 @@ APP_REDIS_DATABASE=0
 APP_REDIS_PASSWORD=your-password
 ```
 
+#### Firestore Authentication
+
+**Local Development:**
+For local development, place your service account credentials file in one of these locations:
+- `app/firestore-access.json` (recommended)
+- Repository root `firestore-access.json`
+- `infra/firebase/firestore-access.json`
+
+Or set the path explicitly:
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/service-account.json
+```
+
+**Production (Cloud Run, GCE, App Engine):**
+The application automatically detects GCP managed environments and uses the attached service account for authentication. No credentials file is needed - the service account is configured at deployment time:
+
+```bash
+gcloud run deploy your-service \
+  --service-account="your-service-account@project.iam.gserviceaccount.com"
+```
+
+The service account should have the following roles:
+- `roles/datastore.user` - Read/write access to Firestore
+- Any other project-specific permissions
+
+**Environment Detection:**
+The application detects GCP managed environments using these indicators:
+- `K_SERVICE` or `K_REVISION` (Cloud Run)
+- `FUNCTION_TARGET` (Cloud Functions)
+- `GAE_ENV` (App Engine)
+- `GCE_METADATA_HOST` (GCE instances)
+
+When detected, local file search is skipped and credentials come from the metadata service.
+
 ### Feature Flags (`config/features.py`)
 ```python
 # Storage
