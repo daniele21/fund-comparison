@@ -11,9 +11,10 @@ interface HeaderProps {
         navItems?: { id: string; label: string }[];
         activeNavId?: string;
         onSelectNav?: (id: string) => void;
+        sidebarCollapsed?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onLoginRequest, onVisibilityChange, navItems, activeNavId, onSelectNav }) => {
+const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onLoginRequest, onVisibilityChange, navItems, activeNavId, onSelectNav, sidebarCollapsed = false }) => {
     const { user, loading, login, logout, authMode } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isHeaderVisible, setIsHeaderVisible] = useState(true);
@@ -148,7 +149,9 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
     <header className={`bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 fixed top-0 left-0 right-0 z-20 backdrop-blur-md transition-all duration-300 shadow-sm ${
       isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
     }`}>
-      <div className="w-full px-4 md:px-8 py-3 md:py-4 flex items-center justify-between gap-2">
+      <div className={`w-full px-4 md:px-8 py-3 md:py-4 flex items-center justify-between gap-2 transition-all duration-300 ${
+        sidebarCollapsed ? 'md:pl-24' : 'md:pl-64 lg:pl-68'
+      }`}>
         {/* Left side: Logo and Title */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <img src="/icons/Favicon_sfondo%20bianco.png" alt="Logo" className="h-8 w-8 sm:h-12 sm:w-12 object-contain flex-shrink-0" />

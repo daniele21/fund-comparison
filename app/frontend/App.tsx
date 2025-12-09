@@ -378,6 +378,7 @@ const AppContent: React.FC = () => {
           navItems={navItems}
           activeNavId={activeSection}
           onSelectNav={setActiveSection}
+          sidebarCollapsed={sidebarCollapsed}
         />
       
       {/* Layout with Sidebar */}
