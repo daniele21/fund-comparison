@@ -70,3 +70,25 @@ scripts/setup-secret-access.sh
 scripts/test-oauth-locally.sh
 scripts/verify-oauth-config.md
 scripts/verify-oauth-secret.sh
+app/backend/docs/INVALID_CLIENT_ROOT_CAUSE.md
+app/backend/docs/LOCAL_OAUTH_TESTING.md
+app/backend/docs/OAUTH_SECRET_SETUP.md
+app/backend/README.md
+.deploy/setup
+.gitignore
+app/frontend/icons/icon-192.png
+app/frontend/icons/icon-512.png
+app/frontend/icons/logo-dark-mode.png
+app/frontend/icons/logo-light-mode.png
+app/frontend/public/icons/icon-192.png
+app/frontend/public/icons/icon-512.png
+app/frontend/public/icons/logo-dark-mode.png
+app/frontend/public/icons/logo-light-mode.png
+app/frontend/docs/ANIMATED_BUTTONS_FLOATING_COMPARE.md
+app/frontend/docs/FLOATING_BUTTON_FIXES.md
+app/frontend/docs/SCROLL_ANIMATIONS.md
+app/frontend/docs/SCROLL_TO_COMPARISON_FIX.md
+app/frontend/docs/SHORTLIST_AND_CONFIG_README.md
+app/frontend/docs/TABLE_ANIMATION_FIX.md
+app/frontend/data/funds copy.ts
+app/frontend/data/tfr_faq.txt

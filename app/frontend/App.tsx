@@ -20,6 +20,7 @@ import Footer from './components/Footer';
 import { GuidedFundComparator } from './components/guided/GuidedFundComparator';
 import { GuidedComparatorProvider, useGuidedComparator, MAX_SELECTED_FUNDS } from './components/guided/GuidedComparatorContext';
 import PlaybookContent from './components/PlaybookContent';
+import TfrFaq from './components/TfrFaq';
 import { ToastProvider } from './components/animations/ToastNotifications';
 import { PageTransition } from './components/animations/PageTransition';
 import { ScrollReveal, ScrollProgress } from './components/animations/ScrollReveal';
@@ -27,7 +28,7 @@ import { AnimatedButton } from './components/animations/AnimatedButton';
 import { FloatingCompareButton } from './components/animations/FloatingCompareButton';
 
 type View = 'playbook' | 'dashboard';
-type DashboardSection = 'playbook' | 'have-fund' | 'choose-fund' | 'learn';
+type DashboardSection = 'playbook' | 'have-fund' | 'choose-fund' | 'learn' | 'tfr-faq';
 
 // Helper function to reliably get the value to sort by from a fund object.
 const getSortValue = (fund: PensionFund, key: SortableKey): string | number | null => {
@@ -166,6 +167,11 @@ const AppContent: React.FC = () => {
       description: 'Esplora dati, grafici e dettagli per imparare come operano i fondi e prendere decisioni informate.',
       eyebrow: 'Capire',
     },
+    'tfr-faq': {
+      title: 'Domande frequenti sul TFR',
+      description: 'Risposte rapide tratte dalla guida TFR: basi, scelte azienda/fondo e tassazione.',
+      eyebrow: 'FAQ',
+    },
     playbook: {
       title: 'Guida',
       description: 'Approfondisci la guida strategica che hai visto in apertura, sempre disponibile nella tua area riservata.',
@@ -178,6 +184,7 @@ const AppContent: React.FC = () => {
     { id: 'have-fund', label: 'Check' },
     { id: 'choose-fund', label: 'Decisione' },
     { id: 'learn', label: 'Capire' },
+    { id: 'tfr-faq', label: 'TFR Info' },
   ];
 
   const navButtonClasses = (id: DashboardSection) =>
@@ -460,6 +467,11 @@ const AppContent: React.FC = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
                       </svg>
                     )}
+                    {index === 4 && (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008zm0-2.25a.75.75 0 00.75-.75 1.5 1.5 0 10-1.5 1.5.75.75 0 01.75.75zm0-7.5a2.25 2.25 0 00-2.25 2.25.75.75 0 101.5 0 .75.75 0 011.5 0 .75.75 0 001.5 0A2.25 2.25 0 0012 6z" />
+                      </svg>
+                    )}
                     {/* Active indicator dot for collapsed sidebar */}
                     {activeSection === item.id && sidebarCollapsed && (
                       <span className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full ring-2 ring-blue-600 animate-pulse"></span>
@@ -507,6 +519,24 @@ const AppContent: React.FC = () => {
                   </div>
                   <PlaybookContent onNavigate={(section) => setActiveSection(section)} />
                 </section>
+              ) : activeSection === 'tfr-faq' ? (
+                <div className="space-y-6 sm:space-y-8 md:space-y-10">
+                  <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-5 sm:py-6 md:px-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+                    <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-slate-500 dark:text-slate-400">{sectionCopy[activeSection].eyebrow}</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mt-1">{sectionCopy[activeSection].title}</h2>
+                        <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-3xl">{sectionCopy[activeSection].description}</p>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          Informazioni TFR
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <TfrFaq />
+                </div>
               ) : (
               <div className="space-y-6 sm:space-y-8 md:space-y-10">
                 <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-5 sm:py-6 md:px-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
@@ -695,7 +725,7 @@ const AppContent: React.FC = () => {
               }
             }
           }}
-          show={activeSection !== 'playbook'}
+          show={activeSection !== 'playbook' && activeSection !== 'tfr-faq'}
           position="bottom-right"
         />
       </div>
