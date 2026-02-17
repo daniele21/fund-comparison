@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Optional, Tuple
+import os
 
 from fastapi import HTTPException, status
 
@@ -19,6 +20,11 @@ class UserNotFoundError(ValueError):
 
 def _now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def _is_firestore_enabled() -> bool:
+    """Check if Firestore is enabled via environment variable."""
+    return os.getenv("APP_FIRESTORE_ENABLED", "true").lower() in ("true", "1", "yes")
 
 
 def _to_profile(data: dict) -> UserProfile:
@@ -45,12 +51,16 @@ def _to_profile(data: dict) -> UserProfile:
 
 
 async def get_user_by_id(user_id: str) -> Optional[UserProfile]:
+    if not _is_firestore_enabled():
+        return None
     repo = get_user_repository()
     record = await repo.get(user_id)
     return _to_profile(record) if record else None
 
 
 async def get_user_by_email(email: str) -> Optional[UserProfile]:
+    if not _is_firestore_enabled():
+        return None
     repo = get_user_repository()
     record = await repo.get_by_email(email)
     return _to_profile(record) if record else None
@@ -71,6 +81,19 @@ async def create_user(profile_in: UserProfileCreate) -> UserProfile:
 
 async def upsert_user(profile_in: UserProfileCreate, *, mark_login: bool = False) -> UserProfile:
     """Create or update a user profile. Set `mark_login` to refresh last_login_at."""
+    if not _is_firestore_enabled():
+        # Return a mock profile when Firestore is disabled
+        return UserProfile(
+            id=profile_in.id,
+            email=profile_in.email,
+            name=profile_in.name,
+            plan=profile_in.plan or "free",
+            credits=0,
+            created_at=_now(),
+            updated_at=_now(),
+            last_login_at=_now() if mark_login else None,
+        )
+    
     repo = get_user_repository()
     payload = profile_in.model_dump(exclude_none=True)
     payload.setdefault("credits", 0)

@@ -152,6 +152,13 @@ def create_session_token(
     """Create a signed JWT containing session data for the user."""
 
     jwt_secret, jwt_algorithm, jwt_expire_minutes, jwt_audience, jwt_issuer = _get_jwt_runtime_settings()
+    
+    logger.debug(f"[create_session_token] Creating token for user_id={user_id}")
+    logger.debug(f"[create_session_token] Using JWT secret (first 10 chars): {jwt_secret[:10]}...")
+    logger.debug(f"[create_session_token] Using JWT algorithm: {jwt_algorithm}")
+    logger.debug(f"[create_session_token] Expire minutes: {jwt_expire_minutes}")
+    logger.debug(f"[create_session_token] Audience: {jwt_audience}, Issuer: {jwt_issuer}")
+    
     issued_at = int(time.time())
     normalized_plan = _normalize_plan(plan or "free", plan or "free")
     claims: Dict[str, Any] = {
@@ -475,31 +482,67 @@ async def get_current_user(request) -> Optional[dict]:
     
     if auth_header.lower().startswith("bearer "):
         session_token = auth_header[7:].strip()
+        logger.debug(f"[get_current_user] Token from Authorization header: {session_token[:20]}...")
     
     # Fallback to cookie
     if not session_token:
         session_token = request.cookies.get("session")
+        if session_token:
+            logger.debug(f"[get_current_user] Token from cookie: {session_token[:20]}...")
+        else:
+            logger.debug("[get_current_user] No token found in header or cookie")
     
     if not session_token:
         return None
     
     try:
-        # Get JWT config
-        jwt_secret = os.getenv("APP_JWT_SECRET", "dev-secret-key")
+        # Get JWT config - check both possible env var names
+        jwt_secret = (
+            os.getenv("APP_JWT_SECRET")
+            or os.getenv("APP_JWT_SECRET_KEY")
+            or "dev-secret-key"
+        )
         jwt_algorithm = "HS256"
+        
+        logger.debug(f"[get_current_user] Using JWT secret (first 10 chars): {jwt_secret[:10]}...")
+        logger.debug(f"[get_current_user] Using JWT algorithm: {jwt_algorithm}")
         
         auth_config = settings.auth_config
         if auth_config and auth_config.jwt:
             jwt_secret = auth_config.jwt.secret_key
             jwt_algorithm = auth_config.jwt.algorithm
+            logger.debug(f"[get_current_user] Overridden from auth_config: secret={jwt_secret[:10]}... algo={jwt_algorithm}")
+        
+        # Get audience and issuer for validation
+        jwt_audience = os.getenv("APP_JWT_AUDIENCE")
+        jwt_issuer = os.getenv("APP_JWT_ISSUER")
+        if auth_config and auth_config.jwt:
+            jwt_audience = getattr(auth_config.jwt, "audience", jwt_audience)
+            jwt_issuer = getattr(auth_config.jwt, "issuer", jwt_issuer)
+        
+        logger.debug(f"[get_current_user] Expected audience: {jwt_audience}, issuer: {jwt_issuer}")
             
         # Decode and verify JWT
-        payload = jwt.decode(
-            session_token,
-            jwt_secret,
-            algorithms=[jwt_algorithm],
-            options={"verify_exp": True}
-        )
+        decode_options = {
+            "verify_exp": True,
+            "verify_aud": bool(jwt_audience),  # Only verify if we have an expected audience
+            "verify_iss": bool(jwt_issuer),     # Only verify if we have an expected issuer
+        }
+        
+        decode_kwargs = {
+            "algorithms": [jwt_algorithm],
+            "options": decode_options,
+        }
+        
+        # Add audience/issuer to decode args if they exist
+        if jwt_audience:
+            decode_kwargs["audience"] = jwt_audience
+        if jwt_issuer:
+            decode_kwargs["issuer"] = jwt_issuer
+        
+        payload = jwt.decode(session_token, jwt_secret, **decode_kwargs)
+        
+        logger.debug(f"[get_current_user] JWT decoded successfully. sub={payload.get('sub')}, email={payload.get('email')}")
         
         return {
             "id": payload.get("sub"),
@@ -510,8 +553,10 @@ async def get_current_user(request) -> Optional[dict]:
             "plan": _normalize_plan(payload.get("plan"), "free"),
         }
     except jwt.ExpiredSignatureError:
+        logger.warning("[get_current_user] Token expired")
         return None
-    except jwt.InvalidTokenError:
+    except jwt.InvalidTokenError as e:
+        logger.warning(f"[get_current_user] Invalid token: {e}")
         return None
 
 

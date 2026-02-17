@@ -207,11 +207,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // auth mode is not 'google', skip the automatic /auth/me call to avoid unwanted 401s.
     (async () => {
       if (!authConfigLoaded) return;
-      if (authMode !== 'google') {
+      
+      // For invite_code and none modes, check if we have a stored token
+      if (authMode === 'invite_code' || authMode === 'none') {
+        // If we have a token, validate it
+        if (sessionToken) {
+          const u = await fetchMe(sessionToken);
+          if (mounted) {
+            setUser(u);
+            userRef.current = u;
+          }
+        }
         if (mounted) setLoading(false);
         return;
       }
 
+      // For google mode, always try to fetch user (with token or cookies)
       const u = await fetchMe(sessionToken);
       if (mounted) {
         setUser(u);

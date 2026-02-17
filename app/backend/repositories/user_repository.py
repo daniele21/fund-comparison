@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+import os
 
 import anyio
 from google.cloud import firestore
@@ -12,6 +13,11 @@ from backend.providers.firestore import get_collection_name, get_firestore_clien
 
 def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def _is_firestore_enabled() -> bool:
+    """Check if Firestore is enabled via environment variable."""
+    return os.getenv("APP_FIRESTORE_ENABLED", "true").lower() in ("true", "1", "yes")
 
 
 @dataclass
@@ -29,6 +35,13 @@ class FirestoreUserRepository:
     """
 
     def __init__(self, client: Optional[firestore.Client] = None, collection_name: Optional[str] = None):
+        if not _is_firestore_enabled():
+            # Don't initialize Firestore client if disabled
+            self._client = None
+            self._collection_name = None
+            self._collection = None
+            return
+            
         self._client = client or get_firestore_client()
         self._collection_name = collection_name or get_collection_name("users", "users")
         self._collection = self._client.collection(self._collection_name)

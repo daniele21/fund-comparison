@@ -62,3 +62,36 @@ export type UserProfile = {
   contractualFpnCategory?: string;
   monthlyContribution?: number;
 };
+
+// Simulator types
+export interface SimulatorInput {
+  montanteIniziale: number;
+  contributoAnnuo: number;
+  orizzonteAnni: number;
+  ral: number;
+  annoPrimaAdesione: number;
+  tassoRendimento: number; // From selected fund(s)
+}
+
+export interface MontanteSeriesPoint {
+  anno: number;
+  montanteSenzaFiscale: number;
+  montanteConFiscale: number;
+  montanteTFR: number;
+}
+
+export interface SimulatorResult {
+  series: MontanteSeriesPoint[];
+  totaleVersato: number;
+  montanteLordoSenzaFiscale: number;
+  montanteLordoConFiscale: number;
+  rendimentoTotale: number;
+  risparmioFiscaleAnnuo: number;
+  risparmioFiscaleTotale: number;
+  aliquotaMarginaleIRPEF: number;
+  anniPartecipazione: number;
+  aliquotaSostitutiva: number;
+  impostaSostitutiva: number;
+  montanteNetto: number;
+  rendimentoNettoPercentuale: number;
+}

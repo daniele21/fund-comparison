@@ -16,6 +16,12 @@ from .base import BaseConfig, Environment
 class FirestoreConfig(BaseConfig):
     """Google Firestore configuration."""
     
+    # Enable/disable Firestore
+    enabled: bool = Field(
+        default=True,
+        description="Enable Firestore database operations"
+    )
+    
     # Project settings
     project_id: str = Field(
         default="webapp-factory-dev",

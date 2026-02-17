@@ -92,3 +92,5 @@ app/frontend/docs/SHORTLIST_AND_CONFIG_README.md
 app/frontend/docs/TABLE_ANIMATION_FIX.md
 app/frontend/data/funds copy.ts
 app/frontend/data/tfr_faq.txt
+scripts/compare_funds.js
+scripts/GENERATE_FUNDS.md
