@@ -7,19 +7,19 @@ interface SimulatorDisclaimerProps {
 const SimulatorDisclaimer: React.FC<SimulatorDisclaimerProps> = ({ variant = 'default' }) => {
   if (variant === 'compact') {
     return (
-      <p className="text-xs text-slate-500 dark:text-slate-400 italic">
-        ⚠️ I rendimenti passati non sono indicativi di quelli futuri. Questa simulazione ha scopo
-        puramente illustrativo.
+      <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center">
+        ⚠️ I rendimenti passati non sono indicativi di quelli futuri. Simulazione a scopo illustrativo.
+        Calcoli basati su normativa vigente (D.Lgs. 252/2005). Tutti i dati restano nel tuo browser.
       </p>
     );
   }
 
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 p-4">
+    <div className="rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-800/40 p-5 sm:p-6 shadow-sm">
       <div className="flex items-start gap-3">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"
+          className="h-5 w-5 text-slate-400 dark:text-slate-500 flex-shrink-0 mt-0.5"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -32,37 +32,11 @@ const SimulatorDisclaimer: React.FC<SimulatorDisclaimerProps> = ({ variant = 'de
           />
         </svg>
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-bold text-amber-900 dark:text-amber-100 mb-1.5">
-            Avvertenze importanti
-          </h4>
-          <ul className="space-y-1.5 text-xs text-amber-800 dark:text-amber-200">
-            <li className="flex items-start gap-1.5">
-              <span className="flex-shrink-0 mt-1">•</span>
-              <span>
-                <strong>I rendimenti passati non sono indicativi di quelli futuri</strong>. I risultati
-                effettivi possono variare significativamente.
-              </span>
-            </li>
-            <li className="flex items-start gap-1.5">
-              <span className="flex-shrink-0 mt-1">•</span>
-              <span>
-                Questa simulazione ha <strong>scopo puramente illustrativo ed educativo</strong> e non
-                costituisce consulenza finanziaria o fiscale personalizzata.
-              </span>
-            </li>
-            <li className="flex items-start gap-1.5">
-              <span className="flex-shrink-0 mt-1">•</span>
-              <span>
-                I calcoli fiscali si basano sulla normativa vigente (D.Lgs. 252/2005) e sugli scaglioni
-                IRPEF 2025, che potrebbero cambiare nel tempo.
-              </span>
-            </li>
-            <li className="flex items-start gap-1.5">
-              <span className="flex-shrink-0 mt-1">•</span>
-              <span>
-                Per decisioni di investimento reali, consulta sempre un professionista qualificato.
-              </span>
-            </li>
+          <ul className="space-y-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            <li>I rendimenti passati non sono indicativi di quelli futuri.</li>
+            <li>Simulazione a scopo illustrativo, non costituisce consulenza finanziaria.</li>
+            <li>Calcoli basati su normativa vigente (D.Lgs. 252/2005) e IRPEF 2025.</li>
+            <li>Tutti i calcoli avvengono nel browser — nessun dato viene salvato o trasmesso.</li>
           </ul>
         </div>
       </div>

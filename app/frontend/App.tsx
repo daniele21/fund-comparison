@@ -27,9 +27,10 @@ import { ScrollReveal, ScrollProgress } from './components/animations/ScrollReve
 import { AnimatedButton } from './components/animations/AnimatedButton';
 import { FloatingCompareButton } from './components/animations/FloatingCompareButton';
 import SimulatorPage from './components/simulator/SimulatorPage';
+import HomePage from './components/HomePage';
 
 type View = 'playbook' | 'dashboard';
-type DashboardSection = 'playbook' | 'have-fund' | 'choose-fund' | 'learn' | 'simulator' | 'tfr-faq';
+type DashboardSection = 'home' | 'simulator' | 'have-fund' | 'choose-fund' | 'playbook' | 'tfr-faq';
 
 // Helper function to reliably get the value to sort by from a fund object.
 const getSortValue = (fund: PensionFund, key: SortableKey): string | number | null => {
@@ -62,7 +63,7 @@ const FREE_PLAN_LIMIT = 10;
 const AppContent: React.FC = () => {
   const [view, setView] = useState<View>('playbook');
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
-  const [activeSection, setActiveSection] = useState<DashboardSection>('playbook');
+  const [activeSection, setActiveSection] = useState<DashboardSection>('home');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -79,17 +80,17 @@ const AppContent: React.FC = () => {
   const currentPlan = user?.plan ?? 'free';
   const isFullAccess = currentPlan === 'full-access';
 
-  // When the user logs out, redirect to the playbook (home) and close any auth
+  // When the user logs out, redirect to the home page and close any auth
   // related UI that may be open. This ensures the app shows a clear home state
   // after logout instead of leaving the dashboard visible.
   useEffect(() => {
     if (!user) {
-      // Close login modal, upgrade/payment dialogs and show the playbook
+      // Close login modal, upgrade/payment dialogs and show the home
       setShowLoginModal(false);
       setShowUpgradeDialog(false);
       setShowFakePayment(false);
       setView('playbook');
-      setActiveSection('playbook');
+      setActiveSection('home');
     }
   }, [user]);
 
@@ -153,45 +154,45 @@ const AppContent: React.FC = () => {
   const selectedFundIdsSet = useMemo(() => new Set(selectedFundIds), [selectedFundIds]);
 
   const sectionCopy = useMemo(() => ({
-    'have-fund': {
-      title: 'Ho già un fondo pensione',
-      description: 'Verifica come sta andando il tuo fondo attuale e confrontalo con le migliori alternative del mercato.',
-      eyebrow: 'Check',
-    },
-    'choose-fund': {
-      title: 'Devo scegliere un fondo',
-      description: 'Filtra e confronta i fondi per individuare quelli più adatti al tuo profilo e alla tua azienda.',
-      eyebrow: 'Decisione',
-    },
-    learn: {
-      title: 'Voglio capire come funzionano',
-      description: 'Esplora dati, grafici e dettagli per imparare come operano i fondi e prendere decisioni informate.',
-      eyebrow: 'Capire',
+    home: {
+      title: 'Benvenuto',
+      description: 'Strumenti professionali per il tuo futuro pensionistico.',
+      eyebrow: 'Home',
     },
     simulator: {
       title: 'Simulatore Previdenziale',
       description: 'Calcola la crescita del tuo investimento, il risparmio fiscale e scopri quanto potresti accumulare per la tua pensione.',
       eyebrow: 'Simula',
     },
+    'choose-fund': {
+      title: 'Confronta Fondi Pensione',
+      description: 'Filtra e confronta i fondi per individuare quelli più adatti al tuo profilo e alla tua azienda.',
+      eyebrow: 'Confronta',
+    },
+    'have-fund': {
+      title: 'Analizza il tuo Fondo',
+      description: 'Verifica come sta andando il tuo fondo attuale e confrontalo con le migliori alternative del mercato.',
+      eyebrow: 'Analizza',
+    },
+    playbook: {
+      title: 'Guida Previdenziale',
+      description: 'Approfondisci tutto sulla previdenza complementare, TFR e fondi pensione con guide complete e sempre aggiornate.',
+      eyebrow: 'Guida',
+    },
     'tfr-faq': {
       title: 'Domande frequenti sul TFR',
       description: 'Risposte rapide tratte dalla guida TFR: basi, scelte azienda/fondo e tassazione.',
       eyebrow: 'FAQ',
     },
-    playbook: {
-      title: 'Guida',
-      description: 'Approfondisci la guida strategica che hai visto in apertura, sempre disponibile nella tua area riservata.',
-      eyebrow: 'Guida',
-    },
   }), []);
 
   const navItems: { id: DashboardSection; label: string }[] = [
-    { id: 'playbook', label: 'Guida' },
-    { id: 'have-fund', label: 'Check' },
-    { id: 'choose-fund', label: 'Decisione' },
-    { id: 'learn', label: 'Capire' },
+    { id: 'home', label: 'Home' },
     { id: 'simulator', label: 'Simulatore' },
-    { id: 'tfr-faq', label: 'TFR Info' },
+    { id: 'choose-fund', label: 'Confronta Fondi' },
+    { id: 'have-fund', label: 'Analizza Fondo' },
+    { id: 'playbook', label: 'Guida' },
+    { id: 'tfr-faq', label: 'FAQ TFR' },
   ];
 
   const navButtonClasses = (id: DashboardSection) =>
@@ -456,12 +457,12 @@ const AppContent: React.FC = () => {
                   <span className={`relative flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${sidebarCollapsed ? 'mx-auto' : ''}`}>
                     {index === 0 && (
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                       </svg>
                     )}
                     {index === 1 && (
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z" />
                       </svg>
                     )}
                     {index === 2 && (
@@ -471,17 +472,17 @@ const AppContent: React.FC = () => {
                     )}
                     {index === 3 && (
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
                       </svg>
                     )}
                     {index === 4 && (
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                       </svg>
                     )}
                     {index === 5 && (
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008zm0-2.25a.75.75 0 00.75-.75 1.5 1.5 0 10-1.5 1.5.75.75 0 01.75.75zm0-7.5a2.25 2.25 0 00-2.25 2.25.75.75 0 101.5 0 .75.75 0 011.5 0 .75.75 0 001.5 0A2.25 2.25 0 0012 6z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
                       </svg>
                     )}
                     {/* Active indicator dot for collapsed sidebar */}
@@ -551,6 +552,8 @@ const AppContent: React.FC = () => {
                 </div>
               ) : activeSection === 'simulator' ? (
                 <SimulatorPage theme={theme} />
+              ) : activeSection === 'home' ? (
+                <HomePage onNavigate={(section) => setActiveSection(section)} />
               ) : (
               <div className="space-y-6 sm:space-y-8 md:space-y-10">
                 <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-5 sm:py-6 md:px-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
