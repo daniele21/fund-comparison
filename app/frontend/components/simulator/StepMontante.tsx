@@ -79,12 +79,13 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, onVal
   }, [selectedFunds]);
 
   // Get average return rate from selected funds
-  const tassoRendimentoLordo = useMemo(() => {
+  // IMPORTANT: Historical returns are already net of ISC costs
+  const tassoRendimento = useMemo(() => {
     if (fundProxyInfos.length === 0) return 5.0;
     return fundProxyInfos.reduce((sum, e) => sum + e.info.rate, 0) / fundProxyInfos.length;
   }, [fundProxyInfos]);
 
-  // Get average ISC (use isc10a as best proxy for long-term cost, fallback to isc5a)
+  // Get average ISC for informational purposes only (already included in historical returns)
   const iscMedio = useMemo(() => {
     if (selectedFunds.length === 0) return null;
     const costs = selectedFunds
@@ -93,9 +94,6 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, onVal
     if (costs.length === 0) return null;
     return costs.reduce((s, c) => s + c, 0) / costs.length;
   }, [selectedFunds]);
-
-  // Net return = gross return - ISC
-  const tassoRendimento = iscMedio !== null ? tassoRendimentoLordo - iscMedio : tassoRendimentoLordo;
 
   // Calculate series data
   const chartData = useMemo((): MontanteSeriesPoint[] => {
@@ -189,7 +187,7 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, onVal
           {/* Tasso utilizzato — detailed info box */}
           <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Tasso netto utilizzato</span>
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Tasso utilizzato nei calcoli</span>
               <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{formatPercentage(tassoRendimento, 2)}</span>
             </div>
 
@@ -199,29 +197,37 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, onVal
                   <div key={fund.id} className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
                     <span className="font-medium text-slate-700 dark:text-slate-300">{fund.pip}</span>
                     {fund.societa && <span className="text-slate-400 dark:text-slate-500"> ({fund.societa})</span>}
-                    {' — '}rendimento <strong>{info.label}</strong>: {formatPercentage(info.rate, 2)}
+                    <br />
+                    <span className="text-slate-500 dark:text-slate-400">
+                      Rendimento storico <strong>{info.label}</strong>: {formatPercentage(info.rate, 2)}
+                    </span>
                   </div>
                 ))}
                 {iscMedio !== null && (
-                  <div className="flex items-center justify-between pt-1.5 border-t border-slate-200 dark:border-slate-700">
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                      ISC (Indice Sintetico Costi)
-                      <span title="Costo annuo che riduce il rendimento lordo. Usiamo l'ISC a 10 anni come riferimento." className="cursor-help">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                  <div className="pt-1.5 border-t border-slate-200 dark:border-slate-700 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                        ISC medio (10 anni)
+                        <span title="Indice Sintetico dei Costi: il costo annuo percentuale del fondo." className="cursor-help">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </span>
                       </span>
-                    </span>
-                    <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">-{formatPercentage(iscMedio, 2)}</span>
+                      <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">{formatPercentage(iscMedio, 2)}/anno</span>
+                    </div>
+                    <p className="text-[10px] text-emerald-700 dark:text-emerald-400 italic flex items-start gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>I rendimenti storici sono già al netto dei costi ISC.</span>
+                    </p>
                   </div>
                 )}
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 italic">
-                  Tasso = rendimento lordo ({formatPercentage(tassoRendimentoLordo, 2)}){iscMedio !== null ? ` − ISC (${formatPercentage(iscMedio, 2)})` : ''} = <strong>{formatPercentage(tassoRendimento, 2)}</strong> netto
-                </p>
               </div>
             ) : (
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                Valore predefinito del 5%. Seleziona un fondo pensione nella sezione sopra per usare il suo rendimento storico e l'ISC reale.
+                Valore predefinito del 5%. Seleziona un fondo pensione nella sezione sopra per usare il suo rendimento storico reale.
               </p>
             )}
           </div>

@@ -74,6 +74,22 @@ const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
         </p>
       </div>
 
+      {/* Summary of Step 1 parameters */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 px-3 py-2">
+          <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-0.5">Montante iniziale</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{formatCurrency(montanteIniziale)}</p>
+        </div>
+        <div className="rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 px-3 py-2">
+          <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-0.5">Contributo annuo</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{formatCurrency(contributoAnnuo)}</p>
+        </div>
+        <div className="rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 px-3 py-2">
+          <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-0.5">Orizzonte</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{orizzonteAnni} {orizzonteAnni === 1 ? 'anno' : 'anni'}</p>
+        </div>
+      </div>
+
       {/* Info banner (compact) */}
       <div className="rounded-lg border border-amber-200 bg-amber-50/60 dark:border-amber-800 dark:bg-amber-950/20 p-3">
         <div className="flex items-start gap-2">
