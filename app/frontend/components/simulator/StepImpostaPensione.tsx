@@ -63,15 +63,50 @@ const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
   }, [annoPrimaAdesione, onValuesChange]);
 
   return (
-    <div className="space-y-5">
-      {/* Step header */}
+    <div className="space-y-6">
+      {/* Step header with problem→solution */}
       <div>
-        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
-          Imposta sostitutiva e riepilogo
-        </h3>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Al pensionamento si applica un'imposta agevolata. Prima aderisci, meno paghi.
-        </p>
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+              Step 3: Imposta sostitutiva e riepilogo
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              Calcola la tassazione finale alla pensione e il tuo montante netto
+            </p>
+          </div>
+        </div>
+
+        {/* What you'll discover */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+          <div className="rounded-xl bg-violet-50 dark:bg-violet-950/20 border border-violet-200 dark:border-violet-900 p-4">
+            <div className="flex items-start gap-2.5">
+              <span className="text-xl flex-shrink-0">🧮</span>
+              <div>
+                <p className="text-xs font-bold text-violet-900 dark:text-violet-100 mb-1">La preoccupazione</p>
+                <p className="text-xs text-violet-700 dark:text-violet-300 leading-relaxed">
+                  "Alla pensione dovrò pagare tasse sul montante. <strong>Quanto perderò?</strong>"
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 p-4">
+            <div className="flex items-start gap-2.5">
+              <span className="text-xl flex-shrink-0">✨</span>
+              <div>
+                <p className="text-xs font-bold text-emerald-900 dark:text-emerald-100 mb-1">Il vantaggio</p>
+                <p className="text-xs text-emerald-700 dark:text-emerald-300 leading-relaxed">
+                  L'imposta è <strong>agevolata</strong> (9-15%) e diminuisce con gli anni. Vedi il <strong>montante netto finale</strong> e il rendimento reale.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Summary of Step 1 parameters */}

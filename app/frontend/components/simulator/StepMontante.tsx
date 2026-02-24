@@ -120,24 +120,59 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, onVal
   }, [montanteIniziale, contributoAnnuo, orizzonteAnni, tassoRendimento, onValuesChange]);
 
   return (
-    <div className="space-y-5">
-      {/* Step header */}
+    <div className="space-y-6">
+      {/* Step header with problem→solution */}
       <div>
-        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
-          Rivalutazione del montante
-        </h3>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Inserisci i tuoi dati per simulare la crescita del capitale nel tempo grazie all'interesse composto.
-        </p>
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+              Step 1: Rivalutazione del montante
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              Simula come cresce il tuo capitale nel tempo con l'interesse composto
+            </p>
+          </div>
+        </div>
+
+        {/* What you'll discover */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 p-4">
+            <div className="flex items-start gap-2.5">
+              <span className="text-xl flex-shrink-0">🤔</span>
+              <div>
+                <p className="text-xs font-bold text-rose-900 dark:text-rose-100 mb-1">Il dubbio</p>
+                <p className="text-xs text-rose-700 dark:text-rose-300 leading-relaxed">
+                  "Se verso <strong>X euro/anno</strong> per <strong>Y anni</strong>, quanto avrò accumulato alla fine?"
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 p-4">
+            <div className="flex items-start gap-2.5">
+              <span className="text-xl flex-shrink-0">💡</span>
+              <div>
+                <p className="text-xs font-bold text-emerald-900 dark:text-emerald-100 mb-1">La risposta</p>
+                <p className="text-xs text-emerald-700 dark:text-emerald-300 leading-relaxed">
+                  Vedi esattamente il <strong>montante finale</strong>, il <strong>totale versato</strong> e il <strong>rendimento %</strong> generato.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* What is the montante — educational note */}
-      <div className="rounded-xl border border-sky-200 bg-sky-50/60 dark:border-sky-800 dark:bg-sky-950/20 p-3.5">
-        <div className="flex items-start gap-2.5">
-          <span className="text-lg leading-none mt-0.5">📘</span>
+      <div className="rounded-xl border border-sky-200 bg-sky-50/80 dark:border-sky-800 dark:bg-sky-950/30 p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl leading-none mt-0.5">📘</span>
           <div>
-            <p className="text-xs font-bold text-sky-900 dark:text-sky-100 mb-1">Cos'è il montante?</p>
-            <p className="text-xs text-sky-800 dark:text-sky-200 leading-relaxed">
+            <p className="text-sm font-bold text-sky-900 dark:text-sky-100 mb-1.5">Cos'è il montante?</p>
+            <p className="text-sm text-sky-800 dark:text-sky-200 leading-relaxed">
               Il <strong>montante</strong> è la somma totale accumulata nel tuo fondo pensione: comprende
               i contributi versati (tuoi + datore di lavoro + TFR) e i rendimenti generati dagli investimenti nel tempo.
               Più lungo è l'orizzonte temporale, più l'<strong>interesse composto</strong> amplifica la crescita del capitale.

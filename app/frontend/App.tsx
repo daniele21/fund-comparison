@@ -550,18 +550,7 @@ const AppContent: React.FC = () => {
                   <TfrFaq />
                 </div>
               ) : activeSection === 'simulator' ? (
-                <div className="space-y-6 sm:space-y-8 md:space-y-10">
-                  <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-5 sm:py-6 md:px-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
-                    <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-slate-500 dark:text-slate-400">{sectionCopy[activeSection].eyebrow}</p>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mt-1">{sectionCopy[activeSection].title}</h2>
-                        <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-3xl">{sectionCopy[activeSection].description}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <SimulatorPage theme={theme} />
-                </div>
+                <SimulatorPage theme={theme} />
               ) : (
               <div className="space-y-6 sm:space-y-8 md:space-y-10">
                 <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-5 sm:py-6 md:px-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">

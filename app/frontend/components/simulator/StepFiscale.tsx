@@ -28,7 +28,6 @@ const StepFiscale: React.FC<StepFiscaleProps> = ({
   onValuesChange,
 }) => {
   const [ral, setRal] = useState(30000);
-  const [showExplanation, setShowExplanation] = useState(false);
 
   // Calculate tax savings
   const { risparmioAnnuo, aliquotaMarginale } = useMemo(
@@ -66,15 +65,50 @@ const StepFiscale: React.FC<StepFiscaleProps> = ({
   const scaglioneCorrente = SCAGLIONI_IRPEF.find((s) => ral >= s.min && ral <= s.max);
 
   return (
-    <div className="space-y-5">
-      {/* Step header */}
+    <div className="space-y-6">
+      {/* Step header with problem→solution */}
       <div>
-        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
-          Risparmio fiscale IRPEF
-        </h3>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          I contributi al fondo pensione sono deducibili. Inserisci il tuo reddito per calcolare il vantaggio fiscale.
-        </p>
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+              Step 2: Risparmio fiscale IRPEF
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              Scopri quanto recuperi in tasse ogni anno grazie alla deducibilità dei contributi
+            </p>
+          </div>
+        </div>
+
+        {/* What you'll discover */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+          <div className="rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 p-4">
+            <div className="flex items-start gap-2.5">
+              <span className="text-xl flex-shrink-0">❓</span>
+              <div>
+                <p className="text-xs font-bold text-amber-900 dark:text-amber-100 mb-1">La domanda</p>
+                <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
+                  "I contributi al fondo pensione riducono le tasse che pago ogni anno. <strong>Di quanto?</strong>"
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 p-4">
+            <div className="flex items-start gap-2.5">
+              <span className="text-xl flex-shrink-0">💰</span>
+              <div>
+                <p className="text-xs font-bold text-emerald-900 dark:text-emerald-100 mb-1">Il beneficio</p>
+                <p className="text-xs text-emerald-700 dark:text-emerald-300 leading-relaxed">
+                  Vedi il <strong>risparmio annuo</strong>, il <strong>totale recuperato</strong> e l'impatto sul montante se reinvesti il risparmio.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Summary of Step 1 parameters */}
@@ -93,36 +127,48 @@ const StepFiscale: React.FC<StepFiscaleProps> = ({
         </div>
       </div>
 
-      {/* Info banner (compact) */}
-      <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 dark:border-emerald-800 dark:bg-emerald-950/20 p-3">
-        <div className="flex items-start gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div className="flex-1">
-            <p className="text-xs text-emerald-800 dark:text-emerald-200">
-              I contributi versati al fondo pensione sono <strong>deducibili fino a €5.164,57/anno</strong> (D.Lgs. 252/2005).
-            </p>
-            <button
-              onClick={() => setShowExplanation(!showExplanation)}
-              className="mt-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 transition-colors inline-flex items-center gap-1"
-            >
-              {showExplanation ? 'Mostra meno' : 'Come funziona?'}
-              <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 transition-transform duration-200 ${showExplanation ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      {/* Info banner - 3 columns layout */}
+      <div className="rounded-xl border-2 border-emerald-300 dark:border-emerald-700 bg-gradient-to-r from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20 p-4 shadow-md">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+          {/* Column 1: Main Info */}
+          <div className="flex items-start gap-2.5">
+            <div className="flex-shrink-0 p-1.5 rounded-lg bg-emerald-500 text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-            </button>
-            {showExplanation && (
-              <div className="mt-2 pt-2 border-t border-emerald-200 dark:border-emerald-800 space-y-1.5 text-[11px] text-emerald-800 dark:text-emerald-200">
-                <p>
-                  Se versi <strong>€{contributoAnnuo.toLocaleString('it-IT')}/anno</strong> e il tuo reddito è di <strong>€{ral.toLocaleString('it-IT')}</strong>,
-                  risparmi circa <strong>{formatCurrency(risparmioAnnuo)}</strong> ogni anno in minori tasse.
-                </p>
-                <p className="italic">
-                  💡 Reinvestendo il risparmio, il tuo capitale cresce in modo ancora più significativo.
-                </p>
-              </div>
-            )}
+            </div>
+            <div>
+              <p className="text-xs font-bold text-emerald-900 dark:text-emerald-100 mb-0.5">💰 Deducibilità fiscale</p>
+              <p className="text-[11px] text-emerald-800 dark:text-emerald-200 leading-snug">
+                Fino a <strong>€5.164,57/anno</strong> (D.Lgs. 252/2005)
+              </p>
+            </div>
+          </div>
+
+          {/* Column 2: Your Case */}
+          <div className="flex items-start gap-2.5">
+            <div className="flex-shrink-0 p-1.5 rounded-lg bg-emerald-600 text-white">
+              <span className="text-sm font-bold">📊</span>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-emerald-900 dark:text-emerald-100 mb-0.5">Nel tuo caso</p>
+              <p className="text-[11px] text-emerald-800 dark:text-emerald-200 leading-snug">
+                Risparmi <strong className="text-emerald-700 dark:text-emerald-300">{formatCurrency(risparmioAnnuo)}/anno</strong> in tasse
+              </p>
+            </div>
+          </div>
+
+          {/* Column 3: Tip */}
+          <div className="flex items-start gap-2.5">
+            <div className="flex-shrink-0 p-1.5 rounded-lg bg-amber-500 text-white">
+              <span className="text-sm">💡</span>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-amber-900 dark:text-amber-100 mb-0.5">Suggerimento</p>
+              <p className="text-[11px] text-amber-800 dark:text-amber-200 leading-snug">
+                Reinvesti il risparmio per <strong>crescita maggiore</strong>
+              </p>
+            </div>
           </div>
         </div>
       </div>
