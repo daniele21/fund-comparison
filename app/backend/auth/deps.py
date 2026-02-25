@@ -1,7 +1,9 @@
 from fastapi import Depends, Header, HTTPException, Request, status
 from .jwt import verify_access_jwt
 from .models import AuthClaims
+from .roles import Permission, can_access_feature, UserRole, UserStatus
 from backend.services.auth_service import get_current_user
+from backend.services import user_service
 
 
 def _extract_bearer_token(authorization: str | None) -> str:
@@ -18,11 +20,25 @@ async def _claims_from_session(request: Request) -> AuthClaims | None:
     user = await get_current_user(request)
     if not user or not user.get("id"):
         return None
+    
+    # Get full user profile from Firestore to include status
+    try:
+        user_profile = await user_service.get_user_by_id(str(user["id"]))
+        if user_profile:
+            return AuthClaims(
+                sub=str(user_profile.id),
+                email=user_profile.email,
+                roles=user_profile.roles or ["free"],
+                plan=user_profile.plan or "free",
+            )
+    except Exception:
+        pass
+    
     return AuthClaims(
         sub=str(user["id"]),
         email=user.get("email"),
-        roles=user.get("roles") or [],
-        plan=user.get("plan"),
+        roles=user.get("roles") or ["free"],
+        plan=user.get("plan") or "free",
     )
 
 
@@ -214,3 +230,127 @@ async def optional_auth(request: Request, authorization: str | None = Header(Non
     except HTTPException:
         # Return None instead of raising error for optional auth
         return None
+
+
+def require_permission(*permissions: Permission):
+    """
+    FastAPI dependency factory that requires specific permissions.
+    
+    Checks both user role and status to determine if they have access.
+    This is more granular than require_roles() and takes status into account.
+    
+    Args:
+        *permissions: One or more permissions required
+        
+    Returns:
+        Callable dependency function
+        
+    Raises:
+        HTTPException: 403 if user doesn't have required permission
+        HTTPException: 402 if user needs to upgrade/be approved
+    """
+    async def _dep(claims: AuthClaims = Depends(auth_required)) -> AuthClaims:
+        # Get full user profile to check status
+        user_profile = await user_service.get_user_by_id(claims.sub)
+        
+        if not user_profile:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User profile not found"
+            )
+        
+        # Determine user role and status
+        user_role = UserRole.FREE
+        if "admin" in user_profile.roles:
+            user_role = UserRole.ADMIN
+        elif "subscriber" in user_profile.roles:
+            user_role = UserRole.SUBSCRIBER
+        
+        # Default to PENDING if status not set (secure by default)
+        user_status = UserStatus(user_profile.status or "pending")
+        
+        # Check if user has any of the required permissions
+        has_access = False
+        for perm in permissions:
+            if can_access_feature(user_role, user_status, perm):
+                has_access = True
+                break
+        
+        if not has_access:
+            # Provide helpful error message based on status
+            if user_status == UserStatus.PENDING:
+                raise HTTPException(
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                    detail="Your subscription is pending admin approval. Please wait for activation."
+                )
+            elif user_status == UserStatus.SUSPENDED:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Your account has been suspended. Please contact support."
+                )
+            elif user_status == UserStatus.REJECTED:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Your subscription request was not approved."
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You don't have permission to access this feature. Upgrade required."
+                )
+        
+        return claims
+    
+    return _dep
+
+
+def require_active_subscription():
+    """
+    FastAPI dependency that requires an active subscription (subscriber or admin).
+    
+    Checks that user:
+    1. Has subscriber or admin role
+    2. Has active status (approved by admin)
+    
+    Returns:
+        Callable dependency function
+        
+    Raises:
+        HTTPException: If user doesn't have active subscription
+    """
+    async def _dep(claims: AuthClaims = Depends(auth_required)) -> AuthClaims:
+        user_profile = await user_service.get_user_by_id(claims.sub)
+        
+        if not user_profile:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User profile not found"
+            )
+        
+        # Check if user has subscriber or admin role
+        has_paid_role = any(role in ["subscriber", "admin"] for role in user_profile.roles)
+        
+        # Check if status is active
+        is_active = user_profile.status == "active"
+        
+        if not has_paid_role or not is_active:
+            if user_profile.status == "pending":
+                raise HTTPException(
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                    detail="Your subscription is pending admin approval"
+                )
+            elif user_profile.status == "suspended":
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Your account has been suspended"
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                    detail="Active subscription required"
+                )
+        
+        return claims
+    
+    return _dep
+

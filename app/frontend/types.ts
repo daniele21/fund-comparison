@@ -41,7 +41,9 @@ export interface AuthUser {
   name?: string | null;
   picture?: string | null;
   plan?: 'free' | 'full-access';
+  status?: 'pending' | 'active' | 'suspended' | 'rejected';
   roles?: string[];
+  isAdmin?: boolean;
 }
 
 export type EntryMode = 'check-fund' | 'choose-fund' | 'learn' | null;

@@ -4,10 +4,10 @@ import os
 import jwt
 from fastapi import HTTPException, status
 
-APP_JWT_AUDIENCE = os.getenv("APP_JWT_AUDIENCE", "webapp-factory")
-APP_JWT_ISSUER = os.getenv("APP_JWT_ISSUER", "https://api.example.com")
+APP_JWT_AUDIENCE = os.getenv("APP_JWT_AUDIENCE", "webapp-factory-dev-app")
+APP_JWT_ISSUER = os.getenv("APP_JWT_ISSUER", "webapp-factory-dev")
 APP_JWT_ALG = os.getenv("APP_JWT_ALG", "HS256")  # For RS256 use public/private keys + JWKS
-APP_JWT_SECRET = os.getenv("APP_JWT_SECRET", "dev-secret-change-me")
+APP_JWT_SECRET = os.getenv("APP_JWT_SECRET", "dev-secret-key-not-for-production-use-only")
 
 
 class JWTError(HTTPException):
@@ -74,26 +74,52 @@ def verify_access_jwt(token: str) -> dict:
     if not token:
         raise JWTError("Invalid token")
 
+    # Import here to avoid circular dependency
+    from backend.settings import settings
+    
+    # Get JWT config from settings (matches token creation)
+    jwt_secret = APP_JWT_SECRET
+    jwt_algorithm = APP_JWT_ALG
+    jwt_audience = APP_JWT_AUDIENCE
+    jwt_issuer = APP_JWT_ISSUER
+    
+    # Override with auth_config if available
+    auth_config = getattr(settings, "auth_config", None)
+    if auth_config and hasattr(auth_config, "jwt"):
+        jwt_secret = auth_config.jwt.secret_key
+        jwt_algorithm = auth_config.jwt.algorithm
+        if hasattr(auth_config.jwt, "audience"):
+            jwt_audience = auth_config.jwt.audience
+        if hasattr(auth_config.jwt, "issuer"):
+            jwt_issuer = auth_config.jwt.issuer
+
     try:
         # Decode and verify signature/audience/issuer/exp automatically.
-        # Do not force 'sub' to be required by the jwt library so we can
-        # provide a clearer, custom error message when missing.
-        claims = jwt.decode(
-            token,
-            APP_JWT_SECRET,
-            algorithms=[APP_JWT_ALG],
-            audience=APP_JWT_AUDIENCE,
-        )
+        decode_options = {
+            "verify_exp": True,
+            "verify_aud": bool(jwt_audience),
+            "verify_iss": bool(jwt_issuer),
+        }
+        
+        decode_kwargs = {
+            "algorithms": [jwt_algorithm],
+            "options": decode_options,
+        }
+        
+        if jwt_audience:
+            decode_kwargs["audience"] = jwt_audience
+        if jwt_issuer:
+            decode_kwargs["issuer"] = jwt_issuer
+            
+        claims = jwt.decode(token, jwt_secret, **decode_kwargs)
+        
     except jwt.ExpiredSignatureError:
         raise JWTError("Token expired")
-    except jwt.InvalidTokenError:
-        raise JWTError("Invalid token")
+    except jwt.InvalidTokenError as e:
+        raise JWTError(f"Invalid token: {str(e)}")
     
     # Basic sanity checks
     if not claims.get("sub"):
-        # If token decoded successfully but subject is missing, raise a
-        # specific error to help callers distinguish this case from a
-        # generic invalid token.
         raise JWTError("Missing subject")
     
     return claims

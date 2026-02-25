@@ -2,13 +2,26 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../auth';
 import { AnimatedButton } from './animations/AnimatedButton';
 
+interface NavSubItem {
+  id: string;
+  label: string;
+  description?: string;
+}
+
+interface NavItem {
+  id: string;
+  label: string;
+  icon?: React.ReactNode;
+  subItems?: NavSubItem[];
+}
+
 interface HeaderProps {
         theme: string;
         toggleTheme: () => void;
         onGoToPlaybook?: () => void;
         onLoginRequest?: () => void;
         onVisibilityChange?: (visible: boolean) => void;
-        navItems?: { id: string; label: string }[];
+        navItems?: NavItem[];
         activeNavId?: string;
         onSelectNav?: (id: string) => void;
         sidebarCollapsed?: boolean;
@@ -17,6 +30,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onLoginRequest, onVisibilityChange, navItems, activeNavId, onSelectNav, sidebarCollapsed = false }) => {
     const { user, loading, login, logout, authMode } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(null);
     const [isHeaderVisible, setIsHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const ticking = useRef(false);
@@ -128,6 +142,32 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
 
       {!loading && user && (
                 <div className="flex items-center gap-2">
+          {/* Admin badge */}
+          {user.isAdmin && (
+            <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+              👑 Admin
+            </span>
+          )}
+          
+          {/* Plan badge - only show for non-admin users */}
+          {!user.isAdmin && user.plan && (
+            <span className={`hidden sm:inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
+              user.plan === 'full-access' && user.status === 'active'
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                : user.status === 'pending'
+                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+            }`}>
+              {user.plan === 'full-access' && user.status === 'active' ? (
+                <>✓ Full Access</>
+              ) : user.status === 'pending' ? (
+                <>⏳ In Attesa</>
+              ) : (
+                <>Free</>
+              )}
+            </span>
+          )}
+          
           {/* Avatar/logo intentionally removed per request - keep username and logout only */}
           <div className="hidden sm:flex flex-col items-start">
             <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -227,59 +267,89 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
               {/* Navigation items if present */}
               {navItems && navItems.length > 0 && (
                 <div className="space-y-1 mb-3">
-                  {navItems.map((item, index) => (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        onSelectNav?.(item.id);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-left transition-all duration-200 ${
-                        activeNavId === item.id
-                          ? 'bg-blue-600 text-white shadow-sm'
-                          : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      {/* Icons matching desktop sidebar */}
-                      {index === 0 && (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                        </svg>
-                      )}
-                      {index === 1 && (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z" />
-                        </svg>
-                      )}
-                      {index === 2 && (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
-                        </svg>
-                      )}
-                      {index === 3 && (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
-                        </svg>
-                      )}
-                      {index === 4 && (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                        </svg>
-                      )}
-                      {index === 5 && (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
-                        </svg>
-                      )}
-                      <span className="flex-1">{item.label}</span>
-                      {/* Active indicator checkmark */}
-                      {activeNavId === item.id && (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </button>
-                  ))}
+                  {navItems.map((item) => {
+                    const hasSubItems = item.subItems && item.subItems.length > 0;
+                    const isExpanded = expandedMobileItem === item.id;
+                    const isParentActive = hasSubItems && item.subItems?.some(sub => sub.id === activeNavId);
+                    
+                    return (
+                      <div key={item.id}>
+                        {/* Main Nav Button */}
+                        <button
+                          onClick={() => {
+                            if (hasSubItems) {
+                              setExpandedMobileItem(isExpanded ? null : item.id);
+                            } else {
+                              onSelectNav?.(item.id);
+                              setMobileMenuOpen(false);
+                            }
+                          }}
+                          className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-left transition-all duration-200 ${
+                            activeNavId === item.id || isParentActive
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          {/* Icon */}
+                          {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
+                          
+                          <span className="flex-1">{item.label}</span>
+                          
+                          {/* Dropdown indicator or active checkmark */}
+                          {hasSubItems ? (
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              className={`h-4 w-4 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                              fill="none" 
+                              viewBox="0 0 24 24" 
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          ) : (
+                            activeNavId === item.id && (
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )
+                          )}
+                        </button>
+
+                        {/* Sub-items */}
+                        {hasSubItems && isExpanded && (
+                          <div className="mt-1 ml-4 pl-3 space-y-1 border-l-2 border-slate-200 dark:border-slate-700">
+                            {item.subItems?.map((subItem) => (
+                              <button
+                                key={subItem.id}
+                                onClick={() => {
+                                  onSelectNav?.(subItem.id);
+                                  setMobileMenuOpen(false);
+                                  setExpandedMobileItem(null);
+                                }}
+                                className={`w-full flex items-start gap-2 rounded-lg px-3 py-2 text-sm text-left transition-all duration-200 ${
+                                  activeNavId === subItem.id
+                                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-medium'
+                                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
+                                }`}
+                              >
+                                <div className="flex-1">
+                                  <div className="font-medium">{subItem.label}</div>
+                                  {subItem.description && (
+                                    <div className="text-xs opacity-70 mt-0.5">{subItem.description}</div>
+                                  )}
+                                </div>
+                                {activeNavId === subItem.id && (
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 

@@ -1,7 +1,8 @@
 {
   "firestore": {
     "rules": "infra/firebase/firestore.rules",
-    "indexes": "infra/firebase/firestore.indexes.json"
+    "indexes": "infra/firebase/firestore.indexes.json",
+    "database": "fund-comparison-db"
   },
   "hosting": {
     "site": "fund-comparison-0685938029",

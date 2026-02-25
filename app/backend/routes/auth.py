@@ -285,7 +285,7 @@ async def invite_login(payload: InviteLoginPayload):
             id=user_id,
             email=email_value,
             name=display_name,
-            plan=plan_value,
+            # Plan will be determined by upsert_user based on admin config
         )
         await user_service.upsert_user(profile, mark_login=True)
     except Exception as exc:  # noqa: BLE001
@@ -324,10 +324,18 @@ async def me(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     plan = user.get("plan")
+    status_value = user.get("status", "pending")
+    roles = user.get("roles", [])
+    
     try:
         profile = await user_service.get_user_by_id(str(user["id"]))
-        if profile and profile.plan:
-            plan = profile.plan
+        if profile:
+            if profile.plan:
+                plan = profile.plan
+            if profile.status:
+                status_value = profile.status
+            if profile.roles:
+                roles = profile.roles
     except Exception as exc:
         if DefaultCredentialsError and isinstance(exc, DefaultCredentialsError):
             logger.warning("Skipping Firestore lookup for /auth/me due to missing credentials: %s", exc)
@@ -337,7 +345,10 @@ async def me(request: Request):
     normalized_plan = str(plan or "free").strip().lower().replace(" ", "-")
     if normalized_plan not in {"free", "full-access"}:
         normalized_plan = "free"
+    
     user["plan"] = normalized_plan
+    user["status"] = status_value
+    user["roles"] = roles
     return user
 
 
@@ -422,3 +433,44 @@ async def list_providers():
             for name, provider in OAUTH_PROVIDERS.items()
         }
     }
+
+
+@router.get("/debug/token")
+async def debug_token(request: Request):
+    """Debug endpoint to inspect the current token (development only)."""
+    import jwt
+    import time
+    import os
+    
+    # Get token from cookie or header
+    session_token = request.cookies.get("session")
+    auth_header = request.headers.get("authorization", "")
+    if auth_header.lower().startswith("bearer "):
+        session_token = auth_header[7:].strip()
+    
+    if not session_token:
+        return {"error": "No token found"}
+    
+    try:
+        # Decode without verification to see what's inside
+        unverified = jwt.decode(session_token, options={"verify_signature": False})
+        
+        # Check expiration
+        now = int(time.time())
+        exp = unverified.get("exp")
+        iat = unverified.get("iat")
+        
+        return {
+            "token_preview": session_token[:50] + "...",
+            "claims": unverified,
+            "current_time": now,
+            "issued_at": iat,
+            "expires_at": exp,
+            "time_since_issued": now - iat if iat else None,
+            "time_until_expiry": exp - now if exp else None,
+            "is_expired": now > exp if exp else None,
+            "expected_audience": os.getenv("APP_JWT_AUDIENCE", "webapp-factory"),
+            "expected_issuer": os.getenv("APP_JWT_ISSUER", "https://api.example.com"),
+        }
+    except Exception as e:
+        return {"error": str(e), "token_preview": session_token[:50] + "..."}

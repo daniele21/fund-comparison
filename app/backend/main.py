@@ -1,10 +1,25 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.settings import settings
-from backend.routes import health, auth, users, protected, google_auth, payments, consent, notifications, feedback
+from backend.routes import (
+    health, 
+    auth, 
+    users, 
+    protected, 
+    google_auth, 
+    payments, 
+    consent, 
+    notifications, 
+    feedback, 
+    admin,
+    funds,
+    simulator,
+    content
+)
 from backend.middleware.request_id import RequestIDMiddleware
 from backend.middleware.logging import LoggingMiddleware
 from backend.middleware.security_headers import SecurityHeadersMiddleware
+from backend.providers.firebase_auth import initialize_firebase_app
 
 
 app = FastAPI(title="Webapp Factory API", version="1.0.0")
@@ -16,6 +31,10 @@ logger = logging.getLogger("uvicorn.error")
 @app.on_event("startup")
 def log_startup_info():
     try:
+        # Initialize Firebase Admin SDK
+        initialize_firebase_app()
+        logger.info("Firebase Admin SDK initialized")
+        
         # Print some auth-related configuration so users can see missing values at startup
         client_id = getattr(settings, 'GOOGLE_CLIENT_ID', None)
         client_secret_present = bool(getattr(settings, 'GOOGLE_CLIENT_SECRET', None))
@@ -46,6 +65,14 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(google_auth.router, prefix="/auth", tags=["auth", "google"])
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(payments.router, prefix="/payments", tags=["payments"])
+
+# Feature-specific routes with role-based access control
+app.include_router(funds.router, prefix="/api", tags=["funds"])  # Fund comparison
+app.include_router(simulator.router, prefix="/api", tags=["simulator"])  # Pension simulator
+app.include_router(content.router, prefix="/api", tags=["content"])  # Guides & FAQ
+app.include_router(admin.router, prefix="/api", tags=["admin"])  # Admin management
+
+# Legacy routes
 app.include_router(protected.router)
 app.include_router(consent.router)
 app.include_router(notifications.router)

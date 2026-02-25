@@ -20,6 +20,7 @@ from urllib.parse import urlparse
 from backend.services.google_oauth_service import get_google_oauth_service, GoogleOAuthService
 from backend.services.auth_service import get_current_user
 from backend.services import user_service
+from backend.services.admin_notification_service import AdminNotificationService
 from backend.schemas.user import UserProfileCreate
 from backend.settings import settings
 import jwt as pyjwt
@@ -27,6 +28,9 @@ import jwt as pyjwt
 logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter()
+
+# Initialize notification service
+notification_service = AdminNotificationService()
 
 
 class TokenExchangeRequest(BaseModel):
@@ -159,7 +163,7 @@ def _get_cookie_config() -> dict:
     return cookie_name, config
 
 
-def _create_app_session(user_info: dict, provider: str = "google") -> str:
+def _create_app_session(user_info: dict, user_profile: Optional[dict] = None, provider: str = "google") -> str:
     """
     Create application session JWT
     
@@ -167,25 +171,49 @@ def _create_app_session(user_info: dict, provider: str = "google") -> str:
     
     Args:
         user_info: User information from ID token
+        user_profile: Optional user profile from Firestore (includes roles, status, plan)
         provider: OAuth provider name
         
     Returns:
         JWT session token
     """
     # Get JWT config
-    jwt_secret = os.getenv("APP_JWT_SECRET", "dev-secret-key")
+    jwt_secret = os.getenv("APP_JWT_SECRET", "dev-secret-key-not-for-production-use-only")
     jwt_algorithm = "HS256"
     jwt_expire_minutes = 60
+    jwt_audience = os.getenv("APP_JWT_AUDIENCE", "webapp-factory-dev-app")
+    jwt_issuer = os.getenv("APP_JWT_ISSUER", "webapp-factory-dev")
     
     auth_config = getattr(settings, "auth_config", None)
     if auth_config and hasattr(auth_config, "jwt"):
         jwt_secret = auth_config.jwt.secret_key
         jwt_algorithm = auth_config.jwt.algorithm
         jwt_expire_minutes = auth_config.jwt.access_token_expire_minutes
+        if hasattr(auth_config.jwt, "audience"):
+            jwt_audience = auth_config.jwt.audience
+        if hasattr(auth_config.jwt, "issuer"):
+            jwt_issuer = auth_config.jwt.issuer
     
     import time
     
+    # Get roles and plan from user profile if available
+    roles = ["free"]
+    plan = "free"
+    status = "pending"
+    
+    if user_profile:
+        roles = user_profile.get("roles", ["free"])
+        plan = user_profile.get("plan", "free")
+        status = user_profile.get("status", "pending")
+    
     # Create JWT claims
+    now = int(time.time())
+    exp = now + jwt_expire_minutes * 60
+    
+    logger.info(f"[_create_app_session] Creating token with exp={jwt_expire_minutes} minutes")
+    logger.info(f"[_create_app_session] now={now}, exp={exp}, duration={exp-now} seconds")
+    logger.info(f"[_create_app_session] aud={jwt_audience}, iss={jwt_issuer}")
+    
     claims = {
         "sub": user_info["id"],
         "email": user_info["email"],
@@ -193,18 +221,14 @@ def _create_app_session(user_info: dict, provider: str = "google") -> str:
         "name": user_info.get("name"),
         "picture": user_info.get("picture"),
         "provider": provider,
-        "roles": ["user"],  # Default role
-        "plan": "free",     # Default plan
-        "iat": int(time.time()),
-        "exp": int(time.time()) + jwt_expire_minutes * 60,
+        "roles": roles,
+        "plan": plan,
+        "status": status,
+        "iat": now,
+        "exp": exp,
+        "aud": jwt_audience,
+        "iss": jwt_issuer,
     }
-    
-    # Add audience and issuer if configured
-    if auth_config and hasattr(auth_config, "jwt"):
-        if hasattr(auth_config.jwt, "audience"):
-            claims["aud"] = auth_config.jwt.audience
-        if hasattr(auth_config.jwt, "issuer"):
-            claims["iss"] = auth_config.jwt.issuer
     
     return pyjwt.encode(claims, jwt_secret, algorithm=jwt_algorithm)
 
@@ -300,20 +324,33 @@ async def exchange_google_code(
             picture=user_info.get("picture"),
             hd=user_info.get("hd"),
             metadata=metadata or None,
+            # Don't set roles/plan/status here - let upsert_user decide based on admin config
+            # roles will be set automatically: admin users get ["admin"], others get ["free"]
         )
         logger.info("Attempting Firestore upsert for user_id=%s email=%s", user_info["id"], user_info.get("email"))
         saved_profile = await user_service.upsert_user(profile, mark_login=True)
         logger.info(
-            "Firestore profile upserted for user_id=%s plan=%s email=%s",
+            "Firestore profile upserted for user_id=%s plan=%s status=%s email=%s",
             getattr(saved_profile, "id", user_info["id"]),
             getattr(saved_profile, "plan", None),
+            getattr(saved_profile, "status", None),
             user_info.get("email"),
         )
+        
+        # Send Telegram notification for new users (status=pending)
+        if saved_profile and saved_profile.status == "pending":
+            try:
+                await notification_service.notify_new_pending_user(saved_profile)
+                logger.info(f"Sent Telegram notification for new pending user {saved_profile.id}")
+            except Exception as notif_exc:
+                logger.error(f"Failed to send Telegram notification: {notif_exc}")
+    
     except Exception as exc:  # noqa: BLE001
         user_service.handle_service_error(exc)
     
-    # Create app session JWT
-    session_token = _create_app_session(user_info, provider="google")
+    # Create app session JWT with user profile data
+    user_profile_dict = saved_profile.model_dump() if saved_profile else None
+    session_token = _create_app_session(user_info, user_profile=user_profile_dict, provider="google")
     
     # Store refresh token server-side (in production, use Redis/DB)
     # For now, we'll include it in the session JWT (encrypted by google_oauth_service)
@@ -330,9 +367,10 @@ async def exchange_google_code(
         **cookie_config
     )
     
-    # Return success (don't send token in body, only in cookie)
+    # Return success with token (frontend needs it for Bearer auth in cross-origin scenarios)
     return {
         "success": True,
+        "token": session_token,  # Include token for frontend
         "user": {
             "id": user_info["id"],
             "email": user_info["email"],

@@ -28,9 +28,17 @@ import { AnimatedButton } from './components/animations/AnimatedButton';
 import { FloatingCompareButton } from './components/animations/FloatingCompareButton';
 import SimulatorPage from './components/simulator/SimulatorPage';
 import HomePage from './components/HomePage';
+import AdminPanel from './components/AdminPanel';
 
 type View = 'playbook' | 'dashboard';
-type DashboardSection = 'home' | 'simulator' | 'have-fund' | 'choose-fund' | 'playbook' | 'tfr-faq';
+type DashboardSection = 'home' | 'simulator' | 'have-fund' | 'choose-fund' | 'playbook' | 'tfr-faq' | 'admin';
+
+interface NavItem {
+  id: DashboardSection | 'tools' | 'resources';
+  label: string;
+  icon: React.ReactNode;
+  subItems?: { id: DashboardSection; label: string; description?: string }[];
+}
 
 // Helper function to reliably get the value to sort by from a fund object.
 const getSortValue = (fund: PensionFund, key: SortableKey): string | number | null => {
@@ -61,10 +69,11 @@ const getSortValue = (fund: PensionFund, key: SortableKey): string | number | nu
 const FREE_PLAN_LIMIT = 10;
 
 const AppContent: React.FC = () => {
-  const [view, setView] = useState<View>('playbook');
+  const [view, setView] = useState<View>('dashboard');
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
   const [activeSection, setActiveSection] = useState<DashboardSection>('home');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [expandedNavItem, setExpandedNavItem] = useState<string | null>(null);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<FundCategory | 'all'>('all');
@@ -77,8 +86,39 @@ const AppContent: React.FC = () => {
   const { user, loading: authLoading, authMode } = useAuth();
   const { selectedFundIds, toggleSelectedFund, clearSelectedFunds, setEntryMode } = useGuidedComparator();
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [showFreeBanner, setShowFreeBanner] = useState(true);
   const currentPlan = user?.plan ?? 'free';
-  const isFullAccess = currentPlan === 'full-access';
+  const userStatus = user?.status ?? 'pending';
+  // User has full access only if they have full-access plan AND active status (or are admin)
+  const isFullAccess = (currentPlan === 'full-access' && userStatus === 'active') || user?.isAdmin === true;
+
+  // Debug log for admin status
+  useEffect(() => {
+    if (user) {
+      console.log('👤 User info:', {
+        email: user.email,
+        plan: user.plan,
+        status: user.status,
+        roles: user.roles,
+        isAdmin: user.isAdmin,
+        hasFullAccess: isFullAccess
+      });
+    }
+  }, [user, isFullAccess]);
+
+  // Auto-expand parent nav items when activeSection changes
+  useEffect(() => {
+    const toolSections: DashboardSection[] = ['simulator', 'choose-fund', 'have-fund'];
+    const resourceSections: DashboardSection[] = ['playbook', 'tfr-faq'];
+    
+    if (toolSections.includes(activeSection)) {
+      setExpandedNavItem('tools');
+    } else if (resourceSections.includes(activeSection)) {
+      setExpandedNavItem('resources');
+    } else {
+      setExpandedNavItem(null);
+    }
+  }, [activeSection]);
 
   // When the user logs out, redirect to the home page and close any auth
   // related UI that may be open. This ensures the app shows a clear home state
@@ -184,20 +224,82 @@ const AppContent: React.FC = () => {
       description: 'Risposte rapide tratte dalla guida TFR: basi, scelte azienda/fondo e tassazione.',
       eyebrow: 'FAQ',
     },
+    'admin': {
+      title: 'Pannello Amministrazione',
+      description: 'Gestisci utenti e richieste di accesso al sistema.',
+      eyebrow: 'Admin',
+    },
   }), []);
 
-  const navItems: { id: DashboardSection; label: string }[] = [
-    { id: 'home', label: 'Home' },
-    { id: 'simulator', label: 'Simulatore' },
-    { id: 'choose-fund', label: 'Confronta Fondi' },
-    { id: 'have-fund', label: 'Analizza Fondo' },
-    { id: 'playbook', label: 'Guida' },
-    { id: 'tfr-faq', label: 'FAQ TFR' },
+  // Icon components for reuse
+  const HomeIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+    </svg>
+  );
+
+  const ToolsIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+    </svg>
+  );
+
+  const ResourcesIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+    </svg>
+  );
+
+  const navItems: NavItem[] = [
+    { 
+      id: 'home', 
+      label: 'Home', 
+      icon: <HomeIcon />
+    },
+    { 
+      id: 'tools', 
+      label: 'Strumenti', 
+      icon: <ToolsIcon />,
+      subItems: [
+        { id: 'simulator', label: 'Simulatore', description: 'Calcola la tua pensione' },
+        { id: 'choose-fund', label: 'Confronta Fondi', description: 'Trova il fondo ideale' },
+        { id: 'have-fund', label: 'Analizza Fondo', description: 'Verifica il tuo fondo' },
+      ]
+    },
+    { 
+      id: 'resources', 
+      label: 'Risorse', 
+      icon: <ResourcesIcon />,
+      subItems: [
+        { id: 'playbook', label: 'Guida Completa', description: 'Tutto sulla previdenza' },
+        { id: 'tfr-faq', label: 'FAQ TFR', description: 'Domande frequenti' },
+      ]
+    },
+    ...(user?.isAdmin ? [{ 
+      id: 'admin' as DashboardSection, 
+      label: '👑 Admin', 
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+        </svg>
+      )
+    }] : []),
   ];
 
-  const navButtonClasses = (id: DashboardSection) =>
-    `group relative w-full text-left rounded-xl transition-all duration-200 ${
-      activeSection === id
+  const navButtonClasses = (id: DashboardSection | string, isSubItem = false) => {
+    const isActive = activeSection === id;
+    const baseClasses = `group relative w-full text-left rounded-xl transition-all duration-200`;
+    
+    if (isSubItem) {
+      return `${baseClasses} ${
+        isActive
+          ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+          : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
+      } flex items-start gap-3 px-4 py-2.5 ml-2`;
+    }
+    
+    return `${baseClasses} ${
+      isActive
         ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-200/50 dark:shadow-blue-900/30 border-transparent'
         : 'bg-slate-50/50 text-slate-700 border border-slate-200/50 hover:bg-white hover:border-slate-300 hover:shadow-md dark:bg-slate-800/50 dark:text-slate-200 dark:border-slate-700/50 dark:hover:bg-slate-800 dark:hover:border-slate-600'
     } ${
@@ -205,6 +307,7 @@ const AppContent: React.FC = () => {
         ? 'flex items-center justify-center p-3' 
         : 'flex items-center gap-3 px-4 py-3'
     }`;
+  };
 
   const filteredFunds = useMemo(() => {
     return pensionFundsData.filter(fund => {
@@ -446,66 +549,100 @@ const AppContent: React.FC = () => {
 
             {/* Navigation Items */}
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              {navItems.map((item, index) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveSection(item.id)}
-                  className={navButtonClasses(item.id)}
-                  title={sidebarCollapsed ? item.label : undefined}
-                >
-                  {/* Icon with active indicator dot */}
-                  <span className={`relative flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${sidebarCollapsed ? 'mx-auto' : ''}`}>
-                    {index === 0 && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                      </svg>
-                    )}
-                    {index === 1 && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z" />
-                      </svg>
-                    )}
-                    {index === 2 && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
-                      </svg>
-                    )}
-                    {index === 3 && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
-                      </svg>
-                    )}
-                    {index === 4 && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                      </svg>
-                    )}
-                    {index === 5 && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
-                      </svg>
-                    )}
-                    {/* Active indicator dot for collapsed sidebar */}
-                    {activeSection === item.id && sidebarCollapsed && (
-                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full ring-2 ring-blue-600 animate-pulse"></span>
-                    )}
-                  </span>
-                  
-                  {/* Label */}
-                  {!sidebarCollapsed && (
-                    <span className="flex-1 text-left font-medium">{item.label}</span>
-                  )}
+              {navItems.map((item) => {
+                const hasSubItems = item.subItems && item.subItems.length > 0;
+                const isExpanded = expandedNavItem === item.id;
+                const isParentActive = hasSubItems && item.subItems?.some(sub => sub.id === activeSection);
+                
+                return (
+                  <div key={item.id}>
+                    {/* Main Nav Button */}
+                    <button
+                      onClick={() => {
+                        if (hasSubItems) {
+                          if (sidebarCollapsed) {
+                            setSidebarCollapsed(false);
+                            setExpandedNavItem(item.id as string);
+                          } else {
+                            setExpandedNavItem(isExpanded ? null : item.id as string);
+                          }
+                        } else {
+                          setActiveSection(item.id as DashboardSection);
+                        }
+                      }}
+                      className={navButtonClasses(item.id, false)}
+                      title={sidebarCollapsed ? item.label : undefined}
+                    >
+                      {/* Icon with active indicator dot */}
+                      <span className={`relative flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${sidebarCollapsed ? 'mx-auto' : ''}`}>
+                        {item.icon}
+                        {/* Active indicator dot for collapsed sidebar */}
+                        {(activeSection === item.id || isParentActive) && sidebarCollapsed && (
+                          <span className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full ring-2 ring-blue-600 animate-pulse"></span>
+                        )}
+                      </span>
+                      
+                      {/* Label */}
+                      {!sidebarCollapsed && (
+                        <span className="flex-1 text-left font-medium">{item.label}</span>
+                      )}
 
-                  {/* Active indicator */}
-                  {activeSection === item.id && !sidebarCollapsed && (
-                    <span className="flex-shrink-0">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </span>
-                  )}
-                </button>
-              ))}
+                      {/* Dropdown indicator or active indicator */}
+                      {!sidebarCollapsed && (
+                        <>
+                          {hasSubItems ? (
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                              fill="none" 
+                              viewBox="0 0 24 24" 
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          ) : (
+                            activeSection === item.id && (
+                              <span className="flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </span>
+                            )
+                          )}
+                        </>
+                      )}
+                    </button>
+
+                    {/* Sub-items (expanded) */}
+                    {hasSubItems && isExpanded && !sidebarCollapsed && (
+                      <div className="mt-1 space-y-1 ml-2 border-l-2 border-slate-200 dark:border-slate-700 pl-2">
+                        {item.subItems?.map((subItem) => (
+                          <button
+                            key={subItem.id}
+                            onClick={() => {
+                              setActiveSection(subItem.id);
+                              // Optionally collapse after selection on mobile
+                            }}
+                            className={navButtonClasses(subItem.id, true)}
+                          >
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{subItem.label}</div>
+                              {subItem.description && (
+                                <div className="text-xs opacity-70 mt-0.5">{subItem.description}</div>
+                              )}
+                            </div>
+                            {activeSection === subItem.id && (
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </nav>
         </aside>
@@ -552,6 +689,23 @@ const AppContent: React.FC = () => {
                 </div>
               ) : activeSection === 'simulator' ? (
                 <SimulatorPage theme={theme} />
+              ) : activeSection === 'admin' ? (
+                // Redirect to home if user is not admin
+                user?.isAdmin ? (
+                  <AdminPanel />
+                ) : (
+                  (() => {
+                    // Auto-redirect non-admin users to home
+                    setTimeout(() => setActiveSection('home'), 100);
+                    return (
+                      <div className="rounded-2xl border border-slate-200 bg-white/90 px-6 py-8 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 text-center">
+                        <p className="text-slate-600 dark:text-slate-400">
+                          Non hai i permessi per accedere a questa sezione. Reindirizzamento...
+                        </p>
+                      </div>
+                    );
+                  })()
+                )
               ) : activeSection === 'home' ? (
                 <HomePage onNavigate={(section) => setActiveSection(section)} />
               ) : (
@@ -591,7 +745,7 @@ const AppContent: React.FC = () => {
                       </section>
                     </ScrollReveal>
 
-                    <div className="space-y-6 min-w-0">
+                    <div className="space-y-6 min-w-0" data-section="funds">
                       <ScrollReveal variant="slideUp" duration={0.6} delay={0.1} threshold={0.2}>
                         <FilterControls
                           searchTerm={searchTerm}
@@ -775,6 +929,73 @@ const AppContent: React.FC = () => {
       />
       <FeedbackWidget onRequireLogin={openLoginModal} />
       <Footer sidebarCollapsed={sidebarCollapsed} hasSidebar={true} />
+      
+      {/* Fixed Free Plan Banner Overlay */}
+      {!isFullAccess && user && showFreeBanner && !authLoading && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom duration-500">
+          <div className="mx-auto max-w-7xl px-3 sm:px-4 pb-3 sm:pb-4">
+            <div className="rounded-t-xl sm:rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm shadow-lg dark:border-slate-700 dark:bg-slate-900/95">
+              <div className="flex items-start gap-3 p-3 sm:p-4">
+                {/* Icon */}
+                <div className="flex-shrink-0 mt-0.5">
+                  <svg className="w-5 h-5 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  {userStatus === 'pending' ? (
+                    <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300">
+                      <span className="font-semibold text-slate-900 dark:text-slate-100">⏳ Richiesta in attesa.</span>{' '}
+                      La tua richiesta è in fase di approvazione. Una volta approvata, avrai accesso completo a tutti i fondi.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300">
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">Piano gratuito attivo.</span>{' '}
+                        Accesso ai <strong>primi 10 fondi</strong>. Passa a Full Access per oltre 1.000 fondi e strumenti avanzati.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <button
+                          onClick={() => setShowUpgradeDialog(true)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                        >
+                          <span>Scopri Full Access</span>
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => {
+                            const element = document.querySelector('[data-section="funds"]');
+                            element?.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                          className="text-xs sm:text-sm text-slate-600 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 transition-colors underline decoration-dotted underline-offset-2"
+                        >
+                          Vai ai fondi
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Close button */}
+                <button
+                  onClick={() => setShowFreeBanner(false)}
+                  className="flex-shrink-0 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
+                  aria-label="Chiudi banner"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       </div>
     </>
   );

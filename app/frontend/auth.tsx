@@ -59,7 +59,9 @@ async function fetchMe(token?: string): Promise<AuthUser | null> {
     const data = await res.json();
     const plan = typeof data.plan === 'string' ? data.plan.toLowerCase() : 'free';
     const normalizedPlan = plan === 'full-access' ? 'full-access' : 'free';
-    return { ...data, plan: normalizedPlan } as AuthUser;
+    const roles = data.roles || [];
+    const isAdmin = roles.includes('admin');
+    return { ...data, plan: normalizedPlan, isAdmin } as AuthUser;
   } catch (e) {
     console.warn('[Auth] fetchMe error:', e);
     return null;
@@ -321,53 +323,129 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return;
     }
 
-    // Open popup to provider login endpoint. The backend will postMessage back the token and set cookie.
-    const provider = 'google';
-    const redirect = window.location.origin; // Backend will use this to postMessage
-    const loginUrl = `${API_BASE}/auth/${provider}/login?redirect=${encodeURIComponent(redirect)}`;
-    
-    const width = 600;
-    const height = 700;
-    const top = window.top ? Math.max(0, (window.top.innerHeight - height) / 2) : 100;
-    const left = window.top ? Math.max(0, (window.top.innerWidth - width) / 2) : 100;
+    // For Google OAuth, use Google Identity Services (GIS) with popup
+    try {
+      // Wait for GIS library to load
+      await waitForGoogleGSI();
+      
+      // Get OAuth config from backend
+      const configRes = await fetch(`${API_BASE}/auth/google/config`, {
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' },
+      });
+      
+      if (!configRes.ok) {
+        throw new Error('Failed to load OAuth configuration');
+      }
+      
+      const config = await configRes.json();
+      const clientId = config.client_id;
+      
+      if (!clientId) {
+        throw new Error('OAuth client_id not configured');
+      }
 
-    const popup = window.open(
-      loginUrl,
-      'oauth_popup',
-      `width=${width},height=${height},left=${left},top=${top}`
-    );
-
-    if (!popup) {
-      // Failed to open popup (popup blocked)
-      // Fallback: navigate top-level to login
-      window.location.href = loginUrl;
-      return;
-    }
-    return new Promise<void>((resolve) => {
-      let settled = false;
-
-      // Watch for user state change using ref (not closure)
-      const checkInterval = setInterval(() => {
-        if (userRef.current !== null) {
-          settled = true;
-          clearInterval(checkInterval);
-          clearTimeout(timeout);
-          resolve();
-        }
-      }, 200);
-
-      // Safety timeout: after 60s give up waiting
-      const timeout = setTimeout(() => {
-        if (settled) return;
-        settled = true;
-        clearInterval(checkInterval);
-        fetchMe(sessionToken).then(u => {
-          if (u) {
-            setUser(u);
-            userRef.current = u;
+      // Initialize Google Identity Services OAuth client
+      const googleGsi = (window as any).google;
+      const client = googleGsi.accounts.oauth2.initCodeClient({
+        client_id: clientId,
+        scope: 'openid email profile',
+        ux_mode: 'popup',
+        callback: async (response: any) => {
+          console.log('[Auth] Google callback received:', { 
+            hasError: !!response.error, 
+            hasCode: !!response.code 
+          });
+          
+          if (response.error) {
+            console.error('[Auth] Google OAuth error:', response.error);
+            alert(`Google login failed: ${response.error}`);
+            return;
           }
-        }).finally(() => resolve());
-      }, 60_000);
+          
+          // Exchange the authorization code for a session
+          try {
+            console.log('[Auth] Exchanging code...');
+            const exchangeRes = await fetch(`${API_BASE}/auth/google/exchange`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Origin': window.location.origin,
+              },
+              body: JSON.stringify({
+                code: response.code,
+                redirect_uri: window.location.origin,
+              }),
+            });
+            
+            console.log('[Auth] Exchange response status:', exchangeRes.status);
+            
+            if (!exchangeRes.ok) {
+              const errorData = await exchangeRes.json().catch(() => ({}));
+              const errorMsg = errorData.detail || 'Failed to exchange authorization code';
+              console.error('[Auth] Exchange failed:', errorMsg);
+              alert(`Login failed: ${errorMsg}`);
+              return;
+            }
+            
+            const result = await exchangeRes.json();
+            console.log('[Auth] Exchange successful, has token:', !!result.token);
+            const token = result.token;
+            
+            if (token) {
+              persistToken(token);
+            }
+            
+            // Fetch user profile
+            console.log('[Auth] Fetching user profile...');
+            const userData = await fetchMe(token);
+            if (userData) {
+              console.log('[Auth] User authenticated:', userData.email);
+              setUser(userData);
+              userRef.current = userData;
+            } else {
+              console.error('[Auth] Failed to fetch user data');
+              alert('Login succeeded but failed to load user profile. Please refresh the page.');
+            }
+          } catch (err) {
+            console.error('[Auth] Code exchange failed:', err);
+            alert(`Login failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+          }
+        },
+      });
+
+      // Request authorization code
+      console.log('[Auth] Requesting Google authorization code...');
+      client.requestCode();
+    } catch (err) {
+      console.error('[Auth] Google login failed:', err);
+      throw err;
+    }
+  };
+
+  // Helper to wait for Google GIS library to load
+  const waitForGoogleGSI = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (typeof (window as any).google !== 'undefined' && (window as any).google.accounts) {
+        resolve();
+        return;
+      }
+      
+      let attempts = 0;
+      const maxAttempts = 50; // 5 seconds max
+      const interval = setInterval(() => {
+        attempts++;
+        if (typeof (window as any).google !== 'undefined' && (window as any).google.accounts) {
+          clearInterval(interval);
+          resolve();
+        } else if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          reject(new Error('Google Identity Services library failed to load'));
+        }
+      }, 100);
     });
   };
 

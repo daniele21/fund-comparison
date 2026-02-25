@@ -32,7 +32,7 @@ class JWTConfig(BaseConfig):
     
     # Token expiration
     access_token_expire_minutes: int = Field(
-        default=15,
+        default=60,  # 1 hour for development
         description="Access token expiration in minutes",
         ge=1,
         le=1440  # Max 24 hours
@@ -47,12 +47,12 @@ class JWTConfig(BaseConfig):
     
     # JWT Claims
     issuer: str = Field(
-        default="webapp-factory-api",
+        default="webapp-factory-dev",
         description="JWT issuer (iss claim)"
     )
     
     audience: str = Field(
-        default="webapp-factory-app",
+        default="webapp-factory-dev-app",
         description="JWT audience (aud claim)"
     )
     
@@ -306,6 +306,12 @@ class AuthConfig(BaseConfig):
         default=True,
         description="Require an email address when redeeming an invitation code"
     )
+
+    # Admin users configuration
+    admin_emails: List[str] = Field(
+        default_factory=list,
+        description="List of email addresses that should be granted admin role automatically"
+    )
     
     @validator('cors_origins')
     def validate_cors_origins(cls, v):
@@ -344,6 +350,13 @@ class AuthConfig(BaseConfig):
             return False
         
         return True
+    
+    def is_admin_email(self, email: str) -> bool:
+        """Check if an email address is in the admin list."""
+        if not email:
+            return False
+        email_lower = email.lower().strip()
+        return email_lower in [admin.lower().strip() for admin in self.admin_emails]
 
 
 # Default configuration instances
@@ -381,6 +394,10 @@ def get_auth_config() -> AuthConfig:
     invite_requires_email = _parse_bool(os.getenv("APP_AUTH_INVITE_REQUIRE_EMAIL"))
     if invite_requires_email is not None:
         config.invitation_requires_email = invite_requires_email
+
+    admin_emails = _parse_csv(os.getenv("APP_AUTH_ADMIN_EMAILS"))
+    if admin_emails:
+        config.admin_emails = admin_emails
 
     return config
 
