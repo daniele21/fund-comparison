@@ -8,6 +8,9 @@ import StepMontante from './StepMontante';
 import StepFiscale from './StepFiscale';
 import StepImpostaPensione from './StepImpostaPensione';
 import SimulatorDisclaimer from './SimulatorDisclaimer';
+import SectionHeader from '../common/SectionHeader';
+import GuidedTour, { useGuidedTour, FirstVisitBanner } from '../common/GuidedTour';
+import { simulatorTourSteps } from '../../config/tourSteps';
 
 type SimulatorStep = 'montante' | 'fiscale' | 'imposta';
 
@@ -154,6 +157,16 @@ const FundSelector: React.FC<{
 const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
   const [activeStep, setActiveStep] = useState<SimulatorStep>('montante');
   const { selectedFundIds } = useGuidedComparator();
+  
+  // Tour guidato
+  const { 
+    isOpen: isTourOpen, 
+    shouldShowBanner, 
+    startTour, 
+    closeTour, 
+    dismissBanner,
+    completeTour,
+  } = useGuidedTour('simulator');
 
   // Fund from context or manual selection
   const contextFunds = useMemo(() => {
@@ -188,16 +201,49 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
 
   return (
     <div className="space-y-6 sm:space-y-8 lg:space-y-10">
-      {/* ── Hero / Intro ─────────────────────────────────────── */}
+      {/* Banner primo accesso */}
+      {shouldShowBanner && (
+        <FirstVisitBanner
+          onStartTour={startTour}
+          onDismiss={dismissBanner}
+        />
+      )}
+
+      {/* Header unificato */}
+      <SectionHeader
+        eyebrow="Simulazione"
+        title="Simulatore Previdenziale"
+        description="Calcola la crescita del tuo investimento, il risparmio fiscale e scopri quanto potresti accumulare per la tua pensione."
+        badge={{ text: "🌟 Nuovo", variant: "new" }}
+        tourAction={{
+          label: "Tour Guidato",
+          onClick: startTour,
+        }}
+        stats={activeFunds.length > 0 ? [
+          {
+            label: "Fondo Selezionato",
+            value: activeFunds[0].pip,
+            icon: (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            ),
+          },
+        ] : undefined}
+      />
+
+      {/* ── Contenuto originale (con data-tour attributes) ─────────────────────────────────────── */}
       <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:border-slate-800 dark:bg-slate-900/80 p-6 sm:p-8 lg:p-10 shadow-sm">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-3">
-          Simulatore Previdenziale
-        </h1>
-        <p className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-6 sm:mb-8 max-w-2xl">
-          Questo simulatore ti guida in <strong className="text-blue-600 dark:text-blue-400">3 passaggi</strong> per
-          capire quanto accumulerai nel tuo fondo pensione, quanto risparmierai di tasse ogni anno, e quanto riceverai
-          effettivamente al momento della pensione. Basta muovere gli slider per ottenere una stima personalizzata.
-        </p>
+        <div className="mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-3">
+            Come funziona?
+          </h2>
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
+            Questo simulatore ti guida in <strong className="text-blue-600 dark:text-blue-400">3 passaggi</strong> per
+            capire quanto accumulerai nel tuo fondo pensione, quanto risparmierai di tasse ogni anno, e quanto riceverai
+            effettivamente al momento della pensione.
+          </p>
+        </div>
 
         {/* Problema → Soluzione */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-5 sm:mb-6">
@@ -235,7 +281,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
       </div>
 
       {/* ── Step Navigation (horizontal stepper) ─────────────── */}
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4" data-tour="simulator-tabs">
         {STEPS.map((step, idx) => {
           const isActive = step.id === activeStep;
           const isCompleted = idx < currentStepIndex;
@@ -286,7 +332,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
 
       {/* ── Fund Selector (when no context funds) ────────────── */}
       {contextFunds.length === 0 && (
-        <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-800/60 dark:border-slate-800 p-5 sm:p-6 shadow-sm">
+        <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-800/60 dark:border-slate-800 p-5 sm:p-6 shadow-sm" data-tour="fund-selector">
           <FundSelector
             selectedFund={manualFund}
             onSelect={setManualFund}
@@ -296,7 +342,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
       )}
 
       {/* ── Step Content ─────────────────────────────────────── */}
-      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-900/80 dark:border-slate-800 p-5 sm:p-8 lg:p-10 shadow-sm">
+      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-900/80 dark:border-slate-800 p-5 sm:p-8 lg:p-10 shadow-sm" data-tour="simulator-chart">
         {activeStep === 'montante' && (
           <StepMontante
             selectedFunds={activeFunds}
@@ -391,6 +437,16 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
 
       {/* ── Disclaimer ─────────────────────────────────────── */}
       <SimulatorDisclaimer variant="default" />
+
+      {/* ── Tour Guidato ───────────────────────────────────── */}
+      <GuidedTour
+        steps={simulatorTourSteps}
+        isOpen={isTourOpen}
+        onClose={closeTour}
+        onComplete={completeTour}
+        storageKey="simulator"
+        showSkipButton={true}
+      />
     </div>
   );
 };
