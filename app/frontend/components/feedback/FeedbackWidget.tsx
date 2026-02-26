@@ -240,21 +240,21 @@ export const FeedbackWidget: React.FC<FeedbackWidgetProps> = ({ onRequireLogin }
 			<Dialog.Trigger asChild>
 				<button
 					type="button"
-					className="group fixed bottom-20 md:bottom-20 right-4 md:right-6 z-30 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-12 w-12 md:h-14 md:w-14 md:hover:w-auto md:hover:px-4 md:hover:py-2.5 md:hover:rounded-xl md:hover:gap-3 text-sm font-semibold shadow-xl shadow-blue-600/40 hover:shadow-2xl hover:shadow-blue-600/50 transition-all duration-300 ease-out active:scale-95 fc-feedback-opaque overflow-hidden cursor-pointer"
+					className="group fixed bottom-20 md:bottom-20 right-4 md:right-6 z-[70] flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-12 w-12 md:h-14 md:w-14 md:hover:w-auto md:hover:px-4 md:hover:py-2.5 md:hover:rounded-xl md:hover:gap-3 text-sm font-semibold shadow-xl shadow-blue-600/40 hover:shadow-2xl hover:shadow-blue-600/50 transition-all duration-300 ease-out active:scale-95 fc-feedback-opaque overflow-hidden cursor-pointer"
 					aria-label="Apri il feedback"
 				>
 					<MessageCircle className="h-5 w-5 md:h-6 md:w-6 md:group-hover:h-5 md:group-hover:w-5 transition-all duration-300 ease-out flex-shrink-0" aria-hidden="true" />
 					<span className="max-w-0 md:group-hover:max-w-xs opacity-0 md:group-hover:opacity-100 whitespace-nowrap transition-all duration-300 ease-out overflow-hidden">
-						Non trovi il tuo fondo? Segnalacelo
+						Qualche feedback da segnalarci?
 					</span>
 				</button>
 			</Dialog.Trigger>
 			<Dialog.Portal>
 				<Dialog.Overlay
-					className="fixed inset-0 z-40 bg-black/40 dark:bg-black/60 backdrop-blur-sm transition-opacity"
+					className="fixed inset-0 z-[80] bg-black/40 dark:bg-black/60 backdrop-blur-sm transition-opacity"
 				/>
 				<Dialog.Content
-					className="fixed left-1/2 top-1/2 z-50 w-[min(95vw,520px)] max-h-[92vh] sm:max-h-[90vh] -translate-x-1/2 -translate-y-1/2 rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl shadow-slate-900/20 backdrop-blur-xl supports-[backdrop-filter]:backdrop-blur-2xl focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-black/50 animate-in fade-in-0 zoom-in-95 duration-200 overflow-hidden"
+					className="fixed left-1/2 top-1/2 z-[90] w-[min(95vw,520px)] max-h-[92vh] sm:max-h-[90vh] -translate-x-1/2 -translate-y-1/2 rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl shadow-slate-900/20 backdrop-blur-xl supports-[backdrop-filter]:backdrop-blur-2xl focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-black/50 animate-in fade-in-0 zoom-in-95 duration-200 overflow-hidden"
 				>
 					<div className="flex h-full max-h-[85vh] flex-col">
 						<header className="flex items-start justify-between gap-3 sm:gap-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-850 px-4 sm:px-6 py-4 sm:py-5">

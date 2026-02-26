@@ -325,6 +325,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // For Google OAuth, use Google Identity Services (GIS) with popup
     try {
+      setLoading(true);
       // Wait for GIS library to load
       await waitForGoogleGSI();
       
@@ -345,84 +346,75 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw new Error('OAuth client_id not configured');
       }
 
-      // Initialize Google Identity Services OAuth client
-      const googleGsi = (window as any).google;
-      const client = googleGsi.accounts.oauth2.initCodeClient({
-        client_id: clientId,
-        scope: 'openid email profile',
-        ux_mode: 'popup',
-        callback: async (response: any) => {
-          console.log('[Auth] Google callback received:', { 
-            hasError: !!response.error, 
-            hasCode: !!response.code 
-          });
-          
-          if (response.error) {
-            console.error('[Auth] Google OAuth error:', response.error);
-            alert(`Google login failed: ${response.error}`);
-            return;
-          }
-          
-          // Exchange the authorization code for a session
-          try {
-            console.log('[Auth] Exchanging code...');
-            const exchangeRes = await fetch(`${API_BASE}/auth/google/exchange`, {
-              method: 'POST',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'Origin': window.location.origin,
-              },
-              body: JSON.stringify({
-                code: response.code,
-                redirect_uri: window.location.origin,
-              }),
-            });
-            
-            console.log('[Auth] Exchange response status:', exchangeRes.status);
-            
-            if (!exchangeRes.ok) {
-              const errorData = await exchangeRes.json().catch(() => ({}));
-              const errorMsg = errorData.detail || 'Failed to exchange authorization code';
-              console.error('[Auth] Exchange failed:', errorMsg);
-              alert(`Login failed: ${errorMsg}`);
-              return;
-            }
-            
-            const result = await exchangeRes.json();
-            console.log('[Auth] Exchange successful, has token:', !!result.token);
-            const token = result.token;
-            
-            if (token) {
-              persistToken(token);
-            }
-            
-            // Fetch user profile
-            console.log('[Auth] Fetching user profile...');
-            const userData = await fetchMe(token);
-            if (userData) {
-              console.log('[Auth] User authenticated:', userData.email);
+      await new Promise<void>((resolve, reject) => {
+        const googleGsi = (window as any).google;
+        const client = googleGsi.accounts.oauth2.initCodeClient({
+          client_id: clientId,
+          scope: 'openid email profile',
+          ux_mode: 'popup',
+          callback: async (response: any) => {
+            try {
+              console.log('[Auth] Google callback received:', {
+                hasError: !!response.error,
+                hasCode: !!response.code
+              });
+
+              if (response.error) {
+                reject(new Error(`Google login failed: ${response.error}`));
+                return;
+              }
+
+              const exchangeRes = await fetch(`${API_BASE}/auth/google/exchange`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest',
+                  'Origin': window.location.origin,
+                },
+                body: JSON.stringify({
+                  code: response.code,
+                  redirect_uri: window.location.origin,
+                }),
+              });
+
+              if (!exchangeRes.ok) {
+                const errorData = await exchangeRes.json().catch(() => ({} as { detail?: string }));
+                reject(new Error(errorData.detail || 'Failed to exchange authorization code'));
+                return;
+              }
+
+              const result = await exchangeRes.json();
+              const token = result.token as string | undefined;
+
+              if (token) {
+                persistToken(token);
+              }
+
+              const userData = await fetchMe(token);
+              if (!userData) {
+                reject(new Error('Login succeeded but failed to load user profile'));
+                return;
+              }
+
               setUser(userData);
               userRef.current = userData;
-            } else {
-              console.error('[Auth] Failed to fetch user data');
-              alert('Login succeeded but failed to load user profile. Please refresh the page.');
+              resolve();
+            } catch (callbackErr) {
+              reject(callbackErr instanceof Error ? callbackErr : new Error('Unknown OAuth callback error'));
             }
-          } catch (err) {
-            console.error('[Auth] Code exchange failed:', err);
-            alert(`Login failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
-          }
-        },
-      });
+          },
+        });
 
-      // Request authorization code
-      console.log('[Auth] Requesting Google authorization code...');
-      client.requestCode();
+        console.log('[Auth] Requesting Google authorization code...');
+        client.requestCode();
+      });
     } catch (err) {
       console.error('[Auth] Google login failed:', err);
       throw err;
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -18,6 +18,7 @@ VITE_PUBLIC_ANALYTICS_KEY=dev-analytics    # Optional analytics identifier
 ```
 
 Any variable prefixed with `VITE_` becomes available via `import.meta.env`.
+Do not place backend variables (`APP_*`) in frontend env files.
 
 ## Install & Run
 

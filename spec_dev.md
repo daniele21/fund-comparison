@@ -205,3 +205,86 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - [x] UX states principali coperti (tour run/skip/complete).
 - [x] Verifiche locali eseguite con evidenza.
 - [x] Documentazione aggiornata.
+
+---
+
+## Feature Note - Deploy Multi-Environment (test/prod)
+
+## 1. Overview
+- Feature name: Runbook e script deploy unificati per test/prod
+- Owner: Codex
+- Date: 2026-02-26
+- Status: `done`
+- Related issue/PR: n/a
+
+## 2. Problem Statement
+- Current behavior: deploy backend/frontend gestito con comandi manuali sparsi e configurazioni non allineate.
+- Pain points: difficile separare test/prod, alta probabilita di errore su env vars e secret mapping.
+- Impatto su utenti/business: rischio deploy su ambiente sbagliato e regressioni runtime.
+
+## 3. Goals and Non-Goals
+### Goals
+- Standardizzare deploy `test` e `prod` con script versionati.
+- Separare variabili non sensibili da secrets.
+- Rendere esplicito il flusso locale vs server.
+
+### Non-Goals
+- Nessun refactor di auth/business logic backend.
+- Nessun cambio su schema API.
+
+## 4. Scope
+- Frontend scope (`app/frontend/...`): doc env frontend aggiornata (`README.md`).
+- Backend scope (`app/backend/...`): nessuna modifica runtime applicativa.
+- Data/config scope (`data/`, `infra/`, env vars):
+  - aggiunti template in `infra/deploy/` per `test`/`prod`.
+  - aggiunti script in `scripts/deploy/`.
+- Out of scope: pipeline CI/CD completa.
+
+## 6. Technical Design
+- Script nuovi:
+  - `scripts/deploy/deploy_backend.sh`
+  - `scripts/deploy/deploy_frontend.sh`
+  - `scripts/deploy/deploy_all.sh`
+- Config ambiente:
+  - `infra/deploy/environments/*.env.example`
+  - `infra/deploy/secrets/*.secrets.example`
+  - `infra/deploy/backend/*.json.example`
+- Runbook operativo:
+  - `docs/DEPLOY_TEST_PROD.md`
+
+## 7. Security and Permissions
+- Dati sensibili trattati: secret mapping verso Secret Manager.
+- Mitigazioni:
+  - nessun secret hardcoded nei file versionati.
+  - `.gitignore` aggiornato per evitare commit di file env reali (`*.env`, `*.secrets`, `env_test.json`).
+
+## 10. Testing Strategy
+- Verifica sintassi script:
+  - `bash -n scripts/deploy/deploy_backend.sh`
+  - `bash -n scripts/deploy/deploy_frontend.sh`
+  - `bash -n scripts/deploy/deploy_all.sh`
+- QA manuale ripetibile:
+  - deploy `test` end-to-end con `deploy_all.sh`.
+  - deploy `prod` end-to-end con `deploy_all.sh`.
+
+## 11. Documentation Deliverables
+- Files aggiornati in `docs/`: `docs/DEPLOY_TEST_PROD.md`.
+- `README.md` update richiesto: `yes`.
+- Runbook/operational notes: inclusi per locale/server e rollback.
+
+## 12. Rollout and Risk Management
+- Rollout plan: adozione progressiva script nuovi mantenendo fallback ai comandi manuali.
+- Deploy targets: `local | test | production`.
+- Env/secrets changes:
+  - introdotti template e mapping separati per ambiente.
+- Monitoring after deploy:
+  - check URL Cloud Run, login, chiamate API frontend.
+- Rollback plan:
+  - deploy immagine precedente Cloud Run.
+  - rollback release Firebase Hosting.
+
+## 13. Acceptance Criteria (Definition of Done)
+- [x] Scope implementato senza regressioni note.
+- [x] Contratti input/output aggiornati e validati.
+- [x] Verifiche locali eseguite con evidenza.
+- [x] Documentazione aggiornata.

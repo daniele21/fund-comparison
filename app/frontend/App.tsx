@@ -387,7 +387,7 @@ const AppContent: React.FC = () => {
           onClose={closeLoginModal}
           onSuccess={() => {
             closeLoginModal();
-            setActiveSection('playbook');
+            setActiveSection('home');
             setView('dashboard');
           }}
         />
@@ -1087,6 +1087,7 @@ const AppContent: React.FC = () => {
           const shouldOpenPayment = pendingUpgradeAfterLogin;
           closeLoginModal();
           setShowUpgradeDialog(false);
+          setActiveSection('home');
           setView('dashboard');
           if (shouldOpenPayment) {
             setShowFakePayment(true);

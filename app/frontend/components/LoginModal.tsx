@@ -15,6 +15,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
 
   const isInviteMode = authMode === 'invite_code';
   const isOpenAccess = authMode === 'none';
+  const isAuthenticating = busy || loading;
 
   // Reset busy state when modal closes
   useEffect(() => {
@@ -138,9 +139,22 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
       role="dialog"
       aria-modal="true"
       className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
-      onClick={onClose}
+      onClick={() => {
+        if (!isAuthenticating) {
+          onClose();
+        }
+      }}
     >
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+        {isAuthenticating && !isInviteMode && !isOpenAccess && (
+          <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-300 flex items-center gap-2">
+            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="4" />
+              <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+            </svg>
+            Completamento accesso in corso...
+          </div>
+        )}
         {isOpenAccess ? (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Accesso non richiesto</h2>
@@ -166,7 +180,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
             <div className="mt-6 space-y-3">
               <button
                 onClick={handleLogin}
-                disabled={busy || loading}
+                disabled={isAuthenticating}
                 className="w-full inline-flex items-center justify-center gap-x-2 px-4 py-3 bg-white dark:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-semibold hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-60 shadow-sm"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -175,11 +189,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                 </svg>
-                {busy || loading ? 'Apertura login...' : 'Accedi con Google'}
+                {isAuthenticating ? 'Apertura login...' : 'Accedi con Google'}
               </button>
 
               <button
                 onClick={onClose}
+                disabled={isAuthenticating}
                 className="w-full inline-flex items-center justify-center gap-x-2 px-4 py-2 bg-slate-100 text-slate-800 rounded-lg hover:bg-slate-200"
               >
                 Annulla

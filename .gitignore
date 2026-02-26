@@ -63,6 +63,9 @@ app/backend/.env.production
 app/backend/deploy_from_env.py
 app/backend/DEPLOY.md
 app/backend/env_prod.json
+app/backend/env_test.json
+infra/deploy/environments/*.env
+infra/deploy/secrets/*.secrets
 app/backend/README_DEPLOY.md
 app/frontend/.env.production
 scripts/diagnose-oauth-invalid-client.sh
@@ -94,3 +97,9 @@ app/frontend/data/funds copy.ts
 app/frontend/data/tfr_faq.txt
 scripts/compare_funds.js
 scripts/GENERATE_FUNDS.md
+
+app/backend/.env.development.local
+app/backend/.env.test.local
+app/backend/.env.google-invite.local
+app/backend/.env.invite.local
+app/backend/.env.noauth.local

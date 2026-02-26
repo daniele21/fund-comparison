@@ -2,7 +2,25 @@
 
 Minimal repo for fund comparison utilities.
 
+## Deploy test/prod (recommended)
+
+For a unified `test`/`prod` deployment workflow (Cloud Run + Firebase Hosting), use the runbook:
+
+- `docs/DEPLOY_TEST_PROD.md`
+
+Quick commands:
+
+```bash
+# Test
+scripts/deploy/deploy_all.sh --env test --build-backend
+
+# Production
+scripts/deploy/deploy_all.sh --env prod --build-backend
+```
+
 ## Deploying the FastAPI backend (Cloud Run)
+
+Legacy manual reference section. Prefer `scripts/deploy/*` + `docs/DEPLOY_TEST_PROD.md` for ongoing operations.
 
 The repository contains a Dockerfile for the FastAPI backend under `app/backend/`. Build and push the container, then deploy to Cloud Run. Keep secrets in Secret Manager and reference them via `--set-secrets` when deploying.
 

@@ -39,6 +39,14 @@ pnpm --dir app/frontend build
 firebase deploy --only hosting,firestore
 ```
 
+For a two-environment flow (`test`/`prod`) with Cloud Run + Hosting, use the dedicated runbook:
+
+- `docs/DEPLOY_TEST_PROD.md`
+
+In particular:
+- `test` can be deployed to a Hosting preview channel (`firebase hosting:channel:deploy ...`)
+- `prod` should deploy to live Hosting (`firebase deploy --only hosting`)
+
 The Hosting configuration in `firebase.json` serves the contents of `app/frontend/dist` and rewrites all requests to `index.html` so client-side routing works. Remember to set `VITE_API_BASE` during your frontend build so calls go to the deployed backend (for example a Cloud Run URL).
 
 ## Firestore rules & indexes
