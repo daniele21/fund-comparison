@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "financial-suite"
+  },
+  "targets": {
+    "financial-suite": {
+      "hosting": {
+        "app": [
+          "fund-comparison-0685938029"
+        ]
+      }
+    }
   }
 }

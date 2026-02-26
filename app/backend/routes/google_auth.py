@@ -14,10 +14,12 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import logging
 import os
+import re
 from typing import Optional
 from urllib.parse import urlparse
 
 from backend.services.google_oauth_service import get_google_oauth_service, GoogleOAuthService
+from backend.services.auth_service import _get_redirect_uri
 from backend.services.auth_service import get_current_user
 from backend.services import user_service
 from backend.services.admin_notification_service import AdminNotificationService
@@ -76,8 +78,11 @@ def _verify_origin(request: Request, allowed_origins: list[str]) -> str:
     parsed = urlparse(origin)
     origin_base = f"{parsed.scheme}://{parsed.netloc}"
     
+    origin_regex = os.getenv("APP_CORS_ALLOW_ORIGIN_REGEX")
+    regex_match = bool(origin_regex and re.match(origin_regex, origin_base))
+
     # Check against allowed origins
-    if origin_base not in allowed_origins:
+    if origin_base not in allowed_origins and not regex_match:
         logger.warning(
             "Request from unauthorized origin: %s (allowed: %s)",
             origin_base,
@@ -163,6 +168,17 @@ def _get_cookie_config() -> dict:
     return cookie_name, config
 
 
+def _get_google_redirect_uri() -> Optional[str]:
+    """Resolve a stable redirect URI for Google OAuth code flow."""
+    template = os.getenv("APP_OAUTH_REDIRECT_URI_TEMPLATE")
+    if template:
+        return template.replace("{provider}", "google")
+    explicit = os.getenv("APP_OAUTH_REDIRECT_URI")
+    if explicit:
+        return explicit
+    return None
+
+
 def _create_app_session(user_info: dict, user_profile: Optional[dict] = None, provider: str = "google") -> str:
     """
     Create application session JWT
@@ -244,12 +260,27 @@ async def get_google_config(
     Returns configuration needed to initialize Google Identity Services
     on the frontend. This includes client_id and other parameters.
     """
-    # Verify origin
     allowed_origins = _get_allowed_origins()
-    origin = _verify_origin(request, allowed_origins)
-    
-    # Get configuration
-    config = google_oauth.get_authorization_config(redirect_uri=origin)
+    frontend_base = getattr(settings, "FRONTEND_BASE_URL", None) or os.getenv("APP_FRONTEND_BASE_URL")
+    fallback_origin = allowed_origins[0] if allowed_origins else frontend_base
+
+    # `/google/config` only exposes public client configuration; keep strict
+    # origin checks on `/google/exchange`, but avoid hard failures here when
+    # browsers/proxies omit Origin/Referer.
+    resolved_origin = fallback_origin
+    try:
+        resolved_origin = _verify_origin(request, allowed_origins)
+    except HTTPException:
+        if frontend_base:
+            resolved_origin = frontend_base
+        elif fallback_origin:
+            resolved_origin = fallback_origin
+        else:
+            raise
+
+    # Use the server callback redirect URI registered in Google OAuth client.
+    # This avoids needing to add ephemeral Hosting preview URLs as redirect URIs.
+    config = google_oauth.get_authorization_config(redirect_uri=_get_redirect_uri("google"))
     
     # Don't send state in config; frontend should generate its own
     config.pop("state", None)
@@ -286,8 +317,9 @@ async def exchange_google_code(
     allowed_origins = _get_allowed_origins()
     origin = _verify_origin(request, allowed_origins)
     
-    # Use origin as redirect_uri (required for popup flow)
-    redirect_uri = body.redirect_uri or origin
+    # Use the exact redirect_uri used during authorization, otherwise Google will
+    # reject the token exchange.
+    redirect_uri = body.redirect_uri or _get_redirect_uri("google")
     
     # Get expected Workspace domain if configured
     expected_domain = os.getenv("APP_GOOGLE_WORKSPACE_DOMAIN")

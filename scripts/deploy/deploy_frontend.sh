@@ -74,6 +74,7 @@ for var_name in "${required_vars[@]}"; do
 done
 
 echo "Building frontend for ${TARGET_ENV}"
+echo "Using VITE_API_BASE=${FRONTEND_VITE_API_BASE}"
 if [[ -n "${FRONTEND_VITE_PUBLIC_ANALYTICS_KEY:-}" ]]; then
   (
     cd app/frontend
@@ -88,6 +89,18 @@ else
   )
 fi
 
+if command -v rg >/dev/null 2>&1; then
+  verify_cmd=(rg -q --fixed-strings "${FRONTEND_VITE_API_BASE}" app/frontend/dist)
+else
+  verify_cmd=(grep -R -q -F "${FRONTEND_VITE_API_BASE}" app/frontend/dist)
+fi
+
+if ! "${verify_cmd[@]}"; then
+  echo "Frontend build verification failed: expected API base '${FRONTEND_VITE_API_BASE}' not found in dist bundle" >&2
+  exit 1
+fi
+echo "Frontend build verification passed"
+
 FIREBASE_DEPLOY_MODE="${FIREBASE_DEPLOY_MODE:-live}"
 
 if [[ "$FIREBASE_DEPLOY_MODE" == "channel" ]]; then
@@ -97,7 +110,11 @@ if [[ "$FIREBASE_DEPLOY_MODE" == "channel" ]]; then
   fi
 
   echo "Deploying Hosting preview channel '${FIREBASE_CHANNEL_ID}' on project ${FIREBASE_PROJECT_ID}"
-  firebase hosting:channel:deploy "$FIREBASE_CHANNEL_ID" --only hosting --project "$FIREBASE_PROJECT_ID"
+  if [[ -n "${FIREBASE_HOSTING_TARGET:-}" ]]; then
+    firebase hosting:channel:deploy "$FIREBASE_CHANNEL_ID" --only "$FIREBASE_HOSTING_TARGET" --project "$FIREBASE_PROJECT_ID"
+  else
+    firebase hosting:channel:deploy "$FIREBASE_CHANNEL_ID" --project "$FIREBASE_PROJECT_ID"
+  fi
 else
   echo "Deploying Hosting live on project ${FIREBASE_PROJECT_ID}"
   firebase deploy --only hosting --project "$FIREBASE_PROJECT_ID"

@@ -3,6 +3,11 @@ from fastapi import APIRouter, Response, Request, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel, EmailStr
 import logging
+import base64
+import json
+import os
+import re
+from urllib.parse import parse_qs, urlparse
 
 from backend.services.auth_service import (
     build_login_url,
@@ -47,6 +52,33 @@ def _require_auth_mode(*modes: AuthMode):
     if auth_config.auth_mode not in modes:
         raise HTTPException(status_code=404, detail="Endpoint not available for current authentication mode")
     return auth_config
+
+
+def _decode_state_redirect(state: str) -> Optional[str]:
+    """Best-effort decode of redirect URL embedded in OAuth state."""
+    if not state:
+        return None
+    try:
+        padded = state + "=" * (-len(state) % 4)
+        raw = base64.urlsafe_b64decode(padded.encode("utf-8")).decode("utf-8")
+        payload = json.loads(raw)
+        redirect = payload.get("redirect")
+        return redirect if isinstance(redirect, str) and redirect.strip() else None
+    except Exception:
+        return None
+
+
+def _is_allowed_frontend_origin(origin_base: str) -> bool:
+    allowed = set(settings.cors_origins or [])
+    env_origins = os.getenv("APP_CORS_ORIGINS")
+    if env_origins:
+        allowed.update(item.strip() for item in env_origins.split(",") if item.strip())
+
+    if origin_base in allowed:
+        return True
+
+    origin_regex = os.getenv("APP_CORS_ALLOW_ORIGIN_REGEX")
+    return bool(origin_regex and re.match(origin_regex, origin_base))
 
 
 @router.get("/config")
@@ -98,6 +130,20 @@ async def oauth_login(provider: str, redirect: str):
         raise
 
     auth_url = build_login_url(provider, redirect)
+    parsed = urlparse(auth_url)
+    query = parse_qs(parsed.query)
+    built_client_id = query.get("client_id", [""])[0]
+    built_redirect_uri = query.get("redirect_uri", [""])[0]
+    logger.info(
+        "OAuth authorize URL built provider=%s auth_host=%s client_id=%s redirect_uri=%s redirect_param=%s app_env=%s app_envfile=%s",
+        provider,
+        parsed.netloc,
+        built_client_id,
+        built_redirect_uri,
+        redirect,
+        os.getenv("APP_ENV"),
+        os.getenv("APP_ENVFILE"),
+    )
     logger.info("Redirecting to OAuth provider URL for %s", provider)
     return RedirectResponse(url=auth_url)
 
@@ -115,17 +161,49 @@ async def oauth_callback(provider: str, code: str, state: str, response: Respons
 
         _require_auth_mode(AuthMode.GOOGLE)
 
+        logger.info(
+            "OAuth callback received provider=%s code_len=%s state_len=%s app_env=%s app_envfile=%s",
+            provider,
+            len(code or ""),
+            len(state or ""),
+            os.getenv("APP_ENV"),
+            os.getenv("APP_ENVFILE"),
+        )
+
         # Exchange auth code for session token
         session = await exchange_code(provider, code, state)
 
         # Prepare frontend redirect and origin
-        frontend_url = getattr(settings, 'FRONTEND_BASE_URL', None)
+        decoded_redirect = _decode_state_redirect(state)
+        default_frontend = getattr(settings, 'FRONTEND_BASE_URL', None)
+        frontend_url = decoded_redirect or default_frontend
+        logger.info(
+            "OAuth callback redirect resolution decoded_redirect=%s default_frontend=%s chosen_frontend=%s",
+            decoded_redirect,
+            default_frontend,
+            frontend_url,
+        )
         if not frontend_url:
                 raise HTTPException(status_code=500, detail="Frontend base URL not configured. Set APP_FRONTEND_BASE_URL or settings.FRONTEND_BASE_URL.")
 
-        from urllib.parse import urlparse
         p = urlparse(frontend_url)
         frontend_origin = f"{p.scheme}://{p.netloc}"
+        if not _is_allowed_frontend_origin(frontend_origin):
+            logger.warning(
+                "OAuth callback redirect origin not allowed: %s. Falling back to FRONTEND_BASE_URL=%s",
+                frontend_origin,
+                default_frontend,
+            )
+            frontend_url = getattr(settings, 'FRONTEND_BASE_URL', None)
+            if not frontend_url:
+                raise HTTPException(status_code=500, detail="Frontend base URL not configured. Set APP_FRONTEND_BASE_URL or settings.FRONTEND_BASE_URL.")
+            p = urlparse(frontend_url)
+            frontend_origin = f"{p.scheme}://{p.netloc}"
+        logger.info(
+            "OAuth callback final frontend target frontend_url=%s frontend_origin=%s",
+            frontend_url,
+            frontend_origin,
+        )
 
         # NOTE: we include the session token in the postMessage payload so that
         # popup-based flows can receive a token even when cookies are not sent by

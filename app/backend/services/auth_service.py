@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, Any, List
 import jwt
+import base64
+import json
 import os
 import secrets
 import time
@@ -206,10 +208,16 @@ def _get_redirect_uri(provider_name: str) -> str:
     '/auth/callback' but doesn't include provider, the provider segment will be
     inserted (e.g. '/auth/callback' -> '/auth/{provider}/callback').
     """
-    template = (
-        os.getenv("APP_OAUTH_REDIRECT_URI_TEMPLATE")
-        or os.getenv("APP_OAUTH_REDIRECT_URI")
-        or getattr(settings, "OAUTH_REDIRECT_URI", None)
+    template_from_env_template = os.getenv("APP_OAUTH_REDIRECT_URI_TEMPLATE")
+    template_from_env_explicit = os.getenv("APP_OAUTH_REDIRECT_URI")
+    template_from_settings = getattr(settings, "OAUTH_REDIRECT_URI", None)
+    template = template_from_env_template or template_from_env_explicit or template_from_settings
+    template_source = (
+        "APP_OAUTH_REDIRECT_URI_TEMPLATE"
+        if template_from_env_template
+        else "APP_OAUTH_REDIRECT_URI"
+        if template_from_env_explicit
+        else "settings.OAUTH_REDIRECT_URI"
     )
 
     if not template:
@@ -224,19 +232,50 @@ def _get_redirect_uri(provider_name: str) -> str:
     # If template contains formatting placeholder, use it
     if "{provider}" in template:
         try:
-            return template.format(provider=provider_name)
+            resolved = template.format(provider=provider_name)
+            logger.info(
+                "OAuth redirect URI resolved provider=%s source=%s template=%s resolved=%s",
+                provider_name,
+                template_source,
+                template,
+                resolved,
+            )
+            return resolved
         except Exception:
             raise HTTPException(status_code=500, detail="Invalid APP_OAUTH_REDIRECT_URI_TEMPLATE format")
 
     # If template is a generic callback path, insert provider segment
     if template.endswith("/auth/callback"):
-        return template.replace("/auth/callback", f"/auth/{provider_name}/callback")
+        resolved = template.replace("/auth/callback", f"/auth/{provider_name}/callback")
+        logger.info(
+            "OAuth redirect URI resolved provider=%s source=%s template=%s resolved=%s",
+            provider_name,
+            template_source,
+            template,
+            resolved,
+        )
+        return resolved
 
     # If template ends with slash, append provider callback
     if template.endswith("/"):
-        return template.rstrip("/") + f"/auth/{provider_name}/callback"
+        resolved = template.rstrip("/") + f"/auth/{provider_name}/callback"
+        logger.info(
+            "OAuth redirect URI resolved provider=%s source=%s template=%s resolved=%s",
+            provider_name,
+            template_source,
+            template,
+            resolved,
+        )
+        return resolved
 
     # Otherwise, return as-is (assume provider-specific registration handled externally)
+    logger.info(
+        "OAuth redirect URI resolved provider=%s source=%s template=%s resolved=%s",
+        provider_name,
+        template_source,
+        template,
+        template,
+    )
     return template
 
 
@@ -264,8 +303,13 @@ def build_login_url(provider_name: str, redirect: str) -> str:
     if redirect and redirect != redirect_uri:
         logger.debug("OAuth login: caller provided redirect '%s' which differs from server redirect_uri '%s'", redirect, redirect_uri)
     
-    # Generate state for CSRF protection
-    state = secrets.token_urlsafe(32)
+    # Encode redirect into `state` so the callback can postMessage back to the
+    # correct frontend origin (e.g. Firebase Hosting preview channels).
+    state_payload: Dict[str, Any] = {
+        "csrf": secrets.token_urlsafe(32),
+        "redirect": redirect,
+    }
+    state = base64.urlsafe_b64encode(json.dumps(state_payload).encode("utf-8")).decode("utf-8").rstrip("=")
     
     # Build authorization URL
     params = {
@@ -283,6 +327,15 @@ def build_login_url(provider_name: str, redirect: str) -> str:
             "prompt": "consent",
         })
     auth_url = f"{provider.authorization_url}?{urlencode(params)}"
+    logger.info(
+        "OAuth login params provider=%s authorize_host=%s client_id=%s redirect_uri=%s redirect_param=%s scope=%s",
+        provider_name,
+        provider.authorization_url,
+        client_id,
+        redirect_uri,
+        redirect,
+        " ".join(provider.scopes),
+    )
     return auth_url
 
 

@@ -51,8 +51,14 @@ else:
 # relies on os.getenv(...) sees them. This is important because pydantic's
 # BaseSettings will populate the Settings instance but does not mutate
 # os.environ; existing code in the project frequently reads os.getenv directly.
+#
+# Precedence rule:
+# - If APP_ENVFILE is explicitly set, treat it as the source of truth and
+#   override any existing process env vars with values from that file.
+# - Otherwise, keep the previous behavior (do not override process env vars).
 if chosen_env and os.path.exists(chosen_env):
     try:
+        override_existing = bool(explicit_envfile)
         with open(chosen_env, "r") as fh:
             for raw in fh:
                 ln = raw.strip()
@@ -61,8 +67,9 @@ if chosen_env and os.path.exists(chosen_env):
                 k, v = ln.split("=", 1)
                 k = k.strip()
                 v = v.strip().strip('"').strip("'")
-                # Only set env vars that aren't already present in the process
-                if k and k not in os.environ:
+                if not k:
+                    continue
+                if override_existing or k not in os.environ:
                     os.environ[k] = v
     except Exception:
         # Don't fail at import time if env file cannot be read; pydantic will

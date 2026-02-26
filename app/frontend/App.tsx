@@ -1,42 +1,48 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useMemo, useEffect } from 'react';
 import { pensionFundsData } from './data/funds';
 import { PensionFund, FundCategory, SortConfig } from './types';
 import Header from './components/Header';
-import Playbook from './components/Playbook';
-import LoginModal from './components/LoginModal';
 import FilterControls from './components/FilterControls';
 import ActiveFiltersChips from './components/ActiveFiltersChips';
-import FundDetailModal from './components/FundDetailModal';
 import { CATEGORY_MAP } from './constants';
 import { useAuth } from './auth';
-import UpgradeDialog from './components/UpgradeDialog';
-import FakePaymentDialog from './components/FakePaymentDialog';
-import FeedbackWidget from './components/feedback/FeedbackWidget';
 import Footer from './components/Footer';
 import { GuidedFundComparator } from './components/guided/GuidedFundComparator';
 import { GuidedComparatorProvider, useGuidedComparator, MAX_SELECTED_FUNDS } from './components/guided/GuidedComparatorContext';
-import PlaybookContent from './components/PlaybookContent';
-import TfrFaq from './components/TfrFaq';
 import { ToastProvider } from './components/animations/ToastNotifications';
 import { PageTransition } from './components/animations/PageTransition';
 import { ScrollReveal, ScrollProgress } from './components/animations/ScrollReveal';
 import { AnimatedButton } from './components/animations/AnimatedButton';
 import { FloatingCompareButton } from './components/animations/FloatingCompareButton';
-import SimulatorPage from './components/simulator/SimulatorPage';
-import HomePage from './components/HomePage';
-import AdminPanel from './components/AdminPanel';
 import SectionHeader from './components/common/SectionHeader';
 import EmptyState from './components/common/EmptyState';
 import GuidedTour, { useGuidedTour, FirstVisitBanner } from './components/common/GuidedTour';
 import { compareFundsTourSteps, analyzeFundTourSteps } from './config/tourSteps';
-import GuidedFundTable from './components/guided/GuidedFundTable';
-import VisualComparison from './components/VisualComparison';
 import { SECTION_COPY, buildNavItems } from './features/dashboard/config';
 import { getSortValue } from './features/dashboard/sorting';
 import { DashboardSection, View } from './features/dashboard/types';
 import { resolveRouteFromPathname, sectionToPath } from './features/dashboard/routing';
 
+const Playbook = lazy(() => import('./components/Playbook'));
+const LoginModal = lazy(() => import('./components/LoginModal'));
+const FundDetailModal = lazy(() => import('./components/FundDetailModal'));
+const UpgradeDialog = lazy(() => import('./components/UpgradeDialog'));
+const FakePaymentDialog = lazy(() => import('./components/FakePaymentDialog'));
+const FeedbackWidget = lazy(() => import('./components/feedback/FeedbackWidget'));
+const PlaybookContent = lazy(() => import('./components/PlaybookContent'));
+const TfrFaq = lazy(() => import('./components/TfrFaq'));
+const SimulatorPage = lazy(() => import('./components/simulator/SimulatorPage'));
+const HomePage = lazy(() => import('./components/HomePage'));
+const AdminPanel = lazy(() => import('./components/AdminPanel'));
+const GuidedFundTable = lazy(() => import('./components/guided/GuidedFundTable'));
+const VisualComparison = lazy(() => import('./components/VisualComparison'));
+
 const FREE_PLAN_LIMIT = 10;
+const LazyFallback: React.FC = () => (
+  <div className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-6 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300">
+    Caricamento sezione...
+  </div>
+);
 
 const AppContent: React.FC = () => {
   const [view, setView] = useState<View>(() => resolveRouteFromPathname(window.location.pathname).view);
@@ -381,16 +387,18 @@ const AppContent: React.FC = () => {
   if (view === 'playbook') {
     return (
       <>
-        <Playbook onStart={openLoginModal} theme={theme} toggleTheme={toggleTheme} />
-        <LoginModal
-          open={showLoginModal}
-          onClose={closeLoginModal}
-          onSuccess={() => {
-            closeLoginModal();
-            setActiveSection('home');
-            setView('dashboard');
-          }}
-        />
+        <Suspense fallback={<LazyFallback />}>
+          <Playbook onStart={openLoginModal} theme={theme} toggleTheme={toggleTheme} />
+          <LoginModal
+            open={showLoginModal}
+            onClose={closeLoginModal}
+            onSuccess={() => {
+              closeLoginModal();
+              setActiveSection('home');
+              setView('dashboard');
+            }}
+          />
+        </Suspense>
       </>
     );
   }
@@ -579,7 +587,9 @@ const AppContent: React.FC = () => {
                     description={sectionCopy.playbook.description}
                   />
                   <section className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-5 sm:py-6 md:px-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
-                    <PlaybookContent onNavigate={(section) => setActiveSection(section)} />
+                    <Suspense fallback={<LazyFallback />}>
+                      <PlaybookContent onNavigate={(section) => setActiveSection(section)} />
+                    </Suspense>
                   </section>
                 </div>
               ) : activeSection === 'tfr-faq' ? (
@@ -590,13 +600,19 @@ const AppContent: React.FC = () => {
                     description={sectionCopy[activeSection].description}
                     badge={{ text: "Info", variant: "info" }}
                   />
-                  <TfrFaq />
+                  <Suspense fallback={<LazyFallback />}>
+                    <TfrFaq />
+                  </Suspense>
                 </div>
               ) : activeSection === 'simulator' ? (
-                <SimulatorPage theme={theme} />
+                <Suspense fallback={<LazyFallback />}>
+                  <SimulatorPage theme={theme} />
+                </Suspense>
               ) : activeSection === 'admin' ? (
                 user?.isAdmin ? (
-                  <AdminPanel />
+                  <Suspense fallback={<LazyFallback />}>
+                    <AdminPanel />
+                  </Suspense>
                 ) : (
                   <div className="rounded-2xl border border-slate-200 bg-white/90 px-6 py-8 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 text-center">
                     <p className="text-slate-600 dark:text-slate-400">
@@ -605,7 +621,9 @@ const AppContent: React.FC = () => {
                   </div>
                 )
               ) : activeSection === 'home' ? (
-                <HomePage onNavigate={(section) => setActiveSection(section)} />
+                <Suspense fallback={<LazyFallback />}>
+                  <HomePage onNavigate={(section) => setActiveSection(section)} />
+                </Suspense>
               ) : (
               <div className="space-y-6 sm:space-y-8 md:space-y-10">
                 {/* Banner primo accesso per Confronta/Analizza */}
@@ -659,11 +677,13 @@ const AppContent: React.FC = () => {
                         </div>
 
                         <div className="mt-5">
-                          <VisualComparison
-                            appSelectedFunds={selectedFunds}
-                            fundById={fundById}
-                            theme={theme}
-                          />
+                          <Suspense fallback={<LazyFallback />}>
+                            <VisualComparison
+                              appSelectedFunds={selectedFunds}
+                              fundById={fundById}
+                              theme={theme}
+                            />
+                          </Suspense>
                         </div>
                       </section>
                     </ScrollReveal>
@@ -742,14 +762,16 @@ const AppContent: React.FC = () => {
                             </div>
                           </div>
                         )}
-                        <GuidedFundTable
-                          funds={visibleFunds.slice((page - 1) * pageSize, page * pageSize)}
-                          sortConfig={sortConfig}
-                          setSortConfig={setSortConfig}
-                          selectedFundIds={selectedFundIdsSet}
-                          toggleFundSelection={toggleFundSelection}
-                          onFundClick={handleFundClick}
-                        />
+                        <Suspense fallback={<LazyFallback />}>
+                          <GuidedFundTable
+                            funds={visibleFunds.slice((page - 1) * pageSize, page * pageSize)}
+                            sortConfig={sortConfig}
+                            setSortConfig={setSortConfig}
+                            selectedFundIds={selectedFundIdsSet}
+                            toggleFundSelection={toggleFundSelection}
+                            onFundClick={handleFundClick}
+                          />
+                        </Suspense>
 
                         <div className="mt-4 flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
                           <div className="order-2 sm:order-1 text-xs sm:text-sm text-slate-600 dark:text-slate-300 text-center sm:text-left">
@@ -1067,34 +1089,36 @@ const AppContent: React.FC = () => {
         />
       </div>
       
-      <FundDetailModal fund={modalFund} onClose={handleCloseModal} theme={theme} />
-      <UpgradeDialog
-        open={showUpgradeDialog}
-        onClose={() => setShowUpgradeDialog(false)}
-        onRequestLogin={handleUpgradeLogin}
-        onStartCheckout={handleStartFakePayment}
-        isAuthenticated={!!user}
-      />
-      <FakePaymentDialog
-        open={showFakePayment}
-        onClose={() => setShowFakePayment(false)}
-        onSuccess={() => setShowFakePayment(false)}
-      />
-      <LoginModal
-        open={showLoginModal}
-        onClose={closeLoginModal}
-        onSuccess={() => {
-          const shouldOpenPayment = pendingUpgradeAfterLogin;
-          closeLoginModal();
-          setShowUpgradeDialog(false);
-          setActiveSection('home');
-          setView('dashboard');
-          if (shouldOpenPayment) {
-            setShowFakePayment(true);
-          }
-        }}
-      />
-      <FeedbackWidget onRequireLogin={openLoginModal} />
+      <Suspense fallback={null}>
+        <FundDetailModal fund={modalFund} onClose={handleCloseModal} theme={theme} />
+        <UpgradeDialog
+          open={showUpgradeDialog}
+          onClose={() => setShowUpgradeDialog(false)}
+          onRequestLogin={handleUpgradeLogin}
+          onStartCheckout={handleStartFakePayment}
+          isAuthenticated={!!user}
+        />
+        <FakePaymentDialog
+          open={showFakePayment}
+          onClose={() => setShowFakePayment(false)}
+          onSuccess={() => setShowFakePayment(false)}
+        />
+        <LoginModal
+          open={showLoginModal}
+          onClose={closeLoginModal}
+          onSuccess={() => {
+            const shouldOpenPayment = pendingUpgradeAfterLogin;
+            closeLoginModal();
+            setShowUpgradeDialog(false);
+            setActiveSection('home');
+            setView('dashboard');
+            if (shouldOpenPayment) {
+              setShowFakePayment(true);
+            }
+          }}
+        />
+        <FeedbackWidget onRequireLogin={openLoginModal} />
+      </Suspense>
       <Footer sidebarCollapsed={sidebarCollapsed} hasSidebar={true} />
       
       {/* Fixed Free Plan Banner Overlay */}

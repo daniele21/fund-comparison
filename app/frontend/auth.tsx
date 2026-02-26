@@ -323,92 +323,60 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return;
     }
 
-    // For Google OAuth, use Google Identity Services (GIS) with popup
+    // For Google OAuth, use backend redirect flow. This is debuggable (we can
+    // inspect the exact redirect_uri in the server-built URL) and works with
+    // Firebase Hosting preview channels.
     try {
       setLoading(true);
-      // Wait for GIS library to load
-      await waitForGoogleGSI();
-      
-      // Get OAuth config from backend
-      const configRes = await fetch(`${API_BASE}/auth/google/config`, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' },
-      });
-      
-      if (!configRes.ok) {
-        throw new Error('Failed to load OAuth configuration');
-      }
-      
-      const config = await configRes.json();
-      const clientId = config.client_id;
-      
-      if (!clientId) {
-        throw new Error('OAuth client_id not configured');
-      }
-
       await new Promise<void>((resolve, reject) => {
-        const googleGsi = (window as any).google;
-        const client = googleGsi.accounts.oauth2.initCodeClient({
-          client_id: clientId,
-          scope: 'openid email profile',
-          ux_mode: 'popup',
-          callback: async (response: any) => {
-            try {
-              console.log('[Auth] Google callback received:', {
-                hasError: !!response.error,
-                hasCode: !!response.code
-              });
+        const expected = new URL(API_BASE).origin;
+        const expectedLocalhost = expected.replace('127.0.0.1', 'localhost');
+        const expected127 = expected.replace('localhost', '127.0.0.1');
 
-              if (response.error) {
-                reject(new Error(`Google login failed: ${response.error}`));
-                return;
-              }
+        const handler = async (event: MessageEvent) => {
+          const data = event.data as { type?: string; provider?: string; status?: string; token?: string } | undefined;
+          if (!data || data.type !== 'oauth' || data.provider !== 'google' || data.status !== 'success') return;
 
-              const exchangeRes = await fetch(`${API_BASE}/auth/google/exchange`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json',
-                  'X-Requested-With': 'XMLHttpRequest',
-                  'Origin': window.location.origin,
-                },
-                body: JSON.stringify({
-                  code: response.code,
-                  redirect_uri: window.location.origin,
-                }),
-              });
+          if (event.origin !== expected && event.origin !== expectedLocalhost && event.origin !== expected127) {
+            // Ignore unexpected origins
+            return;
+          }
 
-              if (!exchangeRes.ok) {
-                const errorData = await exchangeRes.json().catch(() => ({} as { detail?: string }));
-                reject(new Error(errorData.detail || 'Failed to exchange authorization code'));
-                return;
-              }
+          window.removeEventListener('message', handler);
+          clearTimeout(timeoutId);
 
-              const result = await exchangeRes.json();
-              const token = result.token as string | undefined;
+          const token = typeof data.token === 'string' ? data.token : undefined;
+          if (token) {
+            persistToken(token);
+          }
 
-              if (token) {
-                persistToken(token);
-              }
+          const userData = await fetchMe(token);
+          if (!userData) {
+            reject(new Error('Login succeeded but failed to load user profile'));
+            return;
+          }
 
-              const userData = await fetchMe(token);
-              if (!userData) {
-                reject(new Error('Login succeeded but failed to load user profile'));
-                return;
-              }
+          setUser(userData);
+          userRef.current = userData;
+          resolve();
+        };
 
-              setUser(userData);
-              userRef.current = userData;
-              resolve();
-            } catch (callbackErr) {
-              reject(callbackErr instanceof Error ? callbackErr : new Error('Unknown OAuth callback error'));
-            }
-          },
-        });
+        window.addEventListener('message', handler);
+        const timeoutId = window.setTimeout(() => {
+          window.removeEventListener('message', handler);
+          reject(new Error('Timeout during Google login'));
+        }, 60_000);
 
-        console.log('[Auth] Requesting Google authorization code...');
-        client.requestCode();
+        const popup = window.open(
+          `${API_BASE}/auth/google/login?redirect=${encodeURIComponent(window.location.origin)}`,
+          'google_oauth',
+          'popup,width=520,height=720'
+        );
+        if (!popup) {
+          window.removeEventListener('message', handler);
+          clearTimeout(timeoutId);
+          reject(new Error('Popup bloccato dal browser'));
+        }
       });
     } catch (err) {
       console.error('[Auth] Google login failed:', err);

@@ -5,7 +5,7 @@
     "database": "fund-comparison-db"
   },
   "hosting": {
-    "site": "fund-comparison-0685938029",
+    "target": "app",
     "public": "app/frontend/dist",
     "ignore": [
       "firebase.json",
