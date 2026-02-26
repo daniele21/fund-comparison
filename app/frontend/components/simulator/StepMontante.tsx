@@ -126,7 +126,10 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, onVal
       </div>
 
       {/* ── Parametri ── */}
-      <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 p-5 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
+      <div
+        data-tour="simulator-inputs"
+        className="rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 p-5 sm:p-6 lg:p-8 space-y-6 sm:space-y-8"
+      >
         <div>
           <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">I tuoi dati</h4>
           <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1">Muovi gli slider o digita un valore per personalizzare la simulazione</p>

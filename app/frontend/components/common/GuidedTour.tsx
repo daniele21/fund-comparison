@@ -1,4 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import Joyride, {
+  ACTIONS,
+  EVENTS,
+  STATUS,
+  CallBackProps,
+  Placement,
+  Step as JoyrideStep,
+  Styles,
+} from 'react-joyride';
 
 export interface TourStep {
   target: string; // CSS selector
@@ -7,6 +16,8 @@ export interface TourStep {
   placement?: 'top' | 'bottom' | 'left' | 'right' | 'center';
   disableBeacon?: boolean;
   spotlightClicks?: boolean;
+  offset?: number;
+  isOptional?: boolean;
 }
 
 interface GuidedTourProps {
@@ -14,17 +25,81 @@ interface GuidedTourProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete?: () => void;
-  storageKey?: string; // Per salvare se il tour è stato completato
+  storageKey?: string;
   showSkipButton?: boolean;
 }
 
-/**
- * Sistema di Tour Guidati
- * 
- * TODO: Implementazione completa con React Joyride
- * Per ora forniamo un placeholder che può essere sostituito
- * quando installiamo la libreria: npm install react-joyride
- */
+const resolvePlacement = (placement?: TourStep['placement']): Placement => {
+  if (!placement || placement === 'center') {
+    return 'bottom';
+  }
+
+  return placement;
+};
+
+const getJoyrideStyles = (isDarkMode: boolean): Partial<Styles> => {
+  return {
+    options: {
+      zIndex: 12000,
+      arrowColor: isDarkMode ? '#0f172a' : '#ffffff',
+      backgroundColor: isDarkMode ? '#0f172a' : '#ffffff',
+      primaryColor: '#2563eb',
+      textColor: isDarkMode ? '#e2e8f0' : '#0f172a',
+      overlayColor: 'rgba(2, 6, 23, 0.62)',
+      width: 380,
+      spotlightShadow: '0 0 0 9999px rgba(2, 6, 23, 0.62)',
+    },
+    tooltip: {
+      borderRadius: 14,
+      border: isDarkMode ? '2px solid rgba(59, 130, 246, 0.55)' : '2px solid rgba(37, 99, 235, 0.35)',
+      boxShadow: '0 14px 42px rgba(2, 6, 23, 0.28)',
+      overflow: 'hidden',
+    },
+    tooltipContainer: {
+      textAlign: 'left',
+    },
+    tooltipTitle: {
+      fontSize: 16,
+      fontWeight: 700,
+      marginBottom: 8,
+    },
+    tooltipContent: {
+      fontSize: 14,
+      lineHeight: 1.55,
+      padding: '4px 0 8px',
+    },
+    buttonNext: {
+      backgroundColor: '#2563eb',
+      borderRadius: 10,
+      fontSize: 13,
+      fontWeight: 600,
+      padding: '8px 14px',
+    },
+    buttonBack: {
+      color: isDarkMode ? '#94a3b8' : '#475569',
+      fontSize: 13,
+      fontWeight: 600,
+      marginRight: 8,
+    },
+    buttonSkip: {
+      color: isDarkMode ? '#94a3b8' : '#475569',
+      fontSize: 13,
+      fontWeight: 500,
+    },
+    buttonClose: {
+      color: isDarkMode ? '#94a3b8' : '#475569',
+      height: 22,
+      width: 22,
+      right: 10,
+      top: 10,
+      padding: 2,
+    },
+    spotlight: {
+      borderRadius: 16,
+    },
+  };
+};
+
 const GuidedTour: React.FC<GuidedTourProps> = ({
   steps,
   isOpen,
@@ -33,154 +108,165 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
   storageKey,
   showSkipButton = true,
 }) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [hasCompleted, setHasCompleted] = useState(false);
+  const [run, setRun] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
+  const scrollOffset = 88;
 
-  // Check if user has already completed this tour
   useEffect(() => {
-    if (storageKey) {
-      const completed = localStorage.getItem(`tour_completed_${storageKey}`);
-      setHasCompleted(completed === 'true');
+    if (isOpen && steps.length > 0) {
+      setStepIndex(0);
+      setRun(true);
+      return;
     }
-  }, [storageKey]);
 
-  // Don't show if already completed
-  if (hasCompleted || !isOpen || steps.length === 0) {
-    return null;
-  }
+    setRun(false);
+  }, [isOpen, steps.length]);
 
-  const currentStepData = steps[currentStep];
-  const isLastStep = currentStep === steps.length - 1;
+  const isDarkMode =
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
 
-  const handleNext = () => {
-    if (isLastStep) {
-      handleComplete();
-    } else {
-      setCurrentStep(prev => prev + 1);
+  const joyrideSteps: JoyrideStep[] = useMemo(() => {
+    return steps.map((step) => ({
+      target: step.target,
+      title: step.title,
+      content: step.content,
+      placement: resolvePlacement(step.placement),
+      disableBeacon: step.disableBeacon ?? true,
+      spotlightClicks: step.spotlightClicks ?? false,
+      offset: step.offset ?? 12,
+      disableOverlayClose: true,
+      hideCloseButton: false,
+    }));
+  }, [steps]);
+
+  useEffect(() => {
+    if (!isOpen || !run || typeof document === 'undefined') {
+      return;
     }
-  };
 
-  const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
+    const currentStep = steps[stepIndex];
+    if (!currentStep) {
+      return;
     }
-  };
 
-  const handleSkip = () => {
-    onClose();
-  };
+    if (currentStep.target === 'body') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    const targetElement = document.querySelector(currentStep.target);
+    if (!targetElement) {
+      return;
+    }
+
+    const targetTop = window.scrollY + targetElement.getBoundingClientRect().top - scrollOffset;
+    window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+  }, [isOpen, run, stepIndex, steps]);
 
   const handleComplete = () => {
     if (storageKey) {
       localStorage.setItem(`tour_completed_${storageKey}`, 'true');
     }
-    setHasCompleted(true);
+
     onComplete?.();
+  };
+
+  const closeTour = () => {
+    setRun(false);
+    setStepIndex(0);
     onClose();
   };
 
+  const handleJoyrideCallback = (data: CallBackProps) => {
+    const { action, index, status, type } = data;
+    const isLastStep = index >= joyrideSteps.length - 1;
+
+    if (action === ACTIONS.CLOSE) {
+      closeTour();
+      return;
+    }
+
+    if (status === STATUS.FINISHED) {
+      handleComplete();
+      closeTour();
+      return;
+    }
+
+    if (status === STATUS.SKIPPED) {
+      closeTour();
+      return;
+    }
+
+    if (type === EVENTS.TARGET_NOT_FOUND) {
+      const nextIndex = index + 1;
+
+      if (nextIndex >= joyrideSteps.length) {
+        closeTour();
+        return;
+      }
+
+      setStepIndex(nextIndex);
+      return;
+    }
+
+    if (type === EVENTS.STEP_AFTER) {
+      if ((action === ACTIONS.NEXT || action === ACTIONS.STOP) && isLastStep) {
+        handleComplete();
+        closeTour();
+        return;
+      }
+
+      if (action === ACTIONS.PREV) {
+        setStepIndex(Math.max(index - 1, 0));
+      } else {
+        setStepIndex(Math.min(index + 1, Math.max(joyrideSteps.length - 1, 0)));
+      }
+
+      return;
+    }
+
+  };
+
+  if (!isOpen || steps.length === 0) {
+    return null;
+  }
+
   return (
-    <>
-      {/* Overlay */}
-      <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998] transition-opacity duration-300"
-        onClick={handleSkip}
-      />
-
-      {/* Tour Tooltip */}
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-full max-w-md px-4">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in-95 duration-300">
-          {/* Header */}
-          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-slate-900 dark:to-slate-800">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                {currentStepData.title && (
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
-                    {currentStepData.title}
-                  </h3>
-                )}
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Passo {currentStep + 1} di {steps.length}
-                </p>
-              </div>
-              
-              {showSkipButton && (
-                <button
-                  onClick={handleSkip}
-                  className="ml-3 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  title="Chiudi tour"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="px-6 py-5">
-            <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-              {currentStepData.content}
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="px-6 pb-2">
-            <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-300 ease-out"
-                style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-between">
-            <button
-              onClick={handlePrev}
-              disabled={currentStep === 0}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              ← Indietro
-            </button>
-
-            <div className="flex items-center gap-1">
-              {steps.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentStep(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                    index === currentStep
-                      ? 'bg-blue-600 w-6'
-                      : index < currentStep
-                      ? 'bg-blue-400'
-                      : 'bg-slate-300 dark:bg-slate-600'
-                  }`}
-                  title={`Vai al passo ${index + 1}`}
-                />
-              ))}
-            </div>
-
-            <button
-              onClick={handleNext}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-sm hover:shadow-md transition-all duration-200"
-            >
-              {isLastStep ? 'Finito! ✓' : 'Avanti →'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
+    <Joyride
+      run={run}
+      stepIndex={stepIndex}
+      steps={joyrideSteps}
+      callback={handleJoyrideCallback}
+      continuous
+      showProgress
+      showSkipButton={showSkipButton}
+      disableOverlayClose
+      disableCloseOnEsc={false}
+      disableScrolling={false}
+      disableScrollParentFix={false}
+      scrollToFirstStep
+      scrollOffset={scrollOffset}
+      scrollDuration={450}
+      spotlightClicks={false}
+      spotlightPadding={10}
+      locale={{
+        back: 'Indietro',
+        close: 'Chiudi',
+        last: 'Finito',
+        next: 'Avanti',
+        nextLabelWithProgress: 'Avanti ({step}/{steps})',
+        skip: 'Salta',
+      }}
+      styles={getJoyrideStyles(isDarkMode)}
+    />
   );
 };
 
 export default GuidedTour;
 
-
 /**
  * Hook per gestire lo stato del tour
- * 
+ *
  * Logica:
  * 1. Primo accesso → hasSeenTour = false → mostra banner
  * 2. Utente clicca "Inizia tour" → tour parte
@@ -195,27 +281,27 @@ export const useGuidedTour = (tourKey: string) => {
   useEffect(() => {
     const completed = localStorage.getItem(`tour_completed_${tourKey}`);
     const dismissed = localStorage.getItem(`tour_dismissed_${tourKey}`);
-    
+
     setHasSeenTour(completed === 'true');
     setHasDismissedBanner(dismissed === 'true');
   }, [tourKey]);
 
   const startTour = () => setIsOpen(true);
-  
+
   const closeTour = () => setIsOpen(false);
-  
+
   const dismissBanner = () => {
     // Salva che l'utente ha chiuso il banner senza fare il tour
     localStorage.setItem(`tour_dismissed_${tourKey}`, 'true');
     setHasDismissedBanner(true);
   };
-  
+
   const completeTour = () => {
     // Salva che l'utente ha completato il tour
     localStorage.setItem(`tour_completed_${tourKey}`, 'true');
     setHasSeenTour(true);
   };
-  
+
   const resetTour = () => {
     // Per sviluppatori/admin: resetta tutto
     localStorage.removeItem(`tour_completed_${tourKey}`);
@@ -238,7 +324,6 @@ export const useGuidedTour = (tourKey: string) => {
     resetTour,
   };
 };
-
 
 /**
  * Componente helper per mostrare un banner "Nuovo utente"

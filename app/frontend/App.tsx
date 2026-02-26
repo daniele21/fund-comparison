@@ -1,15 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { pensionFundsData } from './data/funds';
-import { PensionFund, FundCategory, SortConfig, SortableKey } from './types';
+import { PensionFund, FundCategory, SortConfig } from './types';
 import Header from './components/Header';
 import Playbook from './components/Playbook';
 import LoginModal from './components/LoginModal';
 import FilterControls from './components/FilterControls';
 import ActiveFiltersChips from './components/ActiveFiltersChips';
-import SelectedFundsBar from './components/SelectedFundsBar';
-import PerformanceChart from './components/PerformanceChart';
-import CostChart from './components/CostChart';
-import FundTable from './components/FundTable';
 import FundDetailModal from './components/FundDetailModal';
 import { CATEGORY_MAP } from './constants';
 import { useAuth } from './auth';
@@ -33,49 +29,21 @@ import SectionHeader from './components/common/SectionHeader';
 import EmptyState from './components/common/EmptyState';
 import GuidedTour, { useGuidedTour, FirstVisitBanner } from './components/common/GuidedTour';
 import { compareFundsTourSteps, analyzeFundTourSteps } from './config/tourSteps';
-
-type View = 'playbook' | 'dashboard';
-type DashboardSection = 'home' | 'simulator' | 'have-fund' | 'choose-fund' | 'playbook' | 'tfr-faq' | 'admin';
-
-interface NavItem {
-  id: DashboardSection | 'tools' | 'resources';
-  label: string;
-  icon: React.ReactNode;
-  subItems?: { id: DashboardSection; label: string; description?: string }[];
-}
-
-// Helper function to reliably get the value to sort by from a fund object.
-const getSortValue = (fund: PensionFund, key: SortableKey): string | number | null => {
-  switch (key) {
-    case 'linea':
-      return fund.linea;
-    case 'categoria':
-      return fund.categoria;
-    case 'type':
-      return fund.type;
-    case 'costoAnnuo':
-      return fund.costoAnnuo;
-    case 'ultimoAnno':
-      return fund.rendimenti.ultimoAnno;
-    case 'ultimi3Anni':
-      return fund.rendimenti.ultimi3Anni;
-    case 'ultimi5Anni':
-      return fund.rendimenti.ultimi5Anni;
-    case 'ultimi10Anni':
-      return fund.rendimenti.ultimi10Anni;
-    case 'ultimi20Anni':
-      return fund.rendimenti.ultimi20Anni;
-    default:
-      return null;
-  }
-};
+import GuidedFundTable from './components/guided/GuidedFundTable';
+import VisualComparison from './components/VisualComparison';
+import { SECTION_COPY, buildNavItems } from './features/dashboard/config';
+import { getSortValue } from './features/dashboard/sorting';
+import { DashboardSection, View } from './features/dashboard/types';
+import { resolveRouteFromPathname, sectionToPath } from './features/dashboard/routing';
 
 const FREE_PLAN_LIMIT = 10;
 
 const AppContent: React.FC = () => {
-  const [view, setView] = useState<View>('dashboard');
+  const [view, setView] = useState<View>(() => resolveRouteFromPathname(window.location.pathname).view);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
-  const [activeSection, setActiveSection] = useState<DashboardSection>('home');
+  const [activeSection, setActiveSection] = useState<DashboardSection>(
+    () => resolveRouteFromPathname(window.location.pathname).section
+  );
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedNavItem, setExpandedNavItem] = useState<string | null>(null);
   
@@ -142,6 +110,33 @@ const AppContent: React.FC = () => {
     }
   }, [user]);
 
+  // Back/forward navigation support
+  useEffect(() => {
+    const onPopState = () => {
+      const resolved = resolveRouteFromPathname(window.location.pathname);
+      setView(resolved.view);
+      setActiveSection(resolved.section);
+    };
+
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  // Sync UI state to URL path
+  useEffect(() => {
+    const targetPath = view === 'playbook' ? '/' : sectionToPath(activeSection);
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
+  }, [view, activeSection]);
+
+  // Route-level role guard for admin area
+  useEffect(() => {
+    if (view === 'dashboard' && activeSection === 'admin' && !user?.isAdmin) {
+      setActiveSection('home');
+    }
+  }, [view, activeSection, user?.isAdmin]);
+
   useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
@@ -201,98 +196,8 @@ const AppContent: React.FC = () => {
   
   const selectedFundIdsSet = useMemo(() => new Set(selectedFundIds), [selectedFundIds]);
 
-  const sectionCopy = useMemo(() => ({
-    home: {
-      title: 'Benvenuto',
-      description: 'Strumenti professionali per il tuo futuro pensionistico.',
-      eyebrow: 'Home',
-    },
-    simulator: {
-      title: 'Simulatore Previdenziale',
-      description: 'Calcola la crescita del tuo investimento, il risparmio fiscale e scopri quanto potresti accumulare per la tua pensione.',
-      eyebrow: 'Simula',
-    },
-    'choose-fund': {
-      title: 'Confronta Fondi Pensione',
-      description: 'Filtra e confronta i fondi per individuare quelli più adatti al tuo profilo e alla tua azienda.',
-      eyebrow: 'Confronta',
-    },
-    'have-fund': {
-      title: 'Analizza il tuo Fondo',
-      description: 'Verifica come sta andando il tuo fondo attuale e confrontalo con le migliori alternative del mercato.',
-      eyebrow: 'Analizza',
-    },
-    playbook: {
-      title: 'Guida Previdenziale',
-      description: 'Approfondisci tutto sulla previdenza complementare, TFR e fondi pensione con guide complete e sempre aggiornate.',
-      eyebrow: 'Guida',
-    },
-    'tfr-faq': {
-      title: 'Domande frequenti sul TFR',
-      description: 'Risposte rapide tratte dalla guida TFR: basi, scelte azienda/fondo e tassazione.',
-      eyebrow: 'FAQ',
-    },
-    'admin': {
-      title: 'Pannello Amministrazione',
-      description: 'Gestisci utenti e richieste di accesso al sistema.',
-      eyebrow: 'Admin',
-    },
-  }), []);
-
-  // Icon components for reuse
-  const HomeIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-    </svg>
-  );
-
-  const ToolsIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
-    </svg>
-  );
-
-  const ResourcesIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-    </svg>
-  );
-
-  const navItems: NavItem[] = [
-    { 
-      id: 'home', 
-      label: 'Home', 
-      icon: <HomeIcon />
-    },
-    { 
-      id: 'tools', 
-      label: 'Strumenti', 
-      icon: <ToolsIcon />,
-      subItems: [
-        { id: 'simulator', label: 'Simulatore', description: 'Calcola la tua pensione' },
-        { id: 'choose-fund', label: 'Confronta Fondi', description: 'Trova il fondo ideale' },
-        { id: 'have-fund', label: 'Analizza Fondo', description: 'Verifica il tuo fondo' },
-      ]
-    },
-    { 
-      id: 'resources', 
-      label: 'Risorse', 
-      icon: <ResourcesIcon />,
-      subItems: [
-        { id: 'playbook', label: 'Guida Completa', description: 'Tutto sulla previdenza' },
-        { id: 'tfr-faq', label: 'FAQ TFR', description: 'Domande frequenti' },
-      ]
-    },
-    ...(user?.isAdmin ? [{ 
-      id: 'admin' as DashboardSection, 
-      label: '👑 Admin', 
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-        </svg>
-      )
-    }] : []),
-  ];
+  const sectionCopy = SECTION_COPY;
+  const navItems = useMemo(() => buildNavItems(Boolean(user?.isAdmin)), [user?.isAdmin]);
 
   const navButtonClasses = (id: DashboardSection | string, isSubItem = false) => {
     const isActive = activeSection === id;
@@ -690,21 +595,14 @@ const AppContent: React.FC = () => {
               ) : activeSection === 'simulator' ? (
                 <SimulatorPage theme={theme} />
               ) : activeSection === 'admin' ? (
-                // Redirect to home if user is not admin
                 user?.isAdmin ? (
                   <AdminPanel />
                 ) : (
-                  (() => {
-                    // Auto-redirect non-admin users to home
-                    setTimeout(() => setActiveSection('home'), 100);
-                    return (
-                      <div className="rounded-2xl border border-slate-200 bg-white/90 px-6 py-8 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 text-center">
-                        <p className="text-slate-600 dark:text-slate-400">
-                          Non hai i permessi per accedere a questa sezione. Reindirizzamento...
-                        </p>
-                      </div>
-                    );
-                  })()
+                  <div className="rounded-2xl border border-slate-200 bg-white/90 px-6 py-8 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 text-center">
+                    <p className="text-slate-600 dark:text-slate-400">
+                      Non hai i permessi per accedere a questa sezione.
+                    </p>
+                  </div>
                 )
               ) : activeSection === 'home' ? (
                 <HomePage onNavigate={(section) => setActiveSection(section)} />
@@ -1274,56 +1172,5 @@ const App: React.FC = () => (
     <AppContent />
   </GuidedComparatorProvider>
 );
-
-const GuidedFundTable: React.FC<React.ComponentProps<typeof FundTable>> = ({ onFundClick, ...rest }) => {
-  const { setSelectedFundId } = useGuidedComparator();
-
-  const handleFundClick = (fund: PensionFund) => {
-    setSelectedFundId(fund.id);
-    onFundClick(fund);
-  };
-
-  return <FundTable {...rest} onFundClick={handleFundClick} />;
-};
-
-// VisualComparison: prefer guided-selected funds when available.
-const VisualComparison: React.FC<{
-  appSelectedFunds: PensionFund[];
-  fundById: Map<string, PensionFund>;
-  theme: string;
-}> = ({ appSelectedFunds, fundById, theme }) => {
-  const { selectedFundIds } = useGuidedComparator();
-
-  const guidedSelected = React.useMemo(() => {
-    if (!selectedFundIds || selectedFundIds.length === 0) return null;
-    return selectedFundIds.map(id => fundById.get(id)).filter((f): f is PensionFund => !!f);
-  }, [selectedFundIds, fundById]);
-
-  const fundsToShow = guidedSelected && guidedSelected.length > 0 ? guidedSelected : appSelectedFunds;
-  const { toggleSelectedFund, clearSelectedFunds } = useGuidedComparator();
-
-  return (
-    <div>
-      {/* Place SelectedFundsBar here so it appears above the charts (inside VisualComparison)") */}
-      <SelectedFundsBar
-        selectedFunds={fundsToShow}
-        selectedFundIds={selectedFundIds}
-        onToggleFund={(id: string) => toggleSelectedFund(id)}
-        onClearAll={() => clearSelectedFunds()}
-        isHeaderVisible={false}
-        maxFunds={MAX_SELECTED_FUNDS}
-      />
-
-      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-        <div className="min-w-0 overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-white p-2 sm:p-3 md:p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/50">
-          <PerformanceChart selectedFunds={fundsToShow} theme={theme} />
-        </div>
-        <div className="min-w-0 overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-white p-2 sm:p-3 md:p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/50">
-          <CostChart selectedFunds={fundsToShow} theme={theme} />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default App;
