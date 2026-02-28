@@ -667,10 +667,13 @@ const AppContent: React.FC = () => {
                   eyebrow={sectionCopy[activeSection].eyebrow}
                   title={sectionCopy[activeSection].title}
                   description={sectionCopy[activeSection].description}
-                  tourAction={{
-                    label: "Tour Guidato",
-                    onClick: activeSection === 'choose-fund' ? compareFundsTour.startTour : analyzeFundTour.startTour,
-                  }}
+                  tourAction={
+                    activeSection === 'choose-fund'
+                      ? { label: 'Tour Guidato', onClick: compareFundsTour.startTour }
+                      : activeSection === 'have-fund'
+                        ? { label: 'Tour Guidato', onClick: analyzeFundTour.startTour }
+                        : undefined
+                  }
                 />
 
                 {/* Contenuto sezione Confronta Fondi */}

@@ -105,7 +105,7 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
   isOpen,
   onClose,
   onComplete,
-  storageKey,
+  // storageKey kept in interface for backward compat – persistence is handled by useGuidedTour hook
   showSkipButton = true,
 }) => {
   const [run, setRun] = useState(false);
@@ -122,8 +122,27 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
     setRun(false);
   }, [isOpen, steps.length]);
 
-  const isDarkMode =
-    typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  // Reactive dark-mode detection via MutationObserver
+  const [isDarkMode, setIsDarkMode] = useState(
+    () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
+  );
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const joyrideSteps: JoyrideStep[] = useMemo(() => {
     return steps.map((step) => ({
@@ -164,10 +183,6 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
   }, [isOpen, run, stepIndex, steps]);
 
   const handleComplete = () => {
-    if (storageKey) {
-      localStorage.setItem(`tour_completed_${storageKey}`, 'true');
-    }
-
     onComplete?.();
   };
 
