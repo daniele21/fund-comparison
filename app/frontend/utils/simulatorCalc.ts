@@ -6,7 +6,7 @@
 import type { PensionFund } from '../types';
 
 // Constants from D.Lgs. 252/2005
-export const MAX_CONTRIBUTO_DEDUCIBILE = 5164.57;
+export const MAX_CONTRIBUTO_DEDUCIBILE = 5300;
 
 // IRPEF tax brackets for 2025
 export const SCAGLIONI_IRPEF = [
@@ -37,16 +37,17 @@ export function getRendimentoProxy(fund: PensionFund): number | null {
 export interface RendimentoProxyInfo {
   rate: number;
   label: string; // e.g. "10 anni", "20 anni", "5 anni"
+  years: 1 | 3 | 5 | 10 | 20;
 }
 
 export function getRendimentoProxyWithLabel(fund: PensionFund): RendimentoProxyInfo | null {
   const { rendimenti } = fund;
   
-  if (rendimenti.ultimi10Anni !== null) return { rate: rendimenti.ultimi10Anni, label: '10 anni' };
-  if (rendimenti.ultimi20Anni !== null) return { rate: rendimenti.ultimi20Anni, label: '20 anni' };
-  if (rendimenti.ultimi5Anni !== null) return { rate: rendimenti.ultimi5Anni, label: '5 anni' };
-  if (rendimenti.ultimi3Anni !== null) return { rate: rendimenti.ultimi3Anni, label: '3 anni' };
-  if (rendimenti.ultimoAnno !== null) return { rate: rendimenti.ultimoAnno, label: '1 anno' };
+  if (rendimenti.ultimi10Anni !== null) return { rate: rendimenti.ultimi10Anni, label: '10 anni', years: 10 };
+  if (rendimenti.ultimi20Anni !== null) return { rate: rendimenti.ultimi20Anni, label: '20 anni', years: 20 };
+  if (rendimenti.ultimi5Anni !== null) return { rate: rendimenti.ultimi5Anni, label: '5 anni', years: 5 };
+  if (rendimenti.ultimi3Anni !== null) return { rate: rendimenti.ultimi3Anni, label: '3 anni', years: 3 };
+  if (rendimenti.ultimoAnno !== null) return { rate: rendimenti.ultimoAnno, label: '1 anno', years: 1 };
   
   return null;
 }
@@ -262,6 +263,14 @@ export function calcolaSimulazione(input: SimulatorInput): SimulatorResult {
   };
 }
 
+export function calcolaTfrAnnuoDaRal(ral: number): number {
+  if (!Number.isFinite(ral) || ral <= 0) {
+    return 0;
+  }
+
+  return (ral / 13.5) * (1 - 0.005);
+}
+
 /**
  * Format currency value for display
  */
@@ -272,6 +281,27 @@ export function formatCurrency(value: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+export function formatIntegerInputIT(value: number): string {
+  if (!Number.isFinite(value)) {
+    return '0';
+  }
+
+  return new Intl.NumberFormat('it-IT', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Math.round(value));
+}
+
+export function parseIntegerInputIT(raw: string): number {
+  const normalized = raw.replace(/[^\d-]/g, '');
+  const parsed = Number.parseInt(normalized, 10);
+  if (!Number.isFinite(parsed)) {
+    return 0;
+  }
+
+  return parsed;
 }
 
 /**

@@ -34,7 +34,11 @@ const PERFORMANCE_PERIODS = [
   { label: 'Ultimi 20 Anni', key: 'ultimi20Anni' as const, benchmark: TFR_BENCHMARK.ultimi20Anni },
 ];
 
-const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, theme, isCompact = false }) => {
+const PerformanceChart: React.FC<PerformanceChartProps> = ({
+  selectedFunds,
+  theme,
+  isCompact = false,
+}) => {
   const tickColor = theme === 'dark' ? '#94a3b8' : '#475569'; // slate-400 for dark, slate-600 for light
   const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0'; // slate-700 for dark, slate-200 for light
 
@@ -93,7 +97,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
                 <rect x="44" y="8" width="8" height="30" fill={theme === 'dark' ? '#475569' : '#e2e8f0'}/>
             </svg>
             <h2 className="text-base sm:text-lg md:text-xl font-semibold mb-1 text-slate-800 dark:text-slate-200">Confronto Performance</h2>
-            <p className="text-xs sm:text-sm md:text-base text-slate-500 dark:text-slate-400 px-3 sm:px-4">Seleziona fino a 10 fondi dalla tabella per confrontarli qui.</p>
+            <p className="text-xs sm:text-sm md:text-base text-slate-500 dark:text-slate-400 px-3 sm:px-4">Seleziona 2-3 fondi dalla tabella per confrontarli qui.</p>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-slate-400 dark:text-slate-500 mt-2 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
@@ -108,9 +112,9 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ selectedFunds, them
         <h3 className="text-sm sm:text-base md:text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2 sm:mb-3 md:mb-4 px-1">Performance (Rendimento medio annuo %)</h3>
       ) : (
         <>
-          <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-800 dark:text-slate-200 px-1">Confronto Performance (Rendimento medio annuo %)</h2>
+          <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-800 dark:text-slate-200 px-1">Confronto Performance (1/3/5/10/20 anni)</h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2 sm:mb-3 md:mb-4 bg-slate-50 dark:bg-slate-700/50 p-2 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 mt-2">
-            <span className="font-bold">Come leggere la linea TFR:</span> La linea rossa mostra il rendimento medio del TFR lasciato in azienda (rivalutazione legale: 1.5% + 75% inflazione).
+            <span className="font-bold">Come leggere la linea TFR:</span> La linea rossa mostra il benchmark TFR per ciascun periodo (1/3/5/10/20 anni).
             {!isMobile && (
               <>
                 <br/>

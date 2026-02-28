@@ -80,6 +80,7 @@ export interface MontanteSeriesPoint {
   montanteSenzaFiscale: number;
   montanteConFiscale: number;
   montanteTFR: number;
+  versatoCumulato?: number;
 }
 
 export interface SimulatorResult {

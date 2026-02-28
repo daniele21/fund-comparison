@@ -4,14 +4,16 @@ import { useGuidedComparator } from './GuidedComparatorContext';
 
 type SelectedFundInsightsPanelProps = {
   funds: PensionFund[];
+  fundId?: string | null;
 };
 
-export const SelectedFundInsightsPanel: React.FC<SelectedFundInsightsPanelProps> = ({ funds }) => {
-  const { selectedFundId, profile } = useGuidedComparator();
+export const SelectedFundInsightsPanel: React.FC<SelectedFundInsightsPanelProps> = ({ funds, fundId: fundIdProp }) => {
+  const { selectedFundId: ctxFundId, profile } = useGuidedComparator();
+  const resolvedFundId = fundIdProp !== undefined ? fundIdProp : ctxFundId;
   const [isDesktop, setIsDesktop] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(false);
 
-  const fund = useMemo(() => funds.find(f => f.id === selectedFundId) ?? null, [funds, selectedFundId]);
+  const fund = useMemo(() => funds.find(f => f.id === resolvedFundId) ?? null, [funds, resolvedFundId]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

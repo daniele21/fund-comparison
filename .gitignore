@@ -103,3 +103,10 @@ app/backend/.env.test.local
 app/backend/.env.google-invite.local
 app/backend/.env.invite.local
 app/backend/.env.noauth.local
+infra/deploy/backend/backend_env.prod.json.example
+infra/deploy/backend/backend_env.test.json.example
+.gitignore
+infra/deploy/secrets/prod.secrets.example
+infra/deploy/secrets/test.secrets.example
+infra/deploy/environments/prod.env.example
+infra/deploy/environments/test.env.example

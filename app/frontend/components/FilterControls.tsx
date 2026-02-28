@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useId, useState, useEffect, useRef } from 'react';
 import { FundCategory, PensionFund } from '../types';
 import { CATEGORY_MAP } from '../constants';
 import { AnimatedButton } from './animations/AnimatedButton';
@@ -219,6 +219,7 @@ const CompanyQuickSearch: React.FC<CompanyQuickSearchProps> = ({
   wrapperClassName = 'w-40',
   inputClassName = 'w-full'
 }) => {
+  const listboxId = useId();
   const [query, setQuery] = useState(selectedCompany === 'all' ? '' : selectedCompany || '');
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -262,8 +263,10 @@ const CompanyQuickSearch: React.FC<CompanyQuickSearchProps> = ({
         <input
           type="text"
           role="combobox"
+          aria-label="Società"
           aria-expanded={isOpen}
           aria-autocomplete="list"
+          aria-controls={listboxId}
           placeholder="Società"
           value={query}
           onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
@@ -277,7 +280,12 @@ const CompanyQuickSearch: React.FC<CompanyQuickSearchProps> = ({
           }}
           className={`text-xs px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 ${inputClassName}`}
         />
-        <button type="button" onClick={() => { if (selectedCompany === 'all') setIsOpen(s => !s); else clearSelection(); }} aria-label="clear or open" className="p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
+        <button
+          type="button"
+          onClick={() => { if (selectedCompany === 'all') setIsOpen(s => !s); else clearSelection(); }}
+          aria-label={selectedCompany && selectedCompany !== 'all' ? 'Svuota filtro società' : 'Apri elenco società'}
+          className="p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
+        >
           {selectedCompany && selectedCompany !== 'all' ? (
             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg>
           ) : (
@@ -287,13 +295,34 @@ const CompanyQuickSearch: React.FC<CompanyQuickSearchProps> = ({
       </div>
 
       {isOpen && matches.length > 0 && (
-        <ul className="absolute z-50 mt-1 w-full max-h-48 overflow-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-lg text-xs">
-          <li className="px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer text-slate-500 dark:text-slate-400" onClick={() => clearSelection()}>
-            Tutte le società
+        <ul
+          id={listboxId}
+          role="listbox"
+          aria-label="Elenco società"
+          className="absolute z-50 mt-1 w-full max-h-48 overflow-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-lg text-xs"
+        >
+          <li>
+            <button
+              type="button"
+              role="option"
+              aria-selected={selectedCompany === 'all'}
+              className="w-full text-left px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
+              onClick={() => clearSelection()}
+            >
+              Tutte le società
+            </button>
           </li>
           {matches.map((c) => (
-            <li key={c} className="px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer" onClick={() => handleSelect(c)}>
-              {c}
+            <li key={c}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={selectedCompany === c}
+                className="w-full text-left px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700"
+                onClick={() => handleSelect(c)}
+              >
+                {c}
+              </button>
             </li>
           ))}
         </ul>

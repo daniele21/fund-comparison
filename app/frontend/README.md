@@ -37,6 +37,27 @@ pnpm build
 
 Artifacts land in `app/frontend/dist/`. Use `pnpm preview` to verify the production bundle before hosting.
 
+## PWA Baseline
+
+The frontend ships with a real PWA setup:
+
+- `public/manifest.webmanifest` for install metadata and icons.
+- `public/sw.js` for service worker lifecycle, cache versioning and runtime caching.
+- `public/offline.html` as explicit offline fallback.
+- SW registration in `index.tsx` via `utils/pwa.ts`.
+- Update UX banner in-app (`components/common/PwaUpdateBanner.tsx`) with manual confirm.
+
+Offline strategy:
+
+- App shell and key assets are pre-cached at SW install.
+- Navigation requests use network-first with cached shell fallback.
+- Static assets (script/style/font/image) use stale-while-revalidate.
+- API `GET` caching is enabled only for safe allowlist endpoints (e.g. `/auth/config`, `/api/public/*`).
+
+Release note:
+
+- When updating cache rules or shell assets, bump `CACHE_VERSION` in `public/sw.js`.
+
 ## Deploying to Firebase Hosting
 
 The repository root contains `firebase.json` configured to serve `dist`. Typical workflow:

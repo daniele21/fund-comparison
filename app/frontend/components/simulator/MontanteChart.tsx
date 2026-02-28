@@ -17,6 +17,7 @@ const SERIES_META: Record<string, { label: string; color: string }> = {
   montanteSenzaFiscale: { label: 'Senza beneficio fiscale', color: '#3b82f6' },
   montanteConFiscale: { label: 'Con beneficio fiscale', color: '#10b981' },
   montanteTFR: { label: 'TFR in azienda', color: '#ef4444' },
+  versatoCumulato: { label: 'Importi versati', color: '#0f766e' },
 };
 
 const SimulatorTooltip: React.FC<{ active?: boolean; payload?: any[]; label?: number; theme: string }> = ({
@@ -69,6 +70,7 @@ interface MontanteChartProps {
   theme: string;
   showFiscale?: boolean;
   showTFR?: boolean;
+  showVersatoCumulato?: boolean;
 }
 
 const MontanteChart: React.FC<MontanteChartProps> = ({
@@ -76,6 +78,7 @@ const MontanteChart: React.FC<MontanteChartProps> = ({
   theme,
   showFiscale = false,
   showTFR = true,
+  showVersatoCumulato = false,
 }) => {
   const tickColor = theme === 'dark' ? '#94a3b8' : '#475569';
   const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0';
@@ -129,6 +132,10 @@ const MontanteChart: React.FC<MontanteChartProps> = ({
           <linearGradient id="colorMontanteTFR" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2} />
             <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+          </linearGradient>
+          <linearGradient id="colorVersatoCumulato" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#0f766e" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="#0f766e" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
@@ -196,6 +203,19 @@ const MontanteChart: React.FC<MontanteChartProps> = ({
             stroke="#10b981"
             strokeWidth={2.5}
             fill="url(#colorMontanteConFiscale)"
+            dot={false}
+            activeDot={{ r: 5 }}
+          />
+        )}
+
+        {showVersatoCumulato && (
+          <Area
+            type="monotone"
+            dataKey="versatoCumulato"
+            name="Importi versati"
+            stroke="#0f766e"
+            strokeWidth={2.5}
+            fill="url(#colorVersatoCumulato)"
             dot={false}
             activeDot={{ r: 5 }}
           />

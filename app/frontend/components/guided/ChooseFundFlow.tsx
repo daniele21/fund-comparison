@@ -284,4 +284,3 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundCli
     </section>
   );
 };
-

@@ -67,7 +67,7 @@ export const LearnAccordion: React.FC = () => (
         una pensione aggiuntiva a quella pubblica obbligatoria. L'adesione è volontaria ma fortemente consigliata, considerando 
         che la pensione pubblica futura potrebbe non essere sufficiente a mantenere il tenore di vita desiderato.
         <br /><br />
-        I vantaggi principali includono: deducibilità fiscale dei contributi versati fino a 5.164,57€ all'anno e la possibilità 
+        I vantaggi principali includono: deducibilità fiscale dei contributi versati fino a 5.300€ all'anno e la possibilità 
         di destinare il TFR maturando al fondo. Inoltre, puoi richiedere anticipazioni per spese sanitarie, acquisto prima casa 
         o altre esigenze previste dalla normativa.
       </AccordionItem>
@@ -98,7 +98,7 @@ export const LearnAccordion: React.FC = () => (
         <strong>Aliquota base e riduzione per anzianità:</strong> L'aliquota ordinaria è del 15%, ma si riduce dello 0,30% 
         per ogni anno oltre il 15°, fino a un minimo del 9%.
         <br /><br />
-        <strong>Contributi dedotti fiscalmente:</strong> I contributi versati entro 5.164,57€/anno che hai dedotto sono tassati 
+        <strong>Contributi dedotti fiscalmente:</strong> I contributi versati entro 5.300€/anno che hai dedotto sono tassati 
         al 15% (riducibile al 9%).
         <br /><br />
         <strong>Contributi NON dedotti:</strong> I contributi oltre il limite, se non dedotti, sono completamente esenti da 

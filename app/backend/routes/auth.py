@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, Response, Request, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel, EmailStr
+from datetime import datetime, timezone
 import logging
 import base64
 import json
@@ -20,6 +21,7 @@ from backend.services.auth_service import (
     create_session_token,
 )
 from backend.services import user_service
+from backend.services.admin_notification_service import get_admin_notification_service
 from backend.schemas.user import UserProfileUpdate, UserProfileCreate
 from config.auth import AuthMode
 
@@ -402,7 +404,7 @@ async def me(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     plan = user.get("plan")
-    status_value = user.get("status", "pending")
+    status_value = user.get("status", "active")
     roles = user.get("roles", [])
     
     try:
@@ -496,6 +498,188 @@ async def fake_upgrade(request: Request):
     )
 
     return response
+
+
+@router.post("/subscription/request")
+async def request_subscription_approval(request: Request):
+    """
+    Self-reported paid flow: the user claims they have completed payment.
+
+    The account is moved to status='pending' (awaiting admin approval) and plan='full-access'.
+    """
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user_id = str(user.get("id") or "")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Missing user id")
+
+    # Prefer Firestore profile state when available.
+    existing_profile = await user_service.get_user_by_id(user_id)
+
+    if existing_profile and existing_profile.plan == "full-access" and existing_profile.status == "active":
+        # Already fully active, no-op.
+        upgraded_token = create_session_token(
+            user_id=user_id,
+            email=existing_profile.email,
+            name=existing_profile.name,
+            picture=existing_profile.picture,
+            provider=user.get("provider") or "session",
+            roles=existing_profile.roles or ["subscriber"],
+            plan="full-access",
+            extra_claims={"status": "active"},
+        )
+        resp = JSONResponse(
+            {
+                "ok": True,
+                "token": upgraded_token,
+                "user": {
+                    "id": existing_profile.id,
+                    "email": existing_profile.email,
+                    "name": existing_profile.name,
+                    "picture": existing_profile.picture,
+                    "roles": existing_profile.roles or [],
+                    "plan": "full-access",
+                    "status": "active",
+                },
+            }
+        )
+        is_prod = getattr(settings, "ENV", "").lower() == "production"
+        resp.set_cookie(
+            key="session",
+            value=upgraded_token,
+            httponly=True,
+            samesite=("strict" if is_prod else "lax"),
+            max_age=60 * 60 * 24 * 7,
+            secure=is_prod,
+        )
+        return resp
+
+    if existing_profile and existing_profile.status == "pending":
+        # Idempotent: already pending.
+        pending_token = create_session_token(
+            user_id=user_id,
+            email=existing_profile.email,
+            name=existing_profile.name,
+            picture=existing_profile.picture,
+            provider=user.get("provider") or "session",
+            roles=existing_profile.roles or ["subscriber"],
+            plan="full-access",
+            extra_claims={"status": "pending"},
+        )
+        resp = JSONResponse(
+            {
+                "ok": True,
+                "token": pending_token,
+                "user": {
+                    "id": existing_profile.id,
+                    "email": existing_profile.email,
+                    "name": existing_profile.name,
+                    "picture": existing_profile.picture,
+                    "roles": existing_profile.roles or [],
+                    "plan": "full-access",
+                    "status": "pending",
+                },
+            }
+        )
+        is_prod = getattr(settings, "ENV", "").lower() == "production"
+        resp.set_cookie(
+            key="session",
+            value=pending_token,
+            httponly=True,
+            samesite=("strict" if is_prod else "lax"),
+            max_age=60 * 60 * 24 * 7,
+            secure=is_prod,
+        )
+        return resp
+
+    # Build metadata and persist pending request.
+    if existing_profile:
+        merged_metadata = dict(existing_profile.metadata or {})
+    else:
+        merged_metadata = {}
+
+    merged_metadata["subscription_request"] = {
+        "requested_at": datetime.now(timezone.utc).isoformat(),
+        "source": "self_report_banner",
+    }
+
+    updated_profile = None
+    if existing_profile:
+        # If already full-access but not active (or missing status), still move to pending.
+        updated_profile = await user_service.update_user(
+            user_id,
+            UserProfileUpdate(
+                plan="full-access",
+                status="pending",
+                roles=["subscriber"],
+                metadata=merged_metadata,
+            ),
+        )
+    else:
+        email = user.get("email")
+        if not email:
+            raise HTTPException(status_code=400, detail="Missing email for user")
+        payload = UserProfileCreate(
+            id=user_id,
+            email=email,
+            name=user.get("name"),
+            picture=user.get("picture"),
+            plan="full-access",
+            status="pending",
+            roles=["subscriber"],
+            metadata=merged_metadata,
+        )
+        updated_profile = await user_service.upsert_user(payload, mark_login=False)
+
+    if not updated_profile:
+        raise HTTPException(status_code=500, detail="Unable to persist subscription request")
+
+    # Notify admin only when transitioning into pending via this endpoint.
+    try:
+        notification_service = get_admin_notification_service()
+        await notification_service.notify_new_pending_user(user=updated_profile, payment_info=None)
+    except Exception:  # noqa: BLE001
+        logger.exception("Failed to notify admin for subscription request user_id=%s", user_id)
+
+    pending_token = create_session_token(
+        user_id=user_id,
+        email=updated_profile.email,
+        name=updated_profile.name,
+        picture=updated_profile.picture,
+        provider=user.get("provider") or "session",
+        roles=updated_profile.roles or ["subscriber"],
+        plan="full-access",
+        extra_claims={"status": "pending"},
+    )
+
+    resp = JSONResponse(
+        {
+            "ok": True,
+            "token": pending_token,
+            "user": {
+                "id": updated_profile.id,
+                "email": updated_profile.email,
+                "name": updated_profile.name,
+                "picture": updated_profile.picture,
+                "roles": updated_profile.roles or [],
+                "plan": "full-access",
+                "status": "pending",
+            },
+        }
+    )
+
+    is_prod = getattr(settings, "ENV", "").lower() == "production"
+    resp.set_cookie(
+        key="session",
+        value=pending_token,
+        httponly=True,
+        samesite=("strict" if is_prod else "lax"),
+        max_age=60 * 60 * 24 * 7,
+        secure=is_prod,
+    )
+    return resp
 
 
 @router.get("/providers")

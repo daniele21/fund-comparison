@@ -135,7 +135,7 @@ montante[0] = montanteIniziale × (1 + tasso/100)
 **Calcolo risparmio fiscale annuo**:
 
 ```
-contributoDeducibile = min(contributoAnnuo, 5164.57)
+contributoDeducibile = min(contributoVolontarioAnnuo, 5300)
 
 // L'aliquota marginale è quella dello scaglione in cui cade il reddito dell'utente
 aliquotaMarginale = aliquotaIRPEF(RAL)
@@ -167,7 +167,7 @@ Per ogni anno t:
 
 ### 4.4 Note educative (inline, stile `InfoCard`)
 
-- _"Il contributo versato al fondo pensione è deducibile dal reddito imponibile fino a **€ 5.164,57/anno** (art. 8 comma 4, D.Lgs. 252/2005). Questo riduce l'IRPEF che paghi."_
+- _"Il contributo volontario versato al fondo pensione è deducibile dal reddito imponibile fino a **€ 5.300/anno**. Questo riduce l'IRPEF che paghi."_
 - _"Se reinvesti il risparmio fiscale (es. in un PAC o nello stesso fondo), il tuo capitale cresce in modo ancora più significativo."_
 
 ---
@@ -258,6 +258,31 @@ frontend/
 │   │   ├── computeRisparmioFiscale()
 │   │   ├── computeAliquotaSostitutiva()
 │   │   ├── getRendimentoProxy()        # 10a → 5a → 3a fallback
+
+---
+
+## Addendum 2026-02-28 · TFR automatico, deducibilità e confronto uniforme
+
+### Nuove regole simulatore
+- TFR datore calcolato automaticamente da RAL:
+  - `TFR_annuo = (RAL / 13.5) * (1 - 0.005)`.
+- Contributo annuo totale usato nella proiezione:
+  - `contributoTotale = contributoVolontario + TFR_annuo`.
+- Deducibilità fiscale:
+  - applicata **solo** al contributo volontario;
+  - soglia copy aggiornata a `€5.300/anno`.
+
+### Nuove regole UX simulatore
+- Input importi in formato italiano con separatore migliaia (`9.500`, `12.000`).
+- Input box ampliati per evitare overflow oltre `10.000`.
+- Warning contestuale quando il rendimento proxy usa storico `<10 anni` (3/5 anni).
+- Nuovo grafico separato: “Importi versati (senza rendimenti)”.
+
+### Nuove regole confronto fondi
+- Selezione limitata a `2-3` fondi.
+- Selettore orizzonte confronto obbligatorio: `3`, `5`, `10` anni.
+- Selezionabili solo fondi con rendimento disponibile sull’orizzonte scelto.
+- CTA rapida “Vai al Simulatore” nella sezione Visual Comparison.
 │   │   └── SCAGLIONI_IRPEF             # Costante
 │   └── simulatorCalc.test.ts           # Unit test per tutte le funzioni
 │
@@ -272,7 +297,7 @@ frontend/
 | `types.ts` | Aggiungere tipi `SimulatorInput` e `SimulatorResult` |
 | `GuidedComparatorContext.tsx` | Nessuna modifica: il simulatore legge `selectedFundIds` dal context esistente |
 | `FundDetailModal.tsx` | Aggiungere CTA "Simula con questo fondo" → `setActiveSection('simulator')` |
-| `constants.ts` | Aggiungere `SCAGLIONI_IRPEF` e `MAX_CONTRIBUTO_DEDUCIBILE = 5164.57` |
+| `constants.ts` | Aggiungere `SCAGLIONI_IRPEF` e `MAX_CONTRIBUTO_DEDUCIBILE = 5300` |
 
 ### 6.3 Gestione stato
 

@@ -10,6 +10,8 @@ interface FundTableProps {
   selectedFundIds: Set<string>;
   toggleFundSelection: (fundId: string) => void;
   onFundClick: (fund: PensionFund) => void;
+  maxSelectableFunds?: number;
+  canSelectFund?: (fund: PensionFund) => boolean;
 }
 
 const SortIcon: React.FC<{ direction?: 'ascending' | 'descending' }> = ({ direction }) => {
@@ -133,7 +135,26 @@ const RendimentoCell: React.FC<{ value: number | null; label?: string; isMobile?
 };
 
 
-const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig, selectedFundIds, toggleFundSelection, onFundClick }) => {
+const FundTable: React.FC<FundTableProps> = ({
+  funds,
+  sortConfig,
+  setSortConfig,
+  selectedFundIds,
+  toggleFundSelection,
+  onFundClick,
+  maxSelectableFunds = 3,
+  canSelectFund,
+}) => {
+  const isFundSelectable = (fund: PensionFund) => {
+    if (selectedFundIds.has(fund.id)) {
+      return true;
+    }
+    if (canSelectFund && !canSelectFund(fund)) {
+      return false;
+    }
+    return selectedFundIds.size < maxSelectableFunds;
+  };
+
   return (
     <div className="w-full min-w-0 space-y-4">
         {/* Desktop Table */}
@@ -169,7 +190,7 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                                         type="checkbox"
                                         checked={selectedFundIds.has(fund.id)}
                                         onChange={() => toggleFundSelection(fund.id)}
-                                        disabled={!selectedFundIds.has(fund.id) && selectedFundIds.size >= 10}
+                                        disabled={!isFundSelectable(fund)}
                                         className="h-4 w-4 text-sky-600 bg-gray-100 border-slate-300 dark:bg-slate-600 dark:border-slate-500 rounded focus:ring-sky-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                     />
                                 </td>
@@ -313,7 +334,7 @@ const FundTable: React.FC<FundTableProps> = ({ funds, sortConfig, setSortConfig,
                                 type="checkbox"
                                 checked={selectedFundIds.has(fund.id)}
                                 onChange={() => {}}
-                                disabled={!selectedFundIds.has(fund.id) && selectedFundIds.size >= 10}
+                                disabled={!isFundSelectable(fund)}
                                 className="h-5 w-5 text-sky-600 bg-white border-slate-300 dark:bg-slate-700 dark:border-slate-500 rounded-md focus:ring-2 focus:ring-sky-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all"
                                 aria-label={`Seleziona ${fund.linea}`}
                             />

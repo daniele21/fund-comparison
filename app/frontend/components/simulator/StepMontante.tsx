@@ -1,78 +1,41 @@
 import React, { useState, useMemo } from 'react';
 import type { PensionFund, MontanteSeriesPoint } from '../../types';
-import { getRendimentoProxy, getRendimentoProxyWithLabel, calcolaMontante, calcolaMontanteTFR, formatCurrency, formatPercentage } from '../../utils/simulatorCalc';
+import {
+  getRendimentoProxyWithLabel,
+  calcolaMontante,
+  calcolaMontanteTFR,
+  calcolaTfrAnnuoDaRal,
+  formatCurrency,
+  formatIntegerInputIT,
+  formatPercentage,
+  parseIntegerInputIT,
+} from '../../utils/simulatorCalc';
 import MontanteChart from './MontanteChart';
+import SimulatorSlider from './SimulatorSlider';
 
 interface StepMontanteProps {
   selectedFunds: PensionFund[];
   theme: string;
+  ral: number;
   onValuesChange?: (values: {
     montanteIniziale: number;
-    contributoAnnuo: number;
+    contributoVolontarioAnnuo: number;
     orizzonteAnni: number;
     tassoRendimento: number;
   }) => void;
+  onRalChange?: (ral: number) => void;
 }
 
-/* ── Slider row ────────────────────────────────────────────────── */
-const SliderInput: React.FC<{
-  label: string;
-  tooltip: string;
-  value: number;
-  onChange: (v: number) => void;
-  min: number;
-  max: number;
-  step: number;
-  format: (v: number) => string;
-  inputSuffix?: string;
-}> = ({ label, tooltip, value, onChange, min, max, step: stepVal, format, inputSuffix }) => (
-  <div className="space-y-3">
-    <div className="flex items-center justify-between gap-2">
-      <label className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-        {label}
-        <span title={tooltip} className="cursor-help text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </span>
-      </label>
-      <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">{format(value)}</span>
-    </div>
-    <div className="flex items-center gap-4">
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={stepVal}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer dark:bg-slate-700 accent-blue-600"
-      />
-      <div className="flex items-center gap-1">
-        <input
-          type="number"
-          min={min}
-          max={max * 5}
-          step={stepVal}
-          value={value}
-          onChange={(e) => onChange(Math.max(min, Number(e.target.value)))}
-          className="w-20 px-2 py-1.5 text-xs text-right border border-slate-200 rounded-md bg-white dark:bg-slate-800 dark:border-slate-600 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-        />
-        {inputSuffix && <span className="text-[11px] text-slate-400 dark:text-slate-500">{inputSuffix}</span>}
-      </div>
-    </div>
-  </div>
-);
-
-const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, onValuesChange }) => {
+const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, ral, onValuesChange, onRalChange }) => {
   const [montanteIniziale, setMontanteIniziale] = useState(5000);
-  const [contributoAnnuo, setContributoAnnuo] = useState(2000);
+  const [contributoVolontarioAnnuo, setContributoVolontarioAnnuo] = useState(2000);
   const [orizzonteAnni, setOrizzonteAnni] = useState(20);
+  const [showVersatoCumulato, setShowVersatoCumulato] = useState(false);
 
   const fundProxyInfos = useMemo(() => {
     return selectedFunds
-      .map(fund => ({ fund, info: getRendimentoProxyWithLabel(fund) }))
-      .filter((entry): entry is { fund: PensionFund; info: { rate: number; label: string } } => entry.info !== null);
+      .map((fund) => ({ fund, info: getRendimentoProxyWithLabel(fund) }))
+      .filter((entry): entry is { fund: PensionFund; info: NonNullable<ReturnType<typeof getRendimentoProxyWithLabel>> } => entry.info !== null);
   }, [selectedFunds]);
 
   const tassoRendimento = useMemo(() => {
@@ -80,63 +43,76 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, onVal
     return fundProxyInfos.reduce((sum, e) => sum + e.info.rate, 0) / fundProxyInfos.length;
   }, [fundProxyInfos]);
 
+  const warningRendimentoBreve = useMemo(() => {
+    return fundProxyInfos.filter(({ info }) => info.years < 10);
+  }, [fundProxyInfos]);
+
   const iscMedio = useMemo(() => {
     if (selectedFunds.length === 0) return null;
     const costs = selectedFunds
-      .map(f => f.isc.isc10a ?? f.isc.isc5a ?? f.costoAnnuo)
+      .map((f) => f.isc.isc10a ?? f.isc.isc5a ?? f.costoAnnuo)
       .filter((c): c is number => c !== null);
     if (costs.length === 0) return null;
     return costs.reduce((s, c) => s + c, 0) / costs.length;
   }, [selectedFunds]);
 
+  const tfrAnnuoDatore = useMemo(() => calcolaTfrAnnuoDaRal(ral), [ral]);
+  const contributoTotaleAnnuo = contributoVolontarioAnnuo + tfrAnnuoDatore;
+
   const chartData = useMemo((): MontanteSeriesPoint[] => {
-    const serieSenzaFiscale = calcolaMontante(montanteIniziale, contributoAnnuo, tassoRendimento, orizzonteAnni);
-    const serieTFR = calcolaMontanteTFR(montanteIniziale, contributoAnnuo, orizzonteAnni);
+    const serieSenzaFiscale = calcolaMontante(montanteIniziale, contributoTotaleAnnuo, tassoRendimento, orizzonteAnni);
+    const serieTFR = calcolaMontanteTFR(montanteIniziale, contributoTotaleAnnuo, orizzonteAnni);
     return Array.from({ length: orizzonteAnni + 1 }, (_, anno) => ({
       anno,
       montanteSenzaFiscale: serieSenzaFiscale[anno],
       montanteConFiscale: serieSenzaFiscale[anno],
       montanteTFR: serieTFR[anno],
+      versatoCumulato: montanteIniziale + contributoTotaleAnnuo * anno,
     }));
-  }, [montanteIniziale, contributoAnnuo, tassoRendimento, orizzonteAnni]);
+  }, [montanteIniziale, contributoTotaleAnnuo, tassoRendimento, orizzonteAnni]);
 
-  const totaleVersato = montanteIniziale + contributoAnnuo * orizzonteAnni;
+  const totaleVersato = montanteIniziale + contributoTotaleAnnuo * orizzonteAnni;
   const montanteFinale = chartData[orizzonteAnni]?.montanteSenzaFiscale || 0;
   const rendimentoTotale = montanteFinale - totaleVersato;
   const rendimentoPercentuale = totaleVersato > 0 ? (montanteFinale / totaleVersato - 1) * 100 : 0;
 
   React.useEffect(() => {
-    onValuesChange?.({ montanteIniziale, contributoAnnuo, orizzonteAnni, tassoRendimento });
-  }, [montanteIniziale, contributoAnnuo, orizzonteAnni, tassoRendimento, onValuesChange]);
+    onValuesChange?.({ montanteIniziale, contributoVolontarioAnnuo, orizzonteAnni, tassoRendimento });
+  }, [montanteIniziale, contributoVolontarioAnnuo, orizzonteAnni, tassoRendimento, onValuesChange]);
 
   return (
     <div className="space-y-8 sm:space-y-10">
-      {/* Step header */}
       <div className="flex items-start gap-4">
         <span className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm sm:text-base font-bold">1</span>
         <div>
-          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">
-            Crescita del tuo capitale nel tempo
-          </h3>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">Crescita del tuo capitale nel tempo</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed max-w-xl">
-            Ogni anno versi una quota nel fondo pensione. I tuoi soldi vengono investiti e generano rendimenti che, sommandosi anno dopo anno,
-            fanno crescere il capitale grazie all'<strong className="text-slate-700 dark:text-slate-300">interesse composto</strong>: i guadagni di oggi producono nuovi guadagni domani.
+            Ogni anno versi una quota nel fondo pensione. Il simulatore separa il tuo contributo volontario dal TFR annuale del datore di lavoro, così il calcolo fiscale resta coerente.
           </p>
         </div>
       </div>
 
-      {/* ── Parametri ── */}
       <div
         data-tour="simulator-inputs"
         className="rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 p-5 sm:p-6 lg:p-8 space-y-6 sm:space-y-8"
       >
-        <div>
-          <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">I tuoi dati</h4>
-          <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1">Muovi gli slider o digita un valore per personalizzare la simulazione</p>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div>
+            <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">I tuoi dati</h4>
+            <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1">Muovi gli slider o digita un valore per personalizzare la simulazione</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <span className="text-[11px] sm:text-xs font-medium text-emerald-700 dark:text-emerald-300 leading-tight">
+              Privacy garantita — tutti i calcoli avvengono nel tuo browser.<br className="hidden sm:inline" />{' '}Nessun dato viene salvato o trasmesso.
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6 sm:gap-y-8">
-          <SliderInput
+          <SimulatorSlider
             label="Capitale già accumulato"
             tooltip="L'importo che hai già nel fondo pensione, oppure quanto vuoi versare come primo conferimento iniziale."
             value={montanteIniziale}
@@ -146,31 +122,68 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, onVal
             step={500}
             format={(v) => formatCurrency(v)}
             inputSuffix="€"
+            useThousandsInput={true}
+            parseText={parseIntegerInputIT}
+            formatText={formatIntegerInputIT}
+            accent="blue"
           />
-          <SliderInput
-            label="Quanto versi ogni anno"
-            tooltip="La somma di tutti i contributi annuali: il tuo contributo volontario + quello del datore di lavoro + l'eventuale TFR destinato al fondo."
-            value={contributoAnnuo}
-            onChange={setContributoAnnuo}
+          <SimulatorSlider
+            label="Contributo volontario annuo"
+            tooltip="Solo la quota che versi volontariamente: è la parte fiscalmente deducibile."
+            value={contributoVolontarioAnnuo}
+            onChange={setContributoVolontarioAnnuo}
             min={0}
             max={20000}
             step={100}
             format={(v) => formatCurrency(v)}
             inputSuffix="€"
+            useThousandsInput={true}
+            parseText={parseIntegerInputIT}
+            formatText={formatIntegerInputIT}
+            accent="emerald"
           />
-          <SliderInput
+
+          <SimulatorSlider
+            label="RAL"
+            tooltip="Il tuo stipendio lordo annuo (Retribuzione Annua Lorda)."
+            value={ral}
+            onChange={(v) => onRalChange?.(v)}
+            min={15000}
+            max={150000}
+            step={1000}
+            format={(v) => formatCurrency(v)}
+            inputSuffix="€"
+            useThousandsInput={true}
+            parseText={parseIntegerInputIT}
+            formatText={formatIntegerInputIT}
+            accent="blue"
+          />
+
+          <SimulatorSlider
             label="Anni alla pensione"
-            tooltip="Il numero di anni che mancano prima che tu vada in pensione. Più è lungo l'orizzonte, più l'interesse composto lavora a tuo favore."
+            tooltip="Il numero di anni che mancano prima che tu vada in pensione."
             value={orizzonteAnni}
             onChange={setOrizzonteAnni}
             min={1}
             max={45}
             step={1}
             format={(v) => `${v} ${v === 1 ? 'anno' : 'anni'}`}
+            formatMin={() => '1 anno'}
+            formatMax={() => '45 anni'}
             inputSuffix="anni"
+            accent="amber"
           />
 
-          {/* Tasso info */}
+          <div className="space-y-1.5 sm:col-span-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/40 p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">TFR datore automatico (da RAL)</span>
+              <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(tfrAnnuoDatore)}</span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Formula: RAL/13,5 - 0,5%. Il TFR del datore non è fiscalmente deducibile.
+            </p>
+          </div>
+
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Rendimento annuo stimato</span>
@@ -180,8 +193,7 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, onVal
               <div className="space-y-0.5">
                 {fundProxyInfos.map(({ fund, info }) => (
                   <p key={fund.id} className="text-xs text-slate-500 dark:text-slate-400">
-                    Calcolato dal rendimento storico di <span className="font-medium text-slate-700 dark:text-slate-300">{fund.pip}</span>
-                    {' '}({info.label}: {formatPercentage(info.rate, 2)})
+                    Calcolato da <span className="font-medium text-slate-700 dark:text-slate-300">{fund.pip}</span> ({info.label}: {formatPercentage(info.rate, 2)})
                   </p>
                 ))}
                 {iscMedio !== null && (
@@ -196,22 +208,42 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, onVal
               </p>
             )}
           </div>
+
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Contributo totale investito ogni anno</p>
+            <p className="text-base font-bold text-slate-900 dark:text-slate-100">{formatCurrency(contributoTotaleAnnuo)}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Volontario {formatCurrency(contributoVolontarioAnnuo)} + TFR datore {formatCurrency(tfrAnnuoDatore)}
+            </p>
+          </div>
         </div>
+
+        {warningRendimentoBreve.length > 0 && (
+          <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 p-4">
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Avvertenza sui rendimenti brevi</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+              Per alcuni fondi il calcolo usa uno storico inferiore a 10 anni (3/5 anni): la proiezione su orizzonti lunghi può risultare meno coerente.
+            </p>
+            <ul className="mt-2 space-y-1 text-xs text-amber-800 dark:text-amber-300">
+              {warningRendimentoBreve.map(({ fund, info }) => (
+                <li key={fund.id}>• {fund.pip} — proxy {info.label}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
-      {/* ── Risultati ── */}
       <div className="space-y-5 sm:space-y-6">
         <div>
           <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ecco quanto accumulerai</h4>
           <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1">I risultati si aggiornano automaticamente quando modifichi i parametri sopra</p>
         </div>
 
-        {/* Key metrics — side by side */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 p-5 sm:p-6 text-center">
-            <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Totale versato da te</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Totale versato</p>
             <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">{formatCurrency(totaleVersato)}</p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">capitale iniziale + contributi</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">capitale iniziale + volontario + TFR</p>
           </div>
           <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-5 sm:p-6 text-center">
             <p className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-2">Capitale accumulato</p>
@@ -225,14 +257,27 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, onVal
           </div>
         </div>
 
-        {/* Chart */}
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 p-5 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300">Crescita del capitale anno per anno</h4>
+            <button
+              type="button"
+              onClick={() => setShowVersatoCumulato((prev) => !prev)}
+              className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                showVersatoCumulato
+                  ? 'bg-teal-50 border-teal-300 text-teal-700 dark:bg-teal-950/30 dark:border-teal-700 dark:text-teal-300'
+                  : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+              }`}
+              aria-pressed={showVersatoCumulato}
+            >
+              {showVersatoCumulato ? 'Nascondi importi versati' : 'Mostra importi versati'}
+            </button>
           </div>
-          <MontanteChart data={chartData} theme={theme} showFiscale={false} showTFR={true} />
+          <MontanteChart data={chartData} theme={theme} showFiscale={false} showTFR={true} showVersatoCumulato={showVersatoCumulato} />
           <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-3">
-            Il grafico mostra come il tuo capitale cresce nel tempo. La curva accelera negli anni grazie all'interesse composto: prima inizi a versare, più il tuo denaro lavora per te.
+            {showVersatoCumulato
+              ? 'Visualizzi la proiezione del capitale con in aggiunta la curva degli importi cumulati versati.'
+              : 'Visualizzi la proiezione del capitale con rendimenti nel tempo.'}
           </p>
         </div>
       </div>

@@ -1,0 +1,41 @@
+{
+  "id": "/",
+  "name": "Comparatore Fondi Pensione",
+  "short_name": "Fondi",
+  "description": "Confronta fondi pensione aperti e negoziali con simulazioni e indicatori chiave.",
+  "lang": "it-IT",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eff6ff",
+  "theme_color": "#0284c7",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Confronta i fondi",
+      "short_name": "Confronta",
+      "url": "/compare",
+      "description": "Apri subito la tabella di confronto fondi."
+    },
+    {
+      "name": "Simulatore pensione",
+      "short_name": "Simula",
+      "url": "/simulator",
+      "description": "Vai direttamente al simulatore previdenziale."
+    }
+  ]
+}

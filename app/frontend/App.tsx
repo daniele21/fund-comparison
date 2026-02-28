@@ -17,6 +17,8 @@ import { FloatingCompareButton } from './components/animations/FloatingCompareBu
 import SectionHeader from './components/common/SectionHeader';
 import EmptyState from './components/common/EmptyState';
 import GuidedTour, { useGuidedTour, FirstVisitBanner } from './components/common/GuidedTour';
+import PwaUpdateBanner from './components/common/PwaUpdateBanner';
+import AccessStatusBanner from './components/common/AccessStatusBanner';
 import { compareFundsTourSteps, analyzeFundTourSteps } from './config/tourSteps';
 import { SECTION_COPY, buildNavItems } from './features/dashboard/config';
 import { getSortValue } from './features/dashboard/sorting';
@@ -46,7 +48,14 @@ const LazyFallback: React.FC = () => (
 
 const AppContent: React.FC = () => {
   const [view, setView] = useState<View>(() => resolveRouteFromPathname(window.location.pathname).view);
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const stored = localStorage.getItem('theme');
+    if (stored === 'light' || stored === 'dark') {
+      return stored;
+    }
+
+    return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
+  });
   const [activeSection, setActiveSection] = useState<DashboardSection>(
     () => resolveRouteFromPathname(window.location.pathname).section
   );
@@ -65,8 +74,10 @@ const AppContent: React.FC = () => {
   const { selectedFundIds, toggleSelectedFund, clearSelectedFunds, setEntryMode } = useGuidedComparator();
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [showFreeBanner, setShowFreeBanner] = useState(true);
+  const [selectionNotice, setSelectionNotice] = useState<string | null>(null);
+  const [analyzeFund, setAnalyzeFund] = useState<PensionFund | null>(null);
   const currentPlan = user?.plan ?? 'free';
-  const userStatus = user?.status ?? 'pending';
+  const userStatus = user?.status ?? 'active';
   // User has full access only if they have full-access plan AND active status (or are admin)
   const isFullAccess = (currentPlan === 'full-access' && userStatus === 'active') || user?.isAdmin === true;
 
@@ -106,6 +117,10 @@ const AppContent: React.FC = () => {
   // related UI that may be open. This ensures the app shows a clear home state
   // after logout instead of leaving the dashboard visible.
   useEffect(() => {
+    if (authLoading || authMode === 'none') {
+      return;
+    }
+
     if (!user) {
       // Close login modal, upgrade/payment dialogs and show the home
       setShowLoginModal(false);
@@ -114,7 +129,7 @@ const AppContent: React.FC = () => {
       setView('playbook');
       setActiveSection('home');
     }
-  }, [user]);
+  }, [user, authLoading, authMode]);
 
   // Back/forward navigation support
   useEffect(() => {
@@ -296,7 +311,12 @@ const AppContent: React.FC = () => {
   }, [filteredAndSortedFunds, isFullAccess, authMode]);
 
   // Do not show upgrade prompt when the app is running with no authentication
-  const showUpgradeNotice = !authLoading && authMode !== 'none' && !isFullAccess && filteredAndSortedFunds.length > FREE_PLAN_LIMIT;
+  const showUpgradeNotice =
+    !authLoading &&
+    authMode !== 'none' &&
+    currentPlan === 'free' &&
+    !isFullAccess &&
+    filteredAndSortedFunds.length > FREE_PLAN_LIMIT;
 
   const fundById = useMemo(() => {
     const map = new Map<string, PensionFund>();
@@ -311,9 +331,15 @@ const AppContent: React.FC = () => {
   }, [selectedFundIds, fundById]);
 
   const toggleFundSelection = (fundId: string) => {
-    if (!selectedFundIdsSet.has(fundId) && selectedFundIds.length >= MAX_SELECTED_FUNDS) {
+    const fund = fundById.get(fundId);
+    if (!fund) {
       return;
     }
+    if (!selectedFundIdsSet.has(fundId) && selectedFundIds.length >= MAX_SELECTED_FUNDS) {
+      setSelectionNotice(`Puoi confrontare al massimo ${MAX_SELECTED_FUNDS} fondi.`);
+      return;
+    }
+    setSelectionNotice(null);
     toggleSelectedFund(fundId);
   };
   
@@ -387,6 +413,7 @@ const AppContent: React.FC = () => {
   if (view === 'playbook') {
     return (
       <>
+        <PwaUpdateBanner />
         <Suspense fallback={<LazyFallback />}>
           <Playbook onStart={openLoginModal} theme={theme} toggleTheme={toggleTheme} />
           <LoginModal
@@ -407,6 +434,7 @@ const AppContent: React.FC = () => {
     <>
       <ToastProvider />
       <ScrollProgress position="top" height={3} color="bg-gradient-to-r from-sky-600 to-cyan-600" />
+      <PwaUpdateBanner />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
         <Header
           theme={theme}
@@ -649,17 +677,6 @@ const AppContent: React.FC = () => {
                     label: "Tour Guidato",
                     onClick: activeSection === 'choose-fund' ? compareFundsTour.startTour : analyzeFundTour.startTour,
                   }}
-                  stats={selectedFundIds.length > 0 ? [
-                    {
-                      label: "Fondi Selezionati",
-                      value: `${selectedFundIds.length}/${MAX_SELECTED_FUNDS}`,
-                      icon: (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                      ),
-                    },
-                  ] : undefined}
                 />
 
                 {/* Contenuto sezione Confronta Fondi */}
@@ -674,6 +691,13 @@ const AppContent: React.FC = () => {
                             <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Visual Comparison</h2>
                             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Andamento e costi dei fondi selezionati, sempre aggiornati.</p>
                           </div>
+                          <AnimatedButton
+                            onClick={() => setActiveSection('simulator')}
+                            variant="primary"
+                            size="sm"
+                          >
+                            Vai al Simulatore
+                          </AnimatedButton>
                         </div>
 
                         <div className="mt-5">
@@ -762,6 +786,11 @@ const AppContent: React.FC = () => {
                             </div>
                           </div>
                         )}
+                        {selectionNotice && (
+                          <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+                            {selectionNotice}
+                          </div>
+                        )}
                         <Suspense fallback={<LazyFallback />}>
                           <GuidedFundTable
                             funds={visibleFunds.slice((page - 1) * pageSize, page * pageSize)}
@@ -770,6 +799,7 @@ const AppContent: React.FC = () => {
                             selectedFundIds={selectedFundIdsSet}
                             toggleFundSelection={toggleFundSelection}
                             onFundClick={handleFundClick}
+                            maxSelectableFunds={MAX_SELECTED_FUNDS}
                           />
                         </Suspense>
 
@@ -869,7 +899,7 @@ const AppContent: React.FC = () => {
                               <div
                                 key={fund.id}
                                 onClick={() => {
-                                  toggleFundSelection(fund.id);
+                                  setAnalyzeFund(fund);
                                   setSearchTerm('');
                                 }}
                                 className="p-3 sm:p-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800/50 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 cursor-pointer transition-all"
@@ -917,7 +947,7 @@ const AppContent: React.FC = () => {
                   </ScrollReveal>
 
                   {/* Sezione Fondi Selezionati e Alternative */}
-                  {selectedFunds.length > 0 && (
+                  {analyzeFund !== null && (
                     <ScrollReveal variant="slideUp" duration={0.6} delay={0.1} threshold={0.2}>
                       <section 
                         data-tour="alternatives" 
@@ -940,16 +970,16 @@ const AppContent: React.FC = () => {
                                 Il Tuo Fondo
                               </span>
                               <h4 className="font-bold text-base text-slate-900 dark:text-slate-100">
-                                {selectedFunds[0].pip}
+                                {analyzeFund.pip}
                               </h4>
                               <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                                {selectedFunds[0].societa} • {selectedFunds[0].categoria}
+                                {analyzeFund.societa} • {analyzeFund.categoria}
                               </p>
                             </div>
                             <AnimatedButton
                               variant="ghost"
                               size="sm"
-                              onClick={() => toggleFundSelection(selectedFunds[0].id)}
+                              onClick={() => setAnalyzeFund(null)}
                             >
                               ✕
                             </AnimatedButton>
@@ -959,19 +989,19 @@ const AppContent: React.FC = () => {
                             <div className="text-center p-2 rounded-lg bg-white/50 dark:bg-slate-800/50">
                               <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Rend. 1Y</div>
                               <div className="font-bold text-sm text-green-600 dark:text-green-400">
-                                {selectedFunds[0].rendimenti.ultimoAnno?.toFixed(2)}%
+                                {analyzeFund.rendimenti.ultimoAnno?.toFixed(2)}%
                               </div>
                             </div>
                             <div className="text-center p-2 rounded-lg bg-white/50 dark:bg-slate-800/50">
                               <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Rend. 5Y</div>
                               <div className="font-bold text-sm text-green-600 dark:text-green-400">
-                                {selectedFunds[0].rendimenti.ultimi5Anni?.toFixed(2)}%
+                                {analyzeFund.rendimenti.ultimi5Anni?.toFixed(2)}%
                               </div>
                             </div>
                             <div className="text-center p-2 rounded-lg bg-white/50 dark:bg-slate-800/50">
                               <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">ISC</div>
                               <div className="font-bold text-sm text-orange-600 dark:text-orange-400">
-                                {selectedFunds[0].isc.isc10a?.toFixed(2)}%
+                                {analyzeFund.isc.isc10a?.toFixed(2)}%
                               </div>
                             </div>
                           </div>
@@ -984,12 +1014,12 @@ const AppContent: React.FC = () => {
                           </h4>
                           
                           {(() => {
-                            const currentCategory = selectedFunds[0].categoria;
+                            const currentCategory = analyzeFund.categoria;
                             const alternatives = pensionFundsData
                               .filter(f => 
                                 f.categoria === currentCategory && 
-                                f.id !== selectedFunds[0].id &&
-                                (f.rendimenti.ultimi5Anni || 0) > (selectedFunds[0].rendimenti.ultimi5Anni || 0)
+                                f.id !== analyzeFund.id &&
+                                (f.rendimenti.ultimi5Anni || 0) > (analyzeFund.rendimenti.ultimi5Anni || 0)
                               )
                               .sort((a, b) => (b.rendimenti.ultimi5Anni || 0) - (a.rendimenti.ultimi5Anni || 0))
                               .slice(0, 3);
@@ -1017,7 +1047,7 @@ const AppContent: React.FC = () => {
                                       </div>
                                       <div className="text-right">
                                         <div className="text-sm font-bold text-green-600 dark:text-green-400">
-                                          +{((fund.rendimenti.ultimi5Anni || 0) - (selectedFunds[0].rendimenti.ultimi5Anni || 0)).toFixed(2)}%
+                                          +{((fund.rendimenti.ultimi5Anni || 0) - (analyzeFund.rendimenti.ultimi5Anni || 0)).toFixed(2)}%
                                         </div>
                                         <div className="text-xs text-slate-500">vs tuo fondo</div>
                                       </div>
@@ -1121,71 +1151,12 @@ const AppContent: React.FC = () => {
       </Suspense>
       <Footer sidebarCollapsed={sidebarCollapsed} hasSidebar={true} />
       
-      {/* Fixed Free Plan Banner Overlay */}
-      {!isFullAccess && user && showFreeBanner && !authLoading && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom duration-500">
-          <div className="mx-auto max-w-7xl px-3 sm:px-4 pb-3 sm:pb-4">
-            <div className="rounded-t-xl sm:rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm shadow-lg dark:border-slate-700 dark:bg-slate-900/95">
-              <div className="flex items-start gap-3 p-3 sm:p-4">
-                {/* Icon */}
-                <div className="flex-shrink-0 mt-0.5">
-                  <svg className="w-5 h-5 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  {userStatus === 'pending' ? (
-                    <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300">
-                      <span className="font-semibold text-slate-900 dark:text-slate-100">⏳ Richiesta in attesa.</span>{' '}
-                      La tua richiesta è in fase di approvazione. Una volta approvata, avrai accesso completo a tutti i fondi.
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300">
-                        <span className="font-semibold text-slate-900 dark:text-slate-100">Piano gratuito attivo.</span>{' '}
-                        Accesso ai <strong>primi 10 fondi</strong>. Passa a Full Access per oltre 1.000 fondi e strumenti avanzati.
-                      </p>
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                        <button
-                          onClick={() => setShowUpgradeDialog(true)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                        >
-                          <span>Scopri Full Access</span>
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => {
-                            const element = document.querySelector('[data-section="funds"]');
-                            element?.scrollIntoView({ behavior: 'smooth' });
-                          }}
-                          className="text-xs sm:text-sm text-slate-600 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 transition-colors underline decoration-dotted underline-offset-2"
-                        >
-                          Vai ai fondi
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Close button */}
-                <button
-                  onClick={() => setShowFreeBanner(false)}
-                  className="flex-shrink-0 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
-                  aria-label="Chiudi banner"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <AccessStatusBanner
+        visible={!isFullAccess && Boolean(user) && showFreeBanner && !authLoading}
+        onClose={() => setShowFreeBanner(false)}
+        onOpenUpgrade={() => setShowUpgradeDialog(true)}
+        freePlanLimit={FREE_PLAN_LIMIT}
+      />
       
       </div>
     </>

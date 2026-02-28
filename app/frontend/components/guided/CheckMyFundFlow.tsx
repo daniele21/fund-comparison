@@ -10,7 +10,7 @@ type CheckMyFundFlowProps = {
 };
 
 export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
-  const { profile, setProfile, setSelectedFundId } = useGuidedComparator();
+  const { profile, setProfile } = useGuidedComparator();
   const [search, setSearch] = useState('');
 
   const matchingFunds = useMemo(() => {
@@ -26,7 +26,6 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
 
   const handleSelectFund = (selected: PensionFund) => {
     setFund(selected);
-    setSelectedFundId(selected.id);
     setSearch(''); // Clear search input to hide the dropdown
   };
 
@@ -138,7 +137,7 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
 
         {/* Column 3: Insights Panel */}
         <div className="order-3 lg:sticky lg:top-28">
-          <SelectedFundInsightsPanel funds={funds} />
+          <SelectedFundInsightsPanel funds={funds} fundId={fund?.id ?? null} />
         </div>
       </div>
     </section>

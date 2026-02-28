@@ -61,7 +61,7 @@ const PlaybookContent: React.FC<PlaybookContentProps> = ({ onNavigate }) => {
           </div>
           <div className="mt-8 sm:mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             <InfoCard title="Deducibilità Fiscale" accent="emerald" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}>
-              Deduci fino a 5.164,57€ all&apos;anno dal tuo reddito imponibile. Questo significa pagare meno tasse oggi, un risparmio tangibile che aumenta il beneficio netto del tuo investimento.
+              Deduci fino a 5.300€ all&apos;anno dal tuo reddito imponibile. Questo significa pagare meno tasse oggi, un risparmio tangibile che aumenta il beneficio netto del tuo investimento.
             </InfoCard>
             <InfoCard title="Contributo del Datore di Lavoro" accent="emerald" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}>
               Aderendo a un fondo negoziale (FPN) e versando un tuo contributo, hai diritto a un versamento aggiuntivo da parte del tuo datore di lavoro. Sono soldi &quot;gratis&quot; che accelerano la crescita del tuo capitale.
@@ -141,7 +141,7 @@ const PlaybookContent: React.FC<PlaybookContentProps> = ({ onNavigate }) => {
             <div className="p-4 sm:p-5 bg-white/80 dark:bg-slate-900/50 rounded-xl backdrop-blur-sm border border-blue-100 dark:border-slate-700 shadow-sm">
               <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-xl sm:text-2xl shadow-md">2</div>
               <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 text-base sm:text-lg">Confronta visivamente</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Seleziona fino a 10 fondi per vedere performance e costi in grafici di facile lettura.</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Seleziona da 2 a 3 fondi per vedere performance e costi in grafici di facile lettura.</p>
             </div>
             <div className="p-4 sm:p-5 bg-white/80 dark:bg-slate-900/50 rounded-xl backdrop-blur-sm border border-blue-100 dark:border-slate-700 shadow-sm">
               <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-xl sm:text-2xl shadow-md">3</div>

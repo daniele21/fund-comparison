@@ -218,6 +218,91 @@ a {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* ═══ Simulator Custom Slider ═══════════════════════════════════════ */
+/* Fully custom track + thumb via CSS; filled track is a sibling div */
+.simulator-slider {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: transparent;
+  margin: 0;
+}
+
+/* Webkit (Chrome, Safari, Edge) ─────────────────────────────────── */
+.simulator-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: transparent; /* painted by the sibling divs */
+}
+
+.simulator-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--slider-thumb-color, var(--color-primary-600));
+  border: 2.5px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 0 0 0px var(--slider-ring-color, rgba(59, 130, 246, 0.35));
+  cursor: pointer;
+  margin-top: -6px;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.simulator-slider:hover::-webkit-slider-thumb,
+.simulator-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22), 0 0 0 4px var(--slider-ring-color, rgba(59, 130, 246, 0.25));
+  transform: scale(1.1);
+}
+
+.simulator-slider:active::-webkit-slider-thumb {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), 0 0 0 6px var(--slider-ring-color, rgba(59, 130, 246, 0.18));
+  transform: scale(1.15);
+}
+
+/* Firefox ───────────────────────────────────────────────────────── */
+.simulator-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: transparent;
+  border: none;
+}
+
+.simulator-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--slider-thumb-color, var(--color-primary-600));
+  border: 2.5px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 0 0 0px var(--slider-ring-color, rgba(59, 130, 246, 0.35));
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.simulator-slider:hover::-moz-range-thumb,
+.simulator-slider:focus-visible::-moz-range-thumb {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22), 0 0 0 4px var(--slider-ring-color, rgba(59, 130, 246, 0.25));
+  transform: scale(1.1);
+}
+
+.simulator-slider:active::-moz-range-thumb {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), 0 0 0 6px var(--slider-ring-color, rgba(59, 130, 246, 0.18));
+  transform: scale(1.15);
+}
+
+/* Focus-visible ring for keyboard navigation */
+.simulator-slider:focus-visible {
+  outline: none;
+}
+
+/* Dark-mode thumb border */
+.dark .simulator-slider::-webkit-slider-thumb {
+  border-color: #1e293b;
+}
+.dark .simulator-slider::-moz-range-thumb {
+  border-color: #1e293b;
+}
+
 /* Safe area insets for notched devices */
 @supports (padding-top: env(safe-area-inset-top)) {
   .safe-top {

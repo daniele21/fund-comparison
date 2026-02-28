@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { EntryMode, UserProfile } from '../../types';
 
-export const MAX_SELECTED_FUNDS = 10;
+export const MIN_SELECTED_FUNDS_FOR_COMPARE = 2;
+export const MAX_SELECTED_FUNDS = 3;
 
 type GuidedState = {
   entryMode: EntryMode;

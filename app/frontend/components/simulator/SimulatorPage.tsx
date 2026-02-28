@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import type { PensionFund } from '../../types';
-import { useGuidedComparator } from '../guided/GuidedComparatorContext';
 import { pensionFundsData } from '../../data/funds';
 import { getRendimentoProxyWithLabel, formatPercentage } from '../../utils/simulatorCalc';
 import { formatFundLabel } from '../../utils/fundLabel';
@@ -156,7 +155,6 @@ const FundSelector: React.FC<{
 /* ── Main Simulator Page ────────────────────────────────────────── */
 const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
   const [activeStep, setActiveStep] = useState<SimulatorStep>('montante');
-  const { selectedFundIds } = useGuidedComparator();
   
   // Tour guidato
   const { 
@@ -168,21 +166,14 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
     completeTour,
   } = useGuidedTour('simulator');
 
-  // Fund from context or manual selection
-  const contextFunds = useMemo(() => {
-    return selectedFundIds
-      .map((id) => pensionFundsData.find((f) => f.id === id))
-      .filter((fund): fund is PensionFund => Boolean(fund));
-  }, [selectedFundIds]);
-
-  // Manual fund selection (when no context funds)
+  // Fund selection (local to simulator, independent from comparator context)
   const [manualFund, setManualFund] = useState<PensionFund | null>(null);
 
-  const activeFunds = contextFunds.length > 0 ? contextFunds : manualFund ? [manualFund] : [];
+  const activeFunds = manualFund ? [manualFund] : [];
 
   // Shared state across steps
   const [montanteIniziale, setMontanteIniziale] = useState(5000);
-  const [contributoAnnuo, setContributoAnnuo] = useState(2000);
+  const [contributoVolontarioAnnuo, setContributoVolontarioAnnuo] = useState(2000);
   const [orizzonteAnni, setOrizzonteAnni] = useState(20);
   const [tassoRendimento, setTassoRendimento] = useState(5.0);
   const [ral, setRal] = useState(30000);
@@ -219,17 +210,6 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
           label: "Tour Guidato",
           onClick: startTour,
         }}
-        stats={activeFunds.length > 0 ? [
-          {
-            label: "Fondo Selezionato",
-            value: activeFunds[0].pip,
-            icon: (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            ),
-          },
-        ] : undefined}
       />
 
       {/* ── Contenuto originale (con data-tour attributes) ─────────────────────────────────────── */}
@@ -330,16 +310,14 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
         })}
       </div>
 
-      {/* ── Fund Selector (when no context funds) ────────────── */}
-      {contextFunds.length === 0 && (
-        <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-800/60 dark:border-slate-800 p-5 sm:p-6 shadow-sm" data-tour="fund-selector">
-          <FundSelector
-            selectedFund={manualFund}
-            onSelect={setManualFund}
-            onClear={() => setManualFund(null)}
-          />
-        </div>
-      )}
+      {/* ── Fund Selector ────────────────────────────────────── */}
+      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-800/60 dark:border-slate-800 p-5 sm:p-6 shadow-sm" data-tour="fund-selector">
+        <FundSelector
+          selectedFund={manualFund}
+          onSelect={setManualFund}
+          onClear={() => setManualFund(null)}
+        />
+      </div>
 
       {/* ── Step Content ─────────────────────────────────────── */}
       <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-900/80 dark:border-slate-800 p-5 sm:p-8 lg:p-10 shadow-sm" data-tour="simulator-chart">
@@ -347,9 +325,11 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
           <StepMontante
             selectedFunds={activeFunds}
             theme={theme}
+            ral={ral}
+            onRalChange={setRal}
             onValuesChange={(values) => {
               setMontanteIniziale(values.montanteIniziale);
-              setContributoAnnuo(values.contributoAnnuo);
+              setContributoVolontarioAnnuo(values.contributoVolontarioAnnuo);
               setOrizzonteAnni(values.orizzonteAnni);
               setTassoRendimento(values.tassoRendimento);
             }}
@@ -359,9 +339,10 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
         {activeStep === 'fiscale' && (
           <StepFiscale
             montanteIniziale={montanteIniziale}
-            contributoAnnuo={contributoAnnuo}
+            contributoVolontarioAnnuo={contributoVolontarioAnnuo}
             orizzonteAnni={orizzonteAnni}
             tassoRendimento={tassoRendimento}
+            ral={ral}
             theme={theme}
             onValuesChange={(values) => {
               setRal(values.ral);
@@ -372,7 +353,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
         {activeStep === 'imposta' && (
           <StepImpostaPensione
             montanteIniziale={montanteIniziale}
-            contributoAnnuo={contributoAnnuo}
+            contributoVolontarioAnnuo={contributoVolontarioAnnuo}
             orizzonteAnni={orizzonteAnni}
             ral={ral}
             tassoRendimento={tassoRendimento}

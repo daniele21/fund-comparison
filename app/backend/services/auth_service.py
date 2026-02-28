@@ -415,6 +415,10 @@ async def exchange_code(provider_name: str, code: str, state: str) -> Session:
     normalized_user = _normalize_user_info(provider_name, user_info)
 
     # Persist user profile in Firestore so downstream services can access it
+    token_roles: List[str] = ["user"]
+    token_plan = "free"
+    token_status: Optional[str] = None
+
     if normalized_user.get("email"):
         try:
             profile = UserProfileCreate(
@@ -423,11 +427,18 @@ async def exchange_code(provider_name: str, code: str, state: str) -> Session:
                 name=normalized_user.get("name"),
                 picture=normalized_user.get("picture"),
             )
-            await user_service.upsert_user(profile, mark_login=True)
+            persisted_profile = await user_service.upsert_user(profile, mark_login=True)
+            if persisted_profile:
+                token_roles = persisted_profile.roles or token_roles
+                token_plan = persisted_profile.plan or token_plan
+                token_status = persisted_profile.status
             logger.info(
-                "Firestore profile upserted (auth_service) user_id=%s email=%s",
+                "Firestore profile upserted (auth_service) user_id=%s email=%s roles=%s plan=%s status=%s",
                 normalized_user["id"],
                 normalized_user.get("email"),
+                token_roles,
+                token_plan,
+                token_status,
             )
         except Exception:  # noqa: BLE001
             logger.exception(
@@ -446,8 +457,9 @@ async def exchange_code(provider_name: str, code: str, state: str) -> Session:
         name=normalized_user.get("name"),
         picture=normalized_user.get("picture"),
         provider=provider_name,
-        roles=["user"],
-        plan="free",
+        roles=token_roles,
+        plan=token_plan,
+        extra_claims={"status": token_status} if token_status else None,
     )
     
     return Session(token=token)
@@ -604,6 +616,7 @@ async def get_current_user(request) -> Optional[dict]:
             "picture": payload.get("picture"),
             "roles": payload.get("roles", []),
             "plan": _normalize_plan(payload.get("plan"), "free"),
+            "status": payload.get("status"),
         }
     except jwt.ExpiredSignatureError:
         logger.warning("[get_current_user] Token expired")

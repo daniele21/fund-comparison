@@ -208,6 +208,55 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 
 ---
 
+## Feature Note - Prompt Pagamento + Demo vs Richiesta in Attesa
+
+## 1. Overview
+- Feature name: Banner accesso (demo vs richiesta attivazione)
+- Owner: Codex
+- Date: 2026-02-27
+- Status: `done`
+- Related issue/PR: n/a
+
+## 2. Problem Statement
+- Current behavior: i nuovi utenti risultavano spesso `pending` (ambiguità: pending=pagato?).
+- Pain points: UX poco chiara e backlog admin rumoroso.
+- Impatto su utenti/business: confusione sullo stato di accesso e sulle limitazioni della demo.
+
+## 3. Goals and Non-Goals
+### Goals
+- `pending` significa solo: utente ha dichiarato di aver pagato / richiesta inviata (in attesa approvazione).
+- UX: chiedere all’utente se ha pagato; se demo, dichiarare il limite principale.
+
+### Non-Goals
+- Implementare la verifica pagamento (Stripe) lato client.
+- Cambiare le policy di accesso alle feature premium (rimangono basate su `status` e ruoli).
+
+## 4. Scope
+- Frontend scope (`app/frontend/...`):
+  - Banner fisso in basso con stati `question | demo | pending`.
+  - Persistenza scelta demo per device via LocalStorage.
+- Backend scope (`app/backend/...`):
+  - Nuovo endpoint `POST /auth/subscription/request`.
+  - Default nuovi utenti: `plan=free`, `status=active`, `roles=[free]`.
+
+## 5. UX Rules (Source of Truth)
+- Demo: `plan=free` + `status=active`
+  - Limite dichiarato: mostra solo i primi `FREE_PLAN_LIMIT` fondi nei risultati.
+  - LocalStorage key: `app.demo_ack_v1 = "1"`.
+- Richiesta inviata: `plan=full-access` + `status=pending`
+  - UI: “Richiesta in attesa”.
+- Abilitato: `plan=full-access` + `status=active`
+  - Accesso completo.
+
+## 6. API Contract
+- `POST /auth/subscription/request`
+  - Auth: session cookie o `Authorization: Bearer <token>`
+  - Side effects:
+    - `status=pending`, `plan=full-access`, `roles=[subscriber]`
+    - `metadata.subscription_request = { requested_at, source="self_report_banner" }`
+    - notifica admin (solo su transizione verso pending via endpoint)
+
+
 ## Feature Note - Deploy Multi-Environment (test/prod)
 
 ## 1. Overview
@@ -288,3 +337,160 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - [x] Contratti input/output aggiornati e validati.
 - [x] Verifiche locali eseguite con evidenza.
 - [x] Documentazione aggiornata.
+
+---
+
+## Feature Note - PWA Baseline Solida (Manifest + SW + Offline)
+
+## 1. Overview
+- Feature name: PWA baseline solida e strutturata
+- Owner: Codex
+- Date: 2026-02-27
+- Status: `done`
+- Related issue/PR: n/a
+
+## 2. Problem Statement
+- Current behavior: frontend non installabile come PWA reale, nessun service worker registrato, assenza fallback offline esplicito.
+- Pain points: UX fragile su rete instabile e assenza di strategia update cache.
+- Impatto su utenti/business: minore affidabilita mobile e impossibilita di uso app-like offline.
+
+## 3. Goals and Non-Goals
+### Goals
+- Rendere l'app installabile con manifest valido.
+- Introdurre service worker versionato e registrazione robusta.
+- Definire una strategia offline minima verificabile.
+
+### Non-Goals
+- Nessuna modifica backend/API.
+- Nessun redesign UI completo.
+
+## 4. Scope
+- Frontend scope (`app/frontend/...`):
+  - `public/manifest.webmanifest`
+  - `public/sw.js`
+  - `public/offline.html`
+  - `utils/pwa.ts`
+  - `components/common/PwaUpdateBanner.tsx`
+  - `index.tsx`
+  - `index.html`
+- Backend scope (`app/backend/...`): nessuno.
+- Data/config scope (`data/`, `infra/`, env vars):
+  - `firebase.json` (headers caching SW/manifest/offline).
+- Out of scope: caching dati API dinamici cross-origin.
+
+## 6. Technical Design
+- API endpoints toccati/nuovi: nessuno.
+- Request/response contracts: nessuna modifica.
+- Validation strategy: n/a.
+- Service/domain logic changes: n/a.
+- External integrations coinvolte: Service Worker API, Web App Manifest.
+- Error handling strategy:
+  - fallback shell/offline page quando rete non disponibile;
+  - update SW gestito con banner utente e apply esplicito (`SKIP_WAITING`) + reload su `controllerchange`.
+- Backward compatibility considerations:
+  - app resta funzionante anche senza supporto SW o in ambiente non sicuro.
+
+## 8. Responsiveness and Accessibility (if UI touched)
+- Breakpoint verificati: pagina `offline.html` responsive su mobile/desktop.
+- Keyboard/focus behavior: bottone `Ricarica` attivabile via keyboard.
+- Label/semantics requirements: testo chiaro su stato rete assente.
+- Note mobile-specific: installabilita migliorata via manifest + icone.
+
+## 9. Performance Considerations
+- Caching strategy:
+  - app shell precache;
+  - static asset stale-while-revalidate;
+  - navigation network-first con fallback;
+  - API GET cacheata solo su allowlist sicura (`/auth/config`, `/api/public/*`).
+- Observability/logging notes:
+  - errore registrazione SW loggato su console.
+
+## 10. Testing Strategy
+- Unit tests: n/a per questo scope.
+- Route/API tests: n/a.
+- UI/manual QA scenarios:
+  - verifica installabilita PWA;
+  - verifica update SW su cambio versione cache;
+  - verifica fallback offline.
+- Commands to run:
+  - Frontend: `pnpm exec tsc --noEmit`, `pnpm build`.
+- Risultati esecuzione locale (2026-02-27):
+  - `pnpm build`: ok.
+  - `pnpm exec tsc --noEmit`: fallisce per errori TypeScript preesistenti in componenti `animations/*` e tipi `recharts`.
+  - `pnpm lint`: script non configurato nel package frontend.
+
+## 11. Documentation Deliverables
+- Files da aggiornare in `docs/`: `docs/PWA_RUNBOOK.md`.
+- `README.md` update richiesto: `yes`.
+- Runbook/operational notes: inclusi, con istruzioni bump `CACHE_VERSION`.
+
+## 12. Rollout and Risk Management
+- Rollout plan: deploy frontend standard su Firebase Hosting.
+- Deploy targets: `local | test | production`.
+- Env/secrets changes: nessuno.
+- Monitoring after deploy:
+  - verifica install prompt e stato SW in browser devtools.
+- Rollback plan:
+  - restore versione precedente `sw.js`/manifest e redeploy hosting.
+
+## 13. Acceptance Criteria (Definition of Done)
+- [x] Scope implementato senza regressioni note.
+- [x] PWA installabile con manifest referenziato.
+- [x] Offline fallback documentato e testabile.
+- [x] Verifiche locali eseguite con evidenza.
+- [x] Documentazione aggiornata.
+
+---
+
+## Feature Note - Upgrade Simulatore + Confronto Fondi a Orizzonte Uniforme (2026-02-28)
+
+### Scope e motivazione
+- Correzione tour Step 2: soglia copy aggiornata a `€5.300`.
+- Simulatore:
+  - input importi con separatore migliaia e box più ampi;
+  - avviso esplicito quando il rendimento proxy usa storico `< 10 anni`;
+  - calcolo TFR automatico da RAL: `(RAL / 13.5) * (1 - 0.005)`;
+  - separazione tra contributo volontario e TFR datore;
+  - deducibilità fiscale applicata solo al contributo volontario;
+  - nuovo grafico dedicato ai soli importi versati.
+- Confronta Fondi:
+  - CTA verso Simulatore;
+  - vincolo selezione `2-3` fondi;
+  - selettore orizzonte confronto `3/5/10 anni`;
+  - selezione bloccata per fondi senza storico sull’orizzonte scelto.
+
+### Impatti frontend/backend/config
+- Frontend toccato:
+  - `app/frontend/components/simulator/*` (step e grafici);
+  - `app/frontend/components/guided/GuidedComparatorContext.tsx`;
+  - `app/frontend/components/VisualComparison.tsx`;
+  - `app/frontend/components/FundTable.tsx`;
+  - `app/frontend/components/guided/ChooseFundFlow.tsx`;
+  - `app/frontend/components/PerformanceChart.tsx`;
+  - `app/frontend/config/tourSteps.tsx`;
+  - `app/frontend/utils/simulatorCalc.ts`;
+  - `app/frontend/utils/fundPerformance.ts` (nuovo).
+- Backend/config deploy: nessun impatto.
+
+### Contratti/tipi aggiornati
+- `ComparisonHorizon = 3 | 5 | 10` nel dominio frontend.
+- `RendimentoProxyInfo` esteso con `years: 1 | 3 | 5 | 10 | 20`.
+- `MontanteSeriesPoint` esteso con `versatoCumulato` (opzionale).
+
+### Piano test e risultati
+- Verifiche previste:
+  - tour copy aggiornata a `5.300`;
+  - input `12000 / 9500 / 100000` con visualizzazione migliaia corretta;
+  - warning storico breve visibile solo con proxy `<10 anni`;
+  - TFR automatico aggiornato al cambio RAL;
+  - deducibilità calcolata solo sul volontario;
+  - confronto limitato a 2-3 fondi con stesso orizzonte;
+  - build frontend verde.
+- Evidenza comandi: vedi output sezione finale attività agente.
+
+### Rischi aperti e rollback
+- Rischio principale: regressioni UX su componenti tabella/confronto in mobile.
+- Rollback:
+  1. ripristino file toccati in `components/simulator`, `guided`, `PerformanceChart`;
+  2. ripristino costanti/utility (`simulatorCalc.ts`, `fundPerformance.ts`);
+  3. redeploy frontend.

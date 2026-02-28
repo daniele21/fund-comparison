@@ -35,7 +35,7 @@ export const simulatorTourSteps: TourStep[] = [
           <li><strong>Reddito annuo</strong> per il calcolo fiscale</li>
         </ul>
         <p className="mt-3 text-xs bg-blue-50 dark:bg-blue-900/30 p-2 rounded">
-          💡 <strong>Tip:</strong> Se versi almeno €5.164/anno risparmi il massimo in tasse!
+          💡 <strong>Tip:</strong> Se versi almeno €5.300/anno risparmi il massimo in tasse!
         </p>
       </div>
     ),
@@ -132,7 +132,7 @@ export const compareFundsTourSteps: TourStep[] = [
     content: (
       <div>
         <p className="mb-3">
-          Qui puoi <strong>confrontare fino a 5 fondi pensione</strong> per trovare quello più adatto a te, 
+          Qui puoi <strong>confrontare 2-3 fondi pensione</strong> per trovare quello più adatto a te, 
           analizzando rendimenti storici e costi.
         </p>
         <p className="text-xs text-slate-500">
@@ -166,7 +166,7 @@ export const compareFundsTourSteps: TourStep[] = [
     content: (
       <div>
         <p className="mb-2">
-          Clicca sui checkbox per selezionare i fondi da confrontare (max 5).
+          Clicca sui checkbox per selezionare i fondi da confrontare (min 2, max 3).
         </p>
         <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
           💡 <strong>Tip:</strong> Guarda le colonne di rendimento e costo per una valutazione rapida!
@@ -181,7 +181,7 @@ export const compareFundsTourSteps: TourStep[] = [
     content: (
       <div>
         <p className="mb-2">
-          I grafici mostrano in modo chiaro:
+          I grafici mostrano in modo chiaro, sempre a parità di orizzonte (3/5/10 anni):
         </p>
         <ul className="space-y-1 text-sm">
           <li>📈 <strong>Performance:</strong> Come sono andati nel tempo</li>

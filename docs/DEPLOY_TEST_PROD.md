@@ -111,6 +111,23 @@ Server:
   - chiamate API verso URL Cloud Run corretto
   - routing SPA su refresh diretto
 
+## Debug `redirect_uri_mismatch` (Google OAuth)
+
+Quando vedi `Error 400: redirect_uri_mismatch`, la prima cosa e' **verificare qual e' il `redirect_uri` effettivo** che stai mandando a Google (non quello che pensi di mandare).
+
+Preflight (stampa `client_id` + `redirect_uri` + authorize URL):
+```bash
+.venv/bin/python app/backend/scripts/oauth_preflight.py --envfile app/backend/.env.development.local
+.venv/bin/python app/backend/scripts/oauth_preflight.py --env-json app/backend/env_test.json --allow-missing-secret
+```
+
+Per confermare cosa sta usando davvero un backend gia' deployato (es. Cloud Run), prendi l'header `Location`:
+```bash
+curl -s -D- -o /dev/null \\
+  'https://<CLOUD_RUN_URL>/auth/google/login?redirect=https://<FRONTEND_ORIGIN>' \\
+  | sed -n 's/^location: //Ip'
+```
+
 ## Rollback
 
 - Cloud Run: redeploy immagine/tag precedente.

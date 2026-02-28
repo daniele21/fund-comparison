@@ -85,8 +85,8 @@ async def upsert_user(profile_in: UserProfileCreate, *, mark_login: bool = False
     """
     Create or update a user profile. Set `mark_login` to refresh last_login_at.
     
-    New users are created with status='pending' by default, requiring admin approval
-    to become active subscribers (unless they are free users or admins).
+    New users are created with free access by default (plan='free', status='active').
+    A paid subscription request is represented by status='pending' (awaiting admin approval).
     
     Admin users (based on email) are automatically granted admin role and active status.
     """
@@ -136,10 +136,9 @@ async def upsert_user(profile_in: UserProfileCreate, *, mark_login: bool = False
             payload.setdefault("status", "active")
             payload.setdefault("roles", ["admin"])
         else:
-            # Regular users: if plan was specified (e.g., from invite code), keep it
-            # Otherwise default to free plan and pending status
+            # Regular users default to demo/free access.
             payload.setdefault("plan", "free")
-            payload.setdefault("status", "pending")
+            payload.setdefault("status", "active")
             payload.setdefault("roles", ["free"])
     else:
         # For existing users, update to admin if they're in the admin list
@@ -155,20 +154,7 @@ async def upsert_user(profile_in: UserProfileCreate, *, mark_login: bool = False
     
     record = await repo.upsert(profile_in.id, payload)
     user_profile = _to_profile(record)
-    
-    # Send notification for new users (except admins)
-    if is_new_user and not is_admin:
-        try:
-            notification_service = get_admin_notification_service()
-            await notification_service.notify_new_pending_user(
-                user=user_profile,
-                payment_info=None  # Will be added when payment is processed
-            )
-        except Exception as e:
-            # Don't fail user creation if notification fails
-            import logging
-            logging.getLogger(__name__).error(f"Failed to send new user notification: {e}")
-    
+
     return user_profile
 
 

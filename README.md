@@ -2,6 +2,13 @@
 
 Minimal repo for fund comparison utilities.
 
+## PWA
+
+Frontend includes a production PWA baseline (manifest + service worker + offline fallback).
+For details and QA checklist see:
+
+- `docs/PWA_RUNBOOK.md`
+
 ## Deploy test/prod (recommended)
 
 For a unified `test`/`prod` deployment workflow (Cloud Run + Firebase Hosting), use the runbook:
