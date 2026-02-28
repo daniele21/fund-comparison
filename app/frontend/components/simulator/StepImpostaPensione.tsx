@@ -85,7 +85,7 @@ const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
         </div>
       </div>
 
-      <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 p-5 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
+      <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 p-3 sm:p-5 md:p-6 lg:p-8 space-y-5 sm:space-y-6 md:space-y-8">
         <div>
           <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Da quanto tempo sei iscritto?</h4>
           <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1">Indica l'anno della tua prima adesione a un qualsiasi fondo pensione</p>
@@ -132,42 +132,42 @@ const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
 
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 overflow-hidden">
           <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-3 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 gap-1 sm:gap-2">
               <div>
-                <span className="text-sm sm:text-base text-slate-700 dark:text-slate-300">Totale versato di tasca tua + TFR datore</span>
-                <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                <span className="text-xs sm:text-sm md:text-base text-slate-700 dark:text-slate-300">Totale versato di tasca tua + TFR datore</span>
+                <p className="text-[11px] sm:text-xs md:text-sm text-slate-400 dark:text-slate-500 mt-0.5">
                   Volontario ({formatCurrency(contributoVolontarioAnnuo)}) + TFR ({formatCurrency(tfrAnnuoDatore)}) × {orizzonteAnni} anni
                 </p>
               </div>
               <span className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100">{formatCurrency(totaleVersato)}</span>
             </div>
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-3 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 gap-1 sm:gap-2">
               <div>
-                <span className="text-sm sm:text-base text-slate-700 dark:text-slate-300">Guadagno dai rendimenti</span>
+                <span className="text-xs sm:text-sm md:text-base text-slate-700 dark:text-slate-300">Guadagno dai rendimenti</span>
               </div>
               <span className="text-sm sm:text-base font-semibold text-emerald-600 dark:text-emerald-400">
                 +{formatCurrency(montanteLordoConFiscale - totaleVersato - risparmioTotale)}
               </span>
             </div>
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-3 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 gap-1 sm:gap-2">
               <div>
-                <span className="text-sm sm:text-base text-slate-700 dark:text-slate-300">Risparmio IRPEF reinvestito</span>
-                <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                <span className="text-xs sm:text-sm md:text-base text-slate-700 dark:text-slate-300">Risparmio IRPEF reinvestito</span>
+                <p className="text-[11px] sm:text-xs md:text-sm text-slate-400 dark:text-slate-500 mt-0.5">
                   Calcolato solo sul contributo volontario ({formatPercentage(aliquotaMarginale * 100, 0)} aliquota)
                 </p>
               </div>
               <span className="text-sm sm:text-base font-semibold text-emerald-600 dark:text-emerald-400">+{formatCurrency(risparmioTotale)}</span>
             </div>
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 bg-slate-50 dark:bg-slate-800/80">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-3 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 gap-1 sm:gap-2 bg-slate-50 dark:bg-slate-800/80">
               <div>
-                <span className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">Capitale lordo accumulato</span>
+                <span className="text-xs sm:text-sm md:text-base font-bold text-slate-800 dark:text-slate-200">Capitale lordo accumulato</span>
               </div>
               <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">{formatCurrency(montanteLordoConFiscale)}</span>
             </div>
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-3 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 gap-1 sm:gap-2">
               <div>
-                <span className="text-sm sm:text-base text-slate-700 dark:text-slate-300">Tassa alla pensione</span>
-                <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                <span className="text-xs sm:text-sm md:text-base text-slate-700 dark:text-slate-300">Tassa alla pensione</span>
+                <p className="text-[11px] sm:text-xs md:text-sm text-slate-400 dark:text-slate-500 mt-0.5">
                   Imposta sostitutiva al {formatPercentage(aliquotaSostitutiva * 100, 1)} (dopo {anniPartecipazione} anni di iscrizione)
                 </p>
               </div>
@@ -175,15 +175,15 @@ const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
             </div>
           </div>
 
-          <div className="bg-emerald-50 dark:bg-emerald-950/30 border-t-2 border-emerald-300 dark:border-emerald-700 px-5 sm:px-6 py-5 sm:py-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-emerald-50 dark:bg-emerald-950/30 border-t-2 border-emerald-300 dark:border-emerald-700 px-3 sm:px-5 md:px-6 py-4 sm:py-5 md:py-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <p className="text-sm sm:text-base font-bold text-emerald-800 dark:text-emerald-200">Quello che riceverai davvero</p>
-                <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 mt-1">
+                <p className="text-xs sm:text-sm md:text-base font-bold text-emerald-800 dark:text-emerald-200">Quello che riceverai davvero</p>
+                <p className="text-[11px] sm:text-xs md:text-sm text-emerald-600 dark:text-emerald-400 mt-0.5 sm:mt-1">
                   Hai guadagnato +{formatPercentage(rendimentoNettoPercentuale, 1)} rispetto al versato
                 </p>
               </div>
-              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">{formatCurrency(montanteNetto)}</span>
+              <span className="text-xl sm:text-2xl md:text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">{formatCurrency(montanteNetto)}</span>
             </div>
           </div>
         </div>

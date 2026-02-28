@@ -28,14 +28,15 @@ const SimulatorTooltip: React.FC<{ active?: boolean; payload?: any[]; label?: nu
 }) => {
   if (!active || !payload || payload.length === 0) return null;
   const isDark = theme === 'dark';
+  const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 640;
 
   return (
     <div
-      className="rounded-lg border shadow-lg px-3 py-2.5"
+      className="rounded-lg border shadow-lg px-2.5 py-2 sm:px-3 sm:py-2.5"
       style={{
         backgroundColor: isDark ? '#0f172a' : '#ffffff',
         borderColor: isDark ? '#334155' : '#e2e8f0',
-        maxWidth: 280,
+        maxWidth: isSmallScreen ? 200 : 280,
       }}
     >
       <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 mb-1.5">
@@ -118,6 +119,7 @@ const MontanteChart: React.FC<MontanteChartProps> = ({
   }
 
   return (
+    <div className="relative overflow-hidden">
     <ResponsiveContainer width="100%" height={isMobile ? 240 : 280}>
       <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
         <defs>
@@ -163,6 +165,8 @@ const MontanteChart: React.FC<MontanteChartProps> = ({
         />
         <Tooltip
           content={<SimulatorTooltip theme={theme} />}
+          allowEscapeViewBox={{ x: false, y: false }}
+          wrapperStyle={{ pointerEvents: 'none', zIndex: 10 }}
         />
         <Legend
           wrapperStyle={{ fontSize: isMobile ? '11px' : '12px' }}
@@ -222,6 +226,7 @@ const MontanteChart: React.FC<MontanteChartProps> = ({
         )}
       </AreaChart>
     </ResponsiveContainer>
+    </div>
   );
 };
 

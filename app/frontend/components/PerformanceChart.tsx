@@ -157,6 +157,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
                 />
               }
               cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
+              allowEscapeViewBox={{ x: false, y: false }}
               wrapperStyle={{ pointerEvents: 'auto', opacity: 1, zIndex: 9999 }}
             />
             {selectedFunds.map((fund, index) => {

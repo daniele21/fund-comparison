@@ -51,7 +51,7 @@ const ChartTooltip: React.FC<ChartTooltipProps> = ({
         opacity: 1,
         backgroundColor: isDark ? '#0f172a' : '#ffffff',
         zIndex: 9999,
-        maxWidth: isMobile ? 280 : 320,
+        maxWidth: isMobile ? 220 : 320,
       }}
     >
       {label && (

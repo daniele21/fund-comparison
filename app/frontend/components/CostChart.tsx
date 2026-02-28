@@ -154,7 +154,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
                 cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
                 position={tooltipPosition}
                 offset={0}
-                allowEscapeViewBox={{ x: true, y: false }}
+                allowEscapeViewBox={{ x: false, y: false }}
                 wrapperStyle={{ pointerEvents: 'auto', opacity: 1, zIndex: 9999 }}
               />
               <Bar dataKey="costo" name="Costo" isAnimationActive={animationsEnabled} radius={isMobile ? [3, 3, 0, 0] : [4, 4, 0, 0]}>
@@ -244,7 +244,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
               cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
               position={tooltipPosition}
               offset={0}
-              allowEscapeViewBox={{ x: true, y: false }}
+              allowEscapeViewBox={{ x: false, y: false }}
               wrapperStyle={{ pointerEvents: 'auto', opacity: 1, zIndex: 9999 }}
             />
             {selectedFunds.map((fund, index) => {

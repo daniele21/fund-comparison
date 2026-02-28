@@ -7,6 +7,7 @@ import ActiveFiltersChips from './components/ActiveFiltersChips';
 import { CATEGORY_MAP } from './constants';
 import { useAuth } from './auth';
 import Footer from './components/Footer';
+import MobileBottomNav from './components/MobileBottomNav';
 import { GuidedFundComparator } from './components/guided/GuidedFundComparator';
 import { GuidedComparatorProvider, useGuidedComparator, MAX_SELECTED_FUNDS } from './components/guided/GuidedComparatorContext';
 import { ToastProvider } from './components/animations/ToastNotifications';
@@ -596,8 +597,8 @@ const AppContent: React.FC = () => {
           }`}
         >
           <div 
-            className="px-6 sm:px-8 lg:px-12 xl:px-16 py-10 sm:py-12 space-y-8 sm:space-y-10 max-w-[1800px]"
-            style={{ paddingTop: '2rem', paddingBottom: '2rem' }}
+            className="px-3 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-6 sm:py-10 md:py-12 pb-20 md:pb-12 space-y-6 sm:space-y-8 md:space-y-10 max-w-[1800px]"
+            style={{ paddingTop: '1.5rem' }}
           >
             <PageTransition pageKey={activeSection} variant="slideUp">
               {activeSection === 'playbook' ? (
@@ -1177,6 +1178,9 @@ const AppContent: React.FC = () => {
         <FeedbackWidget onRequireLogin={openLoginModal} />
       </Suspense>
       <Footer sidebarCollapsed={sidebarCollapsed} hasSidebar={true} />
+      
+      {/* Mobile Bottom Navigation Bar */}
+      <MobileBottomNav activeSection={activeSection} onNavigate={setActiveSection} />
       
       <AccessStatusBanner
         visible={!isFullAccess && Boolean(user) && showFreeBanner && !authLoading}

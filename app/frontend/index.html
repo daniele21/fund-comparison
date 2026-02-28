@@ -66,5 +66,33 @@
   <body class="bg-slate-50 dark:bg-slate-950">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
+    <!-- Persistent iubenda shift for mobile bottom nav -->
+    <script type="text/javascript">
+      (function() {
+        if (window.innerWidth >= 768) return;
+        var root = document.getElementById('root');
+        function shiftThirdPartyFixed() {
+          var els = document.body.getElementsByTagName('*');
+          for (var i = 0; i < els.length; i++) {
+            var el = els[i];
+            if (root && root.contains(el)) continue;
+            var cs = window.getComputedStyle(el);
+            if (cs.position === 'fixed') {
+              var b = parseInt(cs.bottom, 10);
+              if (!isNaN(b) && b < 70) {
+                el.style.setProperty('bottom', '80px', 'important');
+                el.style.setProperty('transform', 'scale(0.78)', 'important');
+                el.style.setProperty('transform-origin', 'bottom right', 'important');
+              }
+            }
+          }
+        }
+        // Run repeatedly to catch late-injected or re-styled widgets
+        setInterval(shiftThirdPartyFixed, 2000);
+        // Also run on DOM mutations
+        new MutationObserver(function() { setTimeout(shiftThirdPartyFixed, 200); })
+          .observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+      })();
+    </script>
   </body>
 </html>

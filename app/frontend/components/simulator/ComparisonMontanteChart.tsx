@@ -33,16 +33,17 @@ const ComparisonTooltip: React.FC<{
 }> = ({ active, payload, label, theme, meta }) => {
   if (!active || !payload || payload.length === 0) return null;
   const isDark = theme === 'dark';
+  const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 640;
 
   const metaMap = new Map<string, FundSeriesMeta>(meta.map((m) => [m.dataKey, m]));
 
   return (
     <div
-      className="rounded-lg border shadow-lg px-3 py-2.5"
+      className="rounded-lg border shadow-lg px-2.5 py-2 sm:px-3 sm:py-2.5"
       style={{
         backgroundColor: isDark ? '#0f172a' : '#ffffff',
         borderColor: isDark ? '#334155' : '#e2e8f0',
-        maxWidth: 320,
+        maxWidth: isSmallScreen ? 200 : 320,
       }}
     >
       <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 mb-1.5">
@@ -115,6 +116,7 @@ const ComparisonMontanteChart: React.FC<ComparisonMontanteChartProps> = ({
   ];
 
   return (
+    <div className="relative overflow-hidden">
     <ResponsiveContainer width="100%" height={isMobile ? 260 : 320}>
       <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
@@ -140,7 +142,11 @@ const ComparisonMontanteChart: React.FC<ComparisonMontanteChartProps> = ({
             style: { fill: tickColor, fontSize: isMobile ? '11px' : '12px', textAnchor: 'middle' },
           }}
         />
-        <Tooltip content={<ComparisonTooltip theme={theme} meta={allMeta} />} />
+        <Tooltip
+          content={<ComparisonTooltip theme={theme} meta={allMeta} />}
+          allowEscapeViewBox={{ x: false, y: false }}
+          wrapperStyle={{ pointerEvents: 'none', zIndex: 10 }}
+        />
         <Legend
           wrapperStyle={{ fontSize: isMobile ? '11px' : '12px' }}
           iconType="line"
@@ -176,6 +182,7 @@ const ComparisonMontanteChart: React.FC<ComparisonMontanteChartProps> = ({
         ))}
       </LineChart>
     </ResponsiveContainer>
+    </div>
   );
 };
 

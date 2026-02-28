@@ -232,11 +232,11 @@ const MultiFundSelector: React.FC<{
                 className="inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3 py-1.5"
               >
                 <div className="min-w-0">
-                  <p className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate max-w-[180px]">
+                  <p className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate max-w-[140px] sm:max-w-[180px]">
                     {fund.pip} — {fund.linea}
                   </p>
                   {fund.societa && (
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[180px]">
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[140px] sm:max-w-[180px]">
                       {fund.societa}
                     </p>
                   )}
@@ -442,7 +442,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
       />
 
       {/* ── Contenuto originale (con data-tour attributes) ─────────────────────────────────────── */}
-      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:border-slate-800 dark:bg-slate-900/80 p-6 sm:p-8 lg:p-10 shadow-sm">
+      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:border-slate-800 dark:bg-slate-900/80 p-4 sm:p-6 md:p-8 lg:p-10 shadow-sm">
         <div className="mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-3">
             Come funziona?
@@ -490,7 +490,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
       </div>
 
       {/* ── Step Navigation (horizontal stepper) ─────────────── */}
-      <div className="grid grid-cols-3 gap-3 sm:gap-4" data-tour="simulator-tabs">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4" data-tour="simulator-tabs">
         {STEPS.map((step, idx) => {
           const isActive = step.id === activeStep;
           const isCompleted = idx < currentStepIndex;
@@ -498,7 +498,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
             <button
               key={step.id}
               onClick={() => setActiveStep(step.id)}
-              className={`flex items-start gap-3 rounded-2xl sm:rounded-3xl border p-4 sm:p-5 text-left transition-all duration-200 ${
+              className={`flex flex-col sm:flex-row items-center sm:items-start gap-1.5 sm:gap-3 rounded-xl sm:rounded-2xl md:rounded-3xl border p-2.5 sm:p-4 md:p-5 text-center sm:text-left transition-all duration-200 ${
                 isActive
                   ? 'bg-white/90 dark:bg-slate-800 border-blue-300 dark:border-blue-700 shadow-md ring-1 ring-blue-200 dark:ring-blue-800'
                   : isCompleted
@@ -506,7 +506,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
                   : 'bg-white/60 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 hover:bg-white/90 dark:hover:bg-slate-800/60 hover:shadow-sm'
               }`}
             >
-              <span className={`flex-shrink-0 flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full text-xs sm:text-sm font-bold mt-0.5 ${
+              <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full text-[10px] sm:text-xs md:text-sm font-bold sm:mt-0.5 ${
                 isActive
                   ? 'bg-blue-600 text-white'
                   : isCompleted
@@ -516,7 +516,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
                 {isCompleted ? '✓' : idx + 1}
               </span>
               <div className="min-w-0">
-                <p className={`text-sm font-semibold leading-tight ${
+                <p className={`text-xs sm:text-sm font-semibold leading-tight ${
                   isActive
                     ? 'text-slate-900 dark:text-white'
                     : isCompleted
@@ -540,15 +540,15 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
       </div>
 
       {/* ── Fund Selector with mode toggle ────────────────── */}
-      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-800/60 dark:border-slate-800 p-5 sm:p-6 shadow-sm" data-tour="fund-selector">
+      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-800/60 dark:border-slate-800 p-3 sm:p-5 md:p-6 shadow-sm" data-tour="fund-selector">
         {/* Mode toggle (only for paid users) */}
         {!isFreePlan && (
-          <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-5 pb-4 border-b border-slate-200 dark:border-slate-700">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Modalità</span>
             <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5">
               <button
                 onClick={() => { setSimulationMode('single'); }}
-                className={`relative px-4 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
+                className={`relative px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
                   simulationMode === 'single'
                     ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
@@ -563,7 +563,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
               </button>
               <button
                 onClick={() => { setSimulationMode('compare'); }}
-                className={`relative px-4 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
+                className={`relative px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
                   simulationMode === 'compare'
                     ? 'bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-sm'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
@@ -614,7 +614,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
       </div>
 
       {/* ── Step Content ─────────────────────────────────────── */}
-      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-900/80 dark:border-slate-800 p-5 sm:p-8 lg:p-10 shadow-sm" data-tour="simulator-chart">
+      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-900/80 dark:border-slate-800 p-3 sm:p-5 md:p-8 lg:p-10 shadow-sm" data-tour="simulator-chart">
         {activeStep === 'montante' && (
           <StepMontante
             selectedFunds={activeFunds}
@@ -675,16 +675,16 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
         <button
           onClick={goPrev}
           disabled={currentStepIndex === 0}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 ${
             currentStepIndex === 0
               ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 hover:shadow-sm'
           }`}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          Indietro
+          <span className="hidden min-[360px]:inline">Indietro</span>
         </button>
 
         {/* Dot indicators */}
@@ -708,14 +708,14 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
         <button
           onClick={goNext}
           disabled={currentStepIndex === STEPS.length - 1}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 ${
             currentStepIndex === STEPS.length - 1
               ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
               : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md'
           }`}
         >
-          Avanti
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <span className="hidden min-[360px]:inline">Avanti</span>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>

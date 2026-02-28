@@ -24,7 +24,7 @@ const Footer: React.FC<FooterProps> = ({ sidebarCollapsed = false, hasSidebar = 
 
   return (
     <footer 
-      className={`mt-8 mb-4 border-t border-slate-200 dark:border-slate-800 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-950 transition-all duration-300 ${
+      className={`mt-8 mb-4 pb-16 md:pb-4 border-t border-slate-200 dark:border-slate-800 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-950 transition-all duration-300 ${
         hasSidebar ? (sidebarCollapsed ? 'md:ml-20' : 'md:ml-56 lg:ml-60') : ''
       }`}
     >

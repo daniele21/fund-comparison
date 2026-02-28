@@ -108,7 +108,7 @@ const AccessStatusBanner: React.FC<AccessStatusBannerProps> = ({ visible, onClos
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom duration-500">
+    <div className="fixed bottom-14 md:bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom duration-500">
       <div className="mx-auto max-w-7xl px-3 sm:px-4 pb-3 sm:pb-4">
         <div className="rounded-t-xl sm:rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm shadow-lg dark:border-slate-700 dark:bg-slate-900/95">
           <div className="flex items-start gap-3 p-3 sm:p-4">

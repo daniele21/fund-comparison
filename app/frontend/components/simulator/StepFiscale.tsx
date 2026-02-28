@@ -88,7 +88,7 @@ const StepFiscale: React.FC<StepFiscaleProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 px-5 py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30">
+      <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-5 gap-y-1.5 px-3 sm:px-5 py-2.5 sm:py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30">
         <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Dal passaggio 1:</span>
         <span className="text-xs text-slate-700 dark:text-slate-300">Contributo volontario <strong>{formatCurrency(contributoVolontarioAnnuo)}</strong></span>
         <span className="text-slate-300 dark:text-slate-600">·</span>
@@ -97,7 +97,7 @@ const StepFiscale: React.FC<StepFiscaleProps> = ({
         <span className="text-xs text-slate-700 dark:text-slate-300">Totale annuo investito <strong>{formatCurrency(contributoTotaleAnnuo)}</strong></span>
       </div>
 
-      <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 p-5 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
+      <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 p-3 sm:p-5 md:p-6 lg:p-8 space-y-5 sm:space-y-6 md:space-y-8">
         <div>
           <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Il tuo reddito</h4>
           <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1">Inserisci la RAL per calcolare aliquota e risparmio fiscale annuale</p>
@@ -167,23 +167,23 @@ const StepFiscale: React.FC<StepFiscaleProps> = ({
           <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1">La deducibilità è calcolata solo sul contributo volontario</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 p-5 text-center">
-            <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Aliquota IRPEF</p>
-            <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">{formatPercentage(aliquotaMarginale * 100, 0)}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 p-3 sm:p-5 text-center">
+            <p className="text-[11px] sm:text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Aliquota IRPEF</p>
+            <p className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100">{formatPercentage(aliquotaMarginale * 100, 0)}</p>
           </div>
-          <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-5 text-center">
-            <p className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-2">Risparmi ogni anno</p>
-            <p className="text-xl sm:text-2xl font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(risparmioAnnuo)}</p>
+          <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-3 sm:p-5 text-center">
+            <p className="text-[11px] sm:text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1.5 sm:mb-2">Risparmi ogni anno</p>
+            <p className="text-lg sm:text-2xl font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(risparmioAnnuo)}</p>
           </div>
-          <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-5 text-center">
-            <p className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-2">Risparmio totale</p>
-            <p className="text-xl sm:text-2xl font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(risparmioTotale)}</p>
+          <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-3 sm:p-5 text-center">
+            <p className="text-[11px] sm:text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1.5 sm:mb-2">Risparmio totale</p>
+            <p className="text-lg sm:text-2xl font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(risparmioTotale)}</p>
           </div>
-          <div className="rounded-2xl border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 p-5 text-center">
-            <p className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">Capitale extra se reinvesti</p>
-            <p className="text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-300">+{formatCurrency(differenzaMontante)}</p>
-            <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">+{formatPercentage(differenzaPercentuale, 1)}</p>
+          <div className="rounded-2xl border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 p-3 sm:p-5 text-center">
+            <p className="text-[11px] sm:text-sm font-medium text-blue-600 dark:text-blue-400 mb-1.5 sm:mb-2">Capitale extra se reinvesti</p>
+            <p className="text-lg sm:text-2xl font-bold text-blue-700 dark:text-blue-300">+{formatCurrency(differenzaMontante)}</p>
+            <p className="text-[10px] sm:text-xs text-blue-500 dark:text-blue-400 mt-0.5 sm:mt-1">+{formatPercentage(differenzaPercentuale, 1)}</p>
           </div>
         </div>
 

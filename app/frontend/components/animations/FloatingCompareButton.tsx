@@ -29,9 +29,9 @@ export const FloatingCompareButton: React.FC<FloatingCompareButtonProps> = ({
   position = 'bottom-right',
 }) => {
   const positionClasses = {
-    'bottom-right': 'bottom-4 right-4 sm:bottom-6 sm:right-6',
-    'bottom-left': 'bottom-4 left-4 sm:bottom-6 sm:left-6',
-    'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2 sm:bottom-6',
+    'bottom-right': 'bottom-[4.5rem] right-4 md:bottom-6 sm:right-6',
+    'bottom-left': 'bottom-[4.5rem] left-4 md:bottom-6 sm:left-6',
+    'bottom-center': 'bottom-[4.5rem] left-1/2 -translate-x-1/2 md:bottom-6',
   };
 
   const shouldShow = show && selectedCount > 0;
@@ -46,7 +46,7 @@ export const FloatingCompareButton: React.FC<FloatingCompareButtonProps> = ({
             console.log('Button clicked, count:', selectedCount);
             onClick();
           }}
-          className={`fixed ${positionClasses[position]} z-[9999] group cursor-pointer`}
+          className={`hidden md:fixed ${positionClasses[position]} z-[9999] group cursor-pointer`}
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
@@ -182,7 +182,7 @@ export const CompactFloatingCompareButton: React.FC<FloatingCompareButtonProps> 
       {shouldShow && (
         <motion.button
           onClick={onClick}
-          className={`fixed ${positionClasses[position]} z-40 w-14 h-14 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center`}
+          className={`hidden md:fixed ${positionClasses[position]} z-40 w-14 h-14 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center`}
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}

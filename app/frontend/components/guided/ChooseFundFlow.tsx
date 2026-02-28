@@ -48,7 +48,7 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundCli
 
 
       <div className="mt-4">
-  <div className="grid gap-3 sm:gap-4 grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-5">
+  <div className="grid gap-3 sm:gap-4 grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           <label className="flex flex-col min-w-0">
             <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate" title="Età">
               Età
