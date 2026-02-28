@@ -1,14 +1,12 @@
 import React, { useEffect } from 'react';
+import { SUBSCRIPTION_URL } from '../constants';
 
 interface UpgradeDialogProps {
   open: boolean;
   onClose: () => void;
-  onRequestLogin: () => void;
-  onStartCheckout: () => void;
-  isAuthenticated: boolean;
 }
 
-const UpgradeDialog: React.FC<UpgradeDialogProps> = ({ open, onClose, onRequestLogin, onStartCheckout, isAuthenticated }) => {
+const UpgradeDialog: React.FC<UpgradeDialogProps> = ({ open, onClose }) => {
   useEffect(() => {
     if (!open) {
       return;
@@ -42,7 +40,7 @@ const UpgradeDialog: React.FC<UpgradeDialogProps> = ({ open, onClose, onRequestL
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">Upgrade</p>
             <h2 id="upgrade-dialog-title" className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">
-              Passa al piano full access
+              Passa al piano Full Access
             </h2>
           </div>
           <button
@@ -57,7 +55,7 @@ const UpgradeDialog: React.FC<UpgradeDialogProps> = ({ open, onClose, onRequestL
         </div>
 
         <p className="mt-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-          Il piano Free mostra soltanto una parte dei risultati. Con il piano Full Access esplori l&apos;intero archivio dei fondi e ottieni
+          Il piano Free mostra soltanto una parte dei risultati. Con il piano Full Access esplori l&apos;intero archivio dei fondi, il simulatore completo e ottieni
           strumenti extra per confrontare in modo approfondito.
         </p>
 
@@ -76,23 +74,23 @@ const UpgradeDialog: React.FC<UpgradeDialogProps> = ({ open, onClose, onRequestL
           <li className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30">
             <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </span>
+            <div>
+              <p className="font-semibold text-slate-900 dark:text-slate-100">Simulatore senza limiti</p>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">Simula con qualsiasi fondo pensione, non solo quello predefinito.</p>
+            </div>
+          </li>
+          <li className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30">
+            <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </span>
             <div>
               <p className="font-semibold text-slate-900 dark:text-slate-100">Supporto dedicato</p>
               <p className="text-slate-600 dark:text-slate-400 mt-1">Ricevi assistenza personalizzata per scegliere il prodotto più adatto.</p>
-            </div>
-          </li>
-          <li className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30">
-            <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-4.215A2 2 0 0016.695 11H15V7a3 3 0 00-6 0v4H7.305a2 2 0 00-1.9 1.785L4 17h5m2 0v4m0 0h2m-2 0H9" />
-              </svg>
-            </span>
-            <div>
-              <p className="font-semibold text-slate-900 dark:text-slate-100">Funzioni premium in arrivo</p>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">Accedi per primo a report avanzati e analisi personalizzate.</p>
             </div>
           </li>
         </ul>
@@ -104,19 +102,17 @@ const UpgradeDialog: React.FC<UpgradeDialogProps> = ({ open, onClose, onRequestL
           >
             Torna indietro
           </button>
-          <button
-            onClick={() => {
-              if (isAuthenticated) {
-                onClose();
-                onStartCheckout();
-                return;
-              }
-              onRequestLogin();
-            }}
-            className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-100"
+          <a
+            href={SUBSCRIPTION_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-100"
           >
-            {isAuthenticated ? 'Procedi al pagamento demo' : 'Accedi per continuare'}
-          </button>
+            Acquista Full Access
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
         </div>
       </div>
     </div>

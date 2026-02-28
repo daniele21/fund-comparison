@@ -29,7 +29,6 @@ const Playbook = lazy(() => import('./components/Playbook'));
 const LoginModal = lazy(() => import('./components/LoginModal'));
 const FundDetailModal = lazy(() => import('./components/FundDetailModal'));
 const UpgradeDialog = lazy(() => import('./components/UpgradeDialog'));
-const FakePaymentDialog = lazy(() => import('./components/FakePaymentDialog'));
 const FeedbackWidget = lazy(() => import('./components/feedback/FeedbackWidget'));
 const PlaybookContent = lazy(() => import('./components/PlaybookContent'));
 const TfrFaq = lazy(() => import('./components/TfrFaq'));
@@ -69,7 +68,6 @@ const AppContent: React.FC = () => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ultimoAnno', direction: 'descending' });
   const [modalFund, setModalFund] = useState<PensionFund | null>(null);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-  const [showFakePayment, setShowFakePayment] = useState(false);
   const { user, loading: authLoading, authMode } = useAuth();
   const { selectedFundIds, toggleSelectedFund, clearSelectedFunds, setEntryMode } = useGuidedComparator();
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
@@ -99,6 +97,14 @@ const AppContent: React.FC = () => {
     }
   }, [user, isFullAccess]);
 
+  // Re-show the free banner whenever the user changes (login/switch account)
+  // so the payment question always appears on each new session/login
+  useEffect(() => {
+    if (user && !isFullAccess) {
+      setShowFreeBanner(true);
+    }
+  }, [user?.id]);
+
   // Auto-expand parent nav items when activeSection changes
   useEffect(() => {
     const toolSections: DashboardSection[] = ['simulator', 'choose-fund', 'have-fund'];
@@ -122,10 +128,9 @@ const AppContent: React.FC = () => {
     }
 
     if (!user) {
-      // Close login modal, upgrade/payment dialogs and show the home
+      // Close login modal, upgrade dialogs and show the home
       setShowLoginModal(false);
       setShowUpgradeDialog(false);
-      setShowFakePayment(false);
       setView('playbook');
       setActiveSection('home');
     }
@@ -183,21 +188,9 @@ const AppContent: React.FC = () => {
 
   // Login modal gating
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [pendingUpgradeAfterLogin, setPendingUpgradeAfterLogin] = useState(false);
   const openLoginModal = () => setShowLoginModal(true);
   const closeLoginModal = () => {
     setShowLoginModal(false);
-    setPendingUpgradeAfterLogin(false);
-  };
-  const handleUpgradeLogin = () => {
-    setShowUpgradeDialog(false);
-    setPendingUpgradeAfterLogin(true);
-    openLoginModal();
-  };
-
-  const handleStartFakePayment = () => {
-    setShowUpgradeDialog(false);
-    setShowFakePayment(true);
   };
 
   const { companies, categories } = useMemo(() => {
@@ -766,7 +759,7 @@ const AppContent: React.FC = () => {
                               <div className="flex flex-col gap-2 sm:flex-row sm:items-center w-full sm:w-auto">
                                 {!user && (
                                   <AnimatedButton
-                                    onClick={handleUpgradeLogin}
+                                    onClick={openLoginModal}
                                     variant="outline"
                                     size="sm"
                                     className="w-full sm:w-auto"
@@ -1124,27 +1117,15 @@ const AppContent: React.FC = () => {
         <UpgradeDialog
           open={showUpgradeDialog}
           onClose={() => setShowUpgradeDialog(false)}
-          onRequestLogin={handleUpgradeLogin}
-          onStartCheckout={handleStartFakePayment}
-          isAuthenticated={!!user}
-        />
-        <FakePaymentDialog
-          open={showFakePayment}
-          onClose={() => setShowFakePayment(false)}
-          onSuccess={() => setShowFakePayment(false)}
         />
         <LoginModal
           open={showLoginModal}
           onClose={closeLoginModal}
           onSuccess={() => {
-            const shouldOpenPayment = pendingUpgradeAfterLogin;
             closeLoginModal();
             setShowUpgradeDialog(false);
             setActiveSection('home');
             setView('dashboard');
-            if (shouldOpenPayment) {
-              setShowFakePayment(true);
-            }
           }}
         />
         <FeedbackWidget onRequireLogin={openLoginModal} />

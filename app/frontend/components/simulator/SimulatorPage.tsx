@@ -3,6 +3,8 @@ import type { PensionFund } from '../../types';
 import { pensionFundsData } from '../../data/funds';
 import { getRendimentoProxyWithLabel, formatPercentage } from '../../utils/simulatorCalc';
 import { formatFundLabel } from '../../utils/fundLabel';
+import { useAuth } from '../../auth';
+import { SUBSCRIPTION_URL } from '../../constants';
 import StepMontante from './StepMontante';
 import StepFiscale from './StepFiscale';
 import StepImpostaPensione from './StepImpostaPensione';
@@ -34,7 +36,8 @@ const FundSelector: React.FC<{
   selectedFund: PensionFund | null;
   onSelect: (fund: PensionFund) => void;
   onClear: () => void;
-}> = ({ selectedFund, onSelect, onClear }) => {
+  isFreePlan: boolean;
+}> = ({ selectedFund, onSelect, onClear, isFreePlan }) => {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
 
@@ -56,6 +59,40 @@ const FundSelector: React.FC<{
       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
         Seleziona il tuo fondo pensione
       </label>
+
+      {isFreePlan ? (
+        <>
+          <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/80 dark:bg-amber-950/20 p-4">
+            <div className="flex items-start gap-3">
+              <span className="flex-shrink-0 text-lg mt-0.5">🔒</span>
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  Selezione fondo non disponibile nel piano Free
+                </p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Nel piano Free la simulazione utilizza un tasso di rendimento predefinito del 5%.
+                  Con il piano <strong>Full Access</strong> puoi selezionare qualsiasi fondo pensione e simulare con il suo rendimento storico reale.
+                </p>
+                <a
+                  href={SUBSCRIPTION_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 mt-1 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-lg shadow-sm hover:shadow-md transition-all"
+                >
+                  Acquista Full Access
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-400 dark:text-slate-500">
+            La simulazione procede con un tasso di rendimento predefinito del 5%.
+          </p>
+        </>
+      ) : (
+      <>
       <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
         Cercalo per nome: useremo il suo rendimento storico per rendere la simulazione più accurata.
         Se non lo selezioni, verrà usato un tasso di rendimento predefinito del 5%.
@@ -148,6 +185,8 @@ const FundSelector: React.FC<{
           ? 'Il rendimento storico di questo fondo verrà utilizzato come tasso di rivalutazione nella simulazione.'
           : 'Opzionale — puoi procedere anche senza selezionare un fondo.'}
       </p>
+      </>
+      )}
     </div>
   );
 };
@@ -155,6 +194,10 @@ const FundSelector: React.FC<{
 /* ── Main Simulator Page ────────────────────────────────────────── */
 const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
   const [activeStep, setActiveStep] = useState<SimulatorStep>('montante');
+  const { user } = useAuth();
+  const currentPlan = user?.plan ?? 'free';
+  const userStatus = user?.status ?? 'active';
+  const isFreePlan = !(currentPlan === 'full-access' && userStatus === 'active') && !user?.isAdmin;
   
   // Tour guidato
   const { 
@@ -167,9 +210,10 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
   } = useGuidedTour('simulator');
 
   // Fund selection (local to simulator, independent from comparator context)
+  // Free plan users cannot select a fund
   const [manualFund, setManualFund] = useState<PensionFund | null>(null);
 
-  const activeFunds = manualFund ? [manualFund] : [];
+  const activeFunds = (!isFreePlan && manualFund) ? [manualFund] : [];
 
   // Shared state across steps
   const [montanteIniziale, setMontanteIniziale] = useState(5000);
@@ -192,6 +236,35 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
 
   return (
     <div className="space-y-6 sm:space-y-8 lg:space-y-10">
+      {/* Banner piano free per simulatore */}
+      {isFreePlan && (
+        <div className="rounded-2xl sm:rounded-3xl border-2 border-amber-300 dark:border-amber-700 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 dark:from-amber-950/30 dark:via-orange-950/20 dark:to-amber-950/30 p-5 sm:p-6 shadow-md">
+          <div className="flex items-start gap-4">
+            <span className="flex-shrink-0 text-2xl mt-0.5">🔒</span>
+            <div className="space-y-2 flex-1">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+                Simulatore in modalità limitata
+              </h3>
+              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                Nel piano Free il simulatore funziona con un <strong>tasso di rendimento predefinito del 5%</strong>.
+                Con il piano <strong>Full Access</strong> puoi selezionare qualsiasi fondo pensione e simulare con il suo rendimento storico reale.
+              </p>
+              <a
+                href={SUBSCRIPTION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-105 active:scale-100"
+              >
+                Acquista Full Access
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Banner primo accesso */}
       {shouldShowBanner && (
         <FirstVisitBanner
@@ -316,6 +389,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
           selectedFund={manualFund}
           onSelect={setManualFund}
           onClear={() => setManualFund(null)}
+          isFreePlan={isFreePlan}
         />
       </div>
 

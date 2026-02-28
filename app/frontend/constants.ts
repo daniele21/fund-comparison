@@ -19,6 +19,9 @@ export const CATEGORY_COLORS: Record<FundCategory, string> = {
   'OBB': 'bg-indigo-500',
 };
 
+/** External subscription purchase URL */
+export const SUBSCRIPTION_URL = 'https://financialspreadsheet.it/pages/comparatore-fondi-pensione';
+
 // Simulator constants (D.Lgs. 252/2005)
 export const MAX_CONTRIBUTO_DEDUCIBILE = 5300;
 
