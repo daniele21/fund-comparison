@@ -360,20 +360,25 @@ async def exchange_google_code(
             # roles will be set automatically: admin users get ["admin"], others get ["free"]
         )
         logger.info("Attempting Firestore upsert for user_id=%s email=%s", user_info["id"], user_info.get("email"))
+        # Check if user exists before upsert to detect new registrations
+        existing_user = await user_service.get_user_by_id(user_info["id"])
+        is_new_user = existing_user is None
+
         saved_profile = await user_service.upsert_user(profile, mark_login=True)
         logger.info(
-            "Firestore profile upserted for user_id=%s plan=%s status=%s email=%s",
+            "Firestore profile upserted for user_id=%s plan=%s status=%s email=%s is_new=%s",
             getattr(saved_profile, "id", user_info["id"]),
             getattr(saved_profile, "plan", None),
             getattr(saved_profile, "status", None),
             user_info.get("email"),
+            is_new_user,
         )
         
-        # Send Telegram notification for new users (status=pending)
-        if saved_profile and saved_profile.status == "pending":
+        # Send Telegram notification for new non-admin users
+        if saved_profile and is_new_user and "admin" not in (saved_profile.roles or []):
             try:
                 await notification_service.notify_new_pending_user(saved_profile)
-                logger.info(f"Sent Telegram notification for new pending user {saved_profile.id}")
+                logger.info(f"Sent Telegram notification for new user {saved_profile.id}")
             except Exception as notif_exc:
                 logger.error(f"Failed to send Telegram notification: {notif_exc}")
     

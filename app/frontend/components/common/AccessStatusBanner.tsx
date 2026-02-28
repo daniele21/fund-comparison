@@ -15,6 +15,8 @@ type AccessStatusBannerProps = {
 
 type BannerMode = 'question' | 'demo' | 'confirmed';
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+
 function readDemoAck(): boolean {
   try {
     return window.sessionStorage.getItem(DEMO_ACK_KEY) === '1';
@@ -48,10 +50,11 @@ function writeSessionAnswered(): void {
 }
 
 const AccessStatusBanner: React.FC<AccessStatusBannerProps> = ({ visible, onClose, onOpenUpgrade, freePlanLimit }) => {
-  const { user, loading, authMode } = useAuth();
+  const { user, loading, authMode, refresh, setToken, updateUser, token } = useAuth();
   const [demoAck, setDemoAck] = useState<boolean>(() => (typeof window === 'undefined' ? false : readDemoAck()));
   const [answeredThisSession, setAnsweredThisSession] = useState<boolean>(() => (typeof window === 'undefined' ? false : readSessionAnswered()));
   const [confirmedPaid, setConfirmedPaid] = useState(false);
+  const [requestError, setRequestError] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -64,6 +67,7 @@ const AccessStatusBanner: React.FC<AccessStatusBannerProps> = ({ visible, onClos
     setDemoAck(false);
     setAnsweredThisSession(false);
     setConfirmedPaid(false);
+    setRequestError(null);
   }, [user?.id]);
 
   const mode: BannerMode | null = useMemo(() => {
@@ -101,10 +105,52 @@ const AccessStatusBanner: React.FC<AccessStatusBannerProps> = ({ visible, onClos
     setAnsweredThisSession(true);
   };
 
-  const handleMarkPaid = () => {
+  const handleMarkPaid = async () => {
     writeSessionAnswered();
     setAnsweredThisSession(true);
-    setConfirmedPaid(true);
+    setRequestError(null);
+
+    // Call backend to mark the subscription request (moves account to pending + notifies admin)
+    try {
+      const headers: Record<string, string> = {
+        'X-Requested-With': 'XMLHttpRequest',
+        Accept: 'application/json',
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const resp = await fetch(`${API_BASE}/auth/subscription/request`, {
+        method: 'POST',
+        credentials: 'include',
+        headers,
+      });
+
+      if (!resp.ok) {
+        const errorText = await resp.text();
+        console.error('Failed to request subscription approval', errorText);
+        setRequestError('Richiesta non inviata al backend. Riprova tra poco o contatta supporto.');
+        setConfirmedPaid(false);
+        return;
+      }
+
+      const body = await resp.json();
+
+      // Persist any returned token and update local user state
+      if (body.token && typeof setToken === 'function') {
+        setToken(body.token);
+      }
+      if (body.user && typeof updateUser === 'function') {
+        // updateUser expects an updater function
+        updateUser(() => body.user);
+      }
+
+      setConfirmedPaid(true);
+    } catch (e) {
+      console.error('Error requesting subscription approval', e);
+      setRequestError('Errore di rete: impossibile inviare la richiesta di conferma pagamento.');
+      setConfirmedPaid(false);
+    }
   };
 
   return (
@@ -124,6 +170,9 @@ const AccessStatusBanner: React.FC<AccessStatusBannerProps> = ({ visible, onClos
                   <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300">
                     <span className="font-semibold text-slate-900 dark:text-slate-100">Hai già acquistato la subscription Full Access?</span>
                   </p>
+                  {requestError && (
+                    <p className="text-xs sm:text-sm text-red-600 dark:text-red-400">{requestError}</p>
+                  )}
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <button
                       type="button"

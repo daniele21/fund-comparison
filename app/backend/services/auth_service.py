@@ -12,6 +12,7 @@ from fastapi import HTTPException
 from ..settings import settings
 from ..services import user_service
 from ..schemas.user import UserProfileCreate
+from ..services.admin_notification_service import get_admin_notification_service
 from config.auth import AuthMode
 import logging
 
@@ -427,19 +428,33 @@ async def exchange_code(provider_name: str, code: str, state: str) -> Session:
                 name=normalized_user.get("name"),
                 picture=normalized_user.get("picture"),
             )
+            # Check if user exists before upsert to detect new registrations
+            existing_user = await user_service.get_user_by_id(normalized_user["id"])
+            is_new_user = existing_user is None
+
             persisted_profile = await user_service.upsert_user(profile, mark_login=True)
             if persisted_profile:
                 token_roles = persisted_profile.roles or token_roles
                 token_plan = persisted_profile.plan or token_plan
                 token_status = persisted_profile.status
             logger.info(
-                "Firestore profile upserted (auth_service) user_id=%s email=%s roles=%s plan=%s status=%s",
+                "Firestore profile upserted (auth_service) user_id=%s email=%s roles=%s plan=%s status=%s is_new=%s",
                 normalized_user["id"],
                 normalized_user.get("email"),
                 token_roles,
                 token_plan,
                 token_status,
+                is_new_user,
             )
+
+            # Send Telegram notification for new non-admin users
+            if persisted_profile and is_new_user and "admin" not in (persisted_profile.roles or []):
+                try:
+                    notification_svc = get_admin_notification_service()
+                    await notification_svc.notify_new_pending_user(persisted_profile)
+                    logger.info("Sent Telegram notification for new user %s", normalized_user["id"])
+                except Exception as notif_exc:
+                    logger.error("Failed to send Telegram notification: %s", notif_exc)
         except Exception:  # noqa: BLE001
             logger.exception(
                 "Failed to upsert user profile in Firestore for user_id=%s",

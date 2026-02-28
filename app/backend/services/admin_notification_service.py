@@ -34,10 +34,15 @@ class AdminNotificationService:
     def __init__(self):
         self.token = settings.TELEGRAM_BOT_TOKEN
         self.chat_id = settings.TELEGRAM_CHAT_ID
-        self.enabled = bool(self.token and self.chat_id)
+        placeholder_token = isinstance(self.token, str) and "replace-with" in self.token
+        placeholder_chat = isinstance(self.chat_id, str) and "replace-with" in self.chat_id
+        self.enabled = bool(self.token and self.chat_id) and not placeholder_token and not placeholder_chat
         
         if not self.enabled:
-            logger.warning("Admin notifications disabled: Telegram not configured")
+            if placeholder_token or placeholder_chat:
+                logger.warning("Admin notifications disabled: placeholder Telegram credentials detected")
+            else:
+                logger.warning("Admin notifications disabled: Telegram not configured")
     
     async def notify_new_pending_user(self, user: UserProfile, payment_info: Optional[Dict[str, Any]] = None):
         """

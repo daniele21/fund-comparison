@@ -22,6 +22,7 @@ from backend.services.auth_service import (
 )
 from backend.services import user_service
 from backend.services.admin_notification_service import get_admin_notification_service
+from backend.services.admin_notification_service import AdminNotificationError
 from backend.schemas.user import UserProfileUpdate, UserProfileCreate
 from config.auth import AuthMode
 
@@ -554,6 +555,27 @@ async def request_subscription_approval(request: Request):
             max_age=60 * 60 * 24 * 7,
             secure=is_prod,
         )
+        # Notify admin that the user reported a payment even if already active
+        try:
+            notification_service = get_admin_notification_service()
+            if not notification_service.enabled:
+                raise HTTPException(status_code=500, detail="Telegram notification service is not configured")
+            await notification_service.notify_new_pending_user(user=existing_profile, payment_info=None)
+        except HTTPException:
+            raise
+        except AdminNotificationError as exc:
+            logger.exception("Failed to notify admin for subscription request (already active) user_id=%s", user_id)
+            raise HTTPException(
+                status_code=502,
+                detail="Subscription request saved but Telegram notification failed",
+            ) from exc
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Unexpected error while notifying admin for subscription request (already active) user_id=%s", user_id)
+            raise HTTPException(
+                status_code=500,
+                detail="Subscription request saved but admin notification failed",
+            ) from exc
+
         return resp
 
     if existing_profile and existing_profile.status == "pending":
@@ -592,6 +614,27 @@ async def request_subscription_approval(request: Request):
             max_age=60 * 60 * 24 * 7,
             secure=is_prod,
         )
+        # Notify admin again when user re-submits the payment claim (even if already pending)
+        try:
+            notification_service = get_admin_notification_service()
+            if not notification_service.enabled:
+                raise HTTPException(status_code=500, detail="Telegram notification service is not configured")
+            await notification_service.notify_new_pending_user(user=existing_profile, payment_info=None)
+        except HTTPException:
+            raise
+        except AdminNotificationError as exc:
+            logger.exception("Failed to notify admin for subscription request (already pending) user_id=%s", user_id)
+            raise HTTPException(
+                status_code=502,
+                detail="Subscription request saved but Telegram notification failed",
+            ) from exc
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Unexpected error while notifying admin for subscription request (already pending) user_id=%s", user_id)
+            raise HTTPException(
+                status_code=500,
+                detail="Subscription request saved but admin notification failed",
+            ) from exc
+
         return resp
 
     # Build metadata and persist pending request.
@@ -639,9 +682,23 @@ async def request_subscription_approval(request: Request):
     # Notify admin only when transitioning into pending via this endpoint.
     try:
         notification_service = get_admin_notification_service()
+        if not notification_service.enabled:
+            raise HTTPException(status_code=500, detail="Telegram notification service is not configured")
         await notification_service.notify_new_pending_user(user=updated_profile, payment_info=None)
-    except Exception:  # noqa: BLE001
+    except HTTPException:
+        raise
+    except AdminNotificationError as exc:
         logger.exception("Failed to notify admin for subscription request user_id=%s", user_id)
+        raise HTTPException(
+            status_code=502,
+            detail="Subscription request saved but Telegram notification failed",
+        ) from exc
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Unexpected error while notifying admin for subscription request user_id=%s", user_id)
+        raise HTTPException(
+            status_code=500,
+            detail="Subscription request saved but admin notification failed",
+        ) from exc
 
     pending_token = create_session_token(
         user_id=user_id,
