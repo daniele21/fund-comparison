@@ -324,14 +324,7 @@ a {
 
 /* Push iubenda cookie button above mobile bottom nav + shrink */
 @media (max-width: 767px) {
-  #iubenda-cs-banner,
-  .iubenda-cs-visible .iubenda-cs-container,
-  [class*="iubenda"],
-  .iub__us-widget,
-  [class*="iubenda-tp-btn"],
-  [id*="iubenda"],
-  body > iframe[style*="position"][style*="fixed"],
-  body > div[style*="position: fixed"][style*="bottom"] {
+  #iubenda-cs-banner {
     bottom: 80px !important;
     transform: scale(0.78) !important;
     transform-origin: bottom right !important;
