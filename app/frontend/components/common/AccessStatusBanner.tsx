@@ -13,7 +13,7 @@ type AccessStatusBannerProps = {
   freePlanLimit: number;
 };
 
-type BannerMode = 'question' | 'demo';
+type BannerMode = 'question' | 'demo' | 'confirmed';
 
 function readDemoAck(): boolean {
   try {
@@ -51,6 +51,7 @@ const AccessStatusBanner: React.FC<AccessStatusBannerProps> = ({ visible, onClos
   const { user, loading, authMode } = useAuth();
   const [demoAck, setDemoAck] = useState<boolean>(() => (typeof window === 'undefined' ? false : readDemoAck()));
   const [answeredThisSession, setAnsweredThisSession] = useState<boolean>(() => (typeof window === 'undefined' ? false : readSessionAnswered()));
+  const [confirmedPaid, setConfirmedPaid] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -62,6 +63,7 @@ const AccessStatusBanner: React.FC<AccessStatusBannerProps> = ({ visible, onClos
     try { window.sessionStorage.removeItem(DEMO_ACK_KEY); } catch { /* ignore */ }
     setDemoAck(false);
     setAnsweredThisSession(false);
+    setConfirmedPaid(false);
   }, [user?.id]);
 
   const mode: BannerMode | null = useMemo(() => {
@@ -74,6 +76,9 @@ const AccessStatusBanner: React.FC<AccessStatusBannerProps> = ({ visible, onClos
     // Every new session: show the question first, regardless of pending status
     if (isNotFullAccess && !answeredThisSession) return 'question';
 
+    // User just clicked "Sì, ho pagato" → show confirmation message
+    if (confirmedPaid) return 'confirmed';
+
     // If the user chose "demo" this session, always show demo mode
     if (demoAck) return 'demo';
 
@@ -81,7 +86,7 @@ const AccessStatusBanner: React.FC<AccessStatusBannerProps> = ({ visible, onClos
     if (isNotFullAccess) return 'demo';
 
     return null;
-  }, [user, loading, authMode, demoAck, answeredThisSession]);
+  }, [user, loading, authMode, demoAck, answeredThisSession, confirmedPaid]);
 
   const canClose = mode !== 'question';
 
@@ -99,8 +104,7 @@ const AccessStatusBanner: React.FC<AccessStatusBannerProps> = ({ visible, onClos
   const handleMarkPaid = () => {
     writeSessionAnswered();
     setAnsweredThisSession(true);
-    // Open the external subscription page
-    window.open(SUBSCRIPTION_URL, '_blank', 'noopener,noreferrer');
+    setConfirmedPaid(true);
   };
 
   return (
@@ -127,9 +131,6 @@ const AccessStatusBanner: React.FC<AccessStatusBannerProps> = ({ visible, onClos
                       className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
                     >
                       Sì, ho pagato
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
                     </button>
                     <button
                       type="button"
@@ -139,6 +140,18 @@ const AccessStatusBanner: React.FC<AccessStatusBannerProps> = ({ visible, onClos
                       No, sto provando la demo
                     </button>
                   </div>
+                </>
+              )}
+
+              {mode === 'confirmed' && (
+                <>
+                  <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300">
+                    <span className="font-semibold text-slate-900 dark:text-slate-100">✅ Grazie! La tua richiesta è in fase di approvazione.</span>
+                  </p>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Riceverai l&apos;accesso completo non appena verrà verificato il pagamento.
+                    Nel frattempo puoi continuare a esplorare le funzionalità disponibili nella versione demo.
+                  </p>
                 </>
               )}
 
