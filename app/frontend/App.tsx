@@ -69,7 +69,7 @@ const AppContent: React.FC = () => {
   const [modalFund, setModalFund] = useState<PensionFund | null>(null);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const { user, loading: authLoading, authMode } = useAuth();
-  const { selectedFundIds, toggleSelectedFund, clearSelectedFunds, setEntryMode } = useGuidedComparator();
+  const { selectedFundIds, toggleSelectedFund, clearSelectedFunds, setEntryMode, setSimulationFundIds } = useGuidedComparator();
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [showFreeBanner, setShowFreeBanner] = useState(true);
   const [selectionNotice, setSelectionNotice] = useState<string | null>(null);
@@ -704,6 +704,52 @@ const AppContent: React.FC = () => {
                         </div>
                       </section>
                     </ScrollReveal>
+
+                    {/* ── CTA: Simula i fondi selezionati ──────────────── */}
+                    {selectedFundIds.length >= 2 && (
+                      <ScrollReveal variant="slideUp" duration={0.5} threshold={0.2}>
+                        <div className="rounded-2xl sm:rounded-3xl border-2 border-violet-300 dark:border-violet-700 bg-gradient-to-r from-violet-50 via-blue-50 to-violet-50 dark:from-violet-950/30 dark:via-blue-950/20 dark:to-violet-950/30 p-5 sm:p-6 shadow-md">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <span className="text-xl">⚡</span>
+                                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+                                  Simula questi {selectedFundIds.length} fondi a confronto
+                                </h3>
+                              </div>
+                              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                Scopri quale fondo ti farebbe accumulare di più: stessi parametri, fondi diversi, risultati chiari.
+                              </p>
+                              <div className="flex flex-wrap gap-1.5 mt-2">
+                                {selectedFunds.slice(0, 3).map((f) => (
+                                  <span
+                                    key={f.id}
+                                    className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 truncate max-w-[180px]"
+                                  >
+                                    {f.pip} — {f.linea}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setSimulationFundIds(selectedFundIds.slice(0, 3));
+                                setActiveSection('simulator');
+                              }}
+                              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 active:scale-100 flex-shrink-0"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                              </svg>
+                              Vai alla Simulazione
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      </ScrollReveal>
+                    )}
 
                     <div className="space-y-6 min-w-0" data-section="funds">
                       <ScrollReveal variant="slideUp" duration={0.6} delay={0.1} threshold={0.2}>

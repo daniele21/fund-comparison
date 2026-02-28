@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import type { PensionFund } from '../../types';
 import {
   calcolaAliquotaSostitutiva,
   calcolaRisparmioFiscaleAnnuo,
@@ -9,6 +10,7 @@ import {
 } from '../../utils/simulatorCalc';
 import AliquotaGauge from './AliquotaGauge';
 import SimulatorSlider from './SimulatorSlider';
+import StepComparisonResults from './StepComparisonResults';
 
 interface StepImpostaPensioneProps {
   montanteIniziale: number;
@@ -18,6 +20,10 @@ interface StepImpostaPensioneProps {
   tassoRendimento: number;
   theme: string;
   onValuesChange?: (values: { annoPrimaAdesione: number }) => void;
+  /** Comparison mode props */
+  isComparisonMode?: boolean;
+  comparisonFunds?: PensionFund[];
+  onRemoveComparisonFund?: (fundId: string) => void;
 }
 
 const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
@@ -28,6 +34,9 @@ const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
   tassoRendimento,
   theme,
   onValuesChange,
+  isComparisonMode = false,
+  comparisonFunds = [],
+  onRemoveComparisonFund,
 }) => {
   const annoCorrente = new Date().getFullYear();
   const [annoPrimaAdesione, setAnnoPrimaAdesione] = useState(2020);
@@ -101,6 +110,21 @@ const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
         </div>
       </div>
 
+      {/* ── Results: comparison vs single ─────────────────── */}
+      {isComparisonMode && comparisonFunds.length >= 2 ? (
+        <StepComparisonResults
+          activeStep="imposta"
+          funds={comparisonFunds}
+          montanteIniziale={montanteIniziale}
+          contributoVolontarioAnnuo={contributoVolontarioAnnuo}
+          orizzonteAnni={orizzonteAnni}
+          tassoRendimento={tassoRendimento}
+          ral={ral}
+          annoPrimaAdesione={annoPrimaAdesione}
+          theme={theme}
+          onRemoveFund={onRemoveComparisonFund}
+        />
+      ) : (
       <div className="space-y-5 sm:space-y-6">
         <div>
           <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Riepilogo completo della simulazione</h4>
@@ -168,6 +192,7 @@ const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
           Nota: l'imposta è calcolata sull'intero montante per semplicità. Nella realtà si applica alla quota imponibile prevista dalla normativa.
         </p>
       </div>
+      )}
     </div>
   );
 };

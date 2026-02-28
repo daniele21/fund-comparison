@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { MontanteSeriesPoint } from '../../types';
+import type { PensionFund, MontanteSeriesPoint } from '../../types';
 import {
   calcolaMontante,
   calcolaMontanteTFR,
@@ -13,6 +13,7 @@ import {
 import { SCAGLIONI_IRPEF } from '../../constants';
 import MontanteChart from './MontanteChart';
 import SimulatorSlider from './SimulatorSlider';
+import StepComparisonResults from './StepComparisonResults';
 
 interface StepFiscaleProps {
   montanteIniziale: number;
@@ -22,6 +23,11 @@ interface StepFiscaleProps {
   ral: number;
   theme: string;
   onValuesChange?: (values: { ral: number }) => void;
+  /** Comparison mode props */
+  isComparisonMode?: boolean;
+  comparisonFunds?: PensionFund[];
+  annoPrimaAdesione?: number;
+  onRemoveComparisonFund?: (fundId: string) => void;
 }
 
 const StepFiscale: React.FC<StepFiscaleProps> = ({
@@ -32,6 +38,10 @@ const StepFiscale: React.FC<StepFiscaleProps> = ({
   ral,
   theme,
   onValuesChange,
+  isComparisonMode = false,
+  comparisonFunds = [],
+  annoPrimaAdesione = 2020,
+  onRemoveComparisonFund,
 }) => {
 
   const tfrAnnuoDatore = useMemo(() => calcolaTfrAnnuoDaRal(ral), [ral]);
@@ -136,6 +146,21 @@ const StepFiscale: React.FC<StepFiscaleProps> = ({
         </div>
       </div>
 
+      {/* ── Results: comparison vs single ─────────────────── */}
+      {isComparisonMode && comparisonFunds.length >= 2 ? (
+        <StepComparisonResults
+          activeStep="fiscale"
+          funds={comparisonFunds}
+          montanteIniziale={montanteIniziale}
+          contributoVolontarioAnnuo={contributoVolontarioAnnuo}
+          orizzonteAnni={orizzonteAnni}
+          tassoRendimento={tassoRendimento}
+          ral={ral}
+          annoPrimaAdesione={annoPrimaAdesione}
+          theme={theme}
+          onRemoveFund={onRemoveComparisonFund}
+        />
+      ) : (
       <div className="space-y-5 sm:space-y-6">
         <div>
           <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ecco quanto risparmi</h4>
@@ -172,6 +197,7 @@ const StepFiscale: React.FC<StepFiscaleProps> = ({
           <MontanteChart data={chartData} theme={theme} showFiscale={true} showTFR={false} />
         </div>
       </div>
+      )}
     </div>
   );
 };

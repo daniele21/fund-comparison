@@ -5,6 +5,7 @@ import { getRendimentoProxyWithLabel, formatPercentage } from '../../utils/simul
 import { formatFundLabel } from '../../utils/fundLabel';
 import { useAuth } from '../../auth';
 import { SUBSCRIPTION_URL } from '../../constants';
+import { useGuidedComparator, MAX_SIMULATION_FUNDS } from '../guided/GuidedComparatorContext';
 import StepMontante from './StepMontante';
 import StepFiscale from './StepFiscale';
 import StepImpostaPensione from './StepImpostaPensione';
@@ -106,7 +107,7 @@ const FundSelector: React.FC<{
             </p>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                {selectedFund.type}
+                {selectedFund.type}{selectedFund.societa ? ` · ${selectedFund.societa}` : ''}
               </span>
               {proxyInfo && (
                 <span className="text-xs text-slate-600 dark:text-slate-300">
@@ -158,7 +159,7 @@ const FundSelector: React.FC<{
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        {fund.type} · {fund.categoria}
+                        {fund.type} · {fund.categoria}{fund.societa ? ` · ${fund.societa}` : ''}
                       </span>
                       {info && (
                         <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400">
@@ -191,6 +192,126 @@ const FundSelector: React.FC<{
   );
 };
 
+/* ── Multi-fund selector (for comparison mode) ──────────────── */
+const MultiFundSelector: React.FC<{
+  selectedFunds: PensionFund[];
+  onAdd: (fund: PensionFund) => void;
+  onRemove: (fundId: string) => void;
+  maxFunds: number;
+}> = ({ selectedFunds, onAdd, onRemove, maxFunds }) => {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const selectedIds = useMemo(() => new Set(selectedFunds.map((f) => f.id)), [selectedFunds]);
+
+  const results = useMemo(() => {
+    if (query.length < 2) return [];
+    const q = query.toLowerCase();
+    return pensionFundsData
+      .filter((f) => {
+        if (selectedIds.has(f.id)) return false;
+        const text = `${f.pip} ${f.linea} ${f.societa ?? ''}`.toLowerCase();
+        return text.includes(q);
+      })
+      .slice(0, 10);
+  }, [query, selectedIds]);
+
+  return (
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+        Fondi da confrontare ({selectedFunds.length}/{maxFunds})
+      </label>
+
+      {/* Selected chips */}
+      {selectedFunds.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {selectedFunds.map((fund) => {
+            const proxy = getRendimentoProxyWithLabel(fund);
+            return (
+              <div
+                key={fund.id}
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3 py-1.5"
+              >
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate max-w-[180px]">
+                    {fund.pip} — {fund.linea}
+                  </p>
+                  {fund.societa && (
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[180px]">
+                      {fund.societa}
+                    </p>
+                  )}
+                  {proxy && (
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                      Rend. {proxy.label}: {formatPercentage(proxy.rate, 2)}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => onRemove(fund.id)}
+                  className="flex-shrink-0 p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                  title="Rimuovi"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Search input */}
+      {selectedFunds.length < maxFunds && (
+        <div className="relative">
+          <div className="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Aggiungi un fondo da confrontare…"
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+              onFocus={() => setOpen(true)}
+              onBlur={() => setTimeout(() => setOpen(false), 200)}
+              className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow placeholder:text-slate-400"
+            />
+          </div>
+          {open && results.length > 0 && (
+            <div className="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 shadow-lg">
+              {results.map((fund) => {
+                const info = getRendimentoProxyWithLabel(fund);
+                return (
+                  <button
+                    key={fund.id}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => { onAdd(fund); setQuery(''); setOpen(false); }}
+                    className="w-full text-left px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-100 dark:border-slate-800/50 last:border-b-0"
+                  >
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{fund.pip} — {fund.linea}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{fund.type} · {fund.categoria}{fund.societa ? ` · ${fund.societa}` : ''}</span>
+                      {info && (
+                        <span className="text-[10px] font-medium text-violet-600 dark:text-violet-400">Rend. {info.label}: {formatPercentage(info.rate, 2)}</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {open && query.length >= 2 && results.length === 0 && (
+            <div className="absolute z-30 mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 shadow-lg p-3 text-center text-sm text-slate-500">
+              Nessun fondo trovato
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 /* ── Main Simulator Page ────────────────────────────────────────── */
 const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
   const [activeStep, setActiveStep] = useState<SimulatorStep>('montante');
@@ -209,6 +330,40 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
     completeTour,
   } = useGuidedTour('simulator');
 
+  // Multi-fund comparison from context (populated by compare page CTA)
+  const { simulationFundIds, setSimulationFundIds } = useGuidedComparator();
+
+  // Toggle-driven mode: 'single' (default) or 'compare'
+  // Auto-activate comparison when arriving from compare page CTA
+  const [simulationMode, setSimulationMode] = useState<'single' | 'compare'>(
+    () => (simulationFundIds.length >= 2 ? 'compare' : 'single')
+  );
+  const isComparisonMode = !isFreePlan && simulationMode === 'compare';
+
+  // Resolve fund objects from IDs (for comparison mode coming from compare page)
+  const fundMap = useMemo(() => {
+    const map = new Map<string, PensionFund>();
+    pensionFundsData.forEach((f) => map.set(f.id, f));
+    return map;
+  }, []);
+
+  const comparisonFunds = useMemo(() => {
+    return simulationFundIds
+      .map((id) => fundMap.get(id))
+      .filter((f): f is PensionFund => Boolean(f));
+  }, [simulationFundIds, fundMap]);
+
+  const handleAddComparisonFund = useCallback((fund: PensionFund) => {
+    if (simulationFundIds.length < MAX_SIMULATION_FUNDS && !simulationFundIds.includes(fund.id)) {
+      setSimulationFundIds([...simulationFundIds, fund.id]);
+    }
+  }, [simulationFundIds, setSimulationFundIds]);
+
+  const handleRemoveComparisonFund = useCallback((fundId: string) => {
+    const next = simulationFundIds.filter((id) => id !== fundId);
+    setSimulationFundIds(next);
+  }, [simulationFundIds, setSimulationFundIds]);
+
   // Fund selection (local to simulator, independent from comparator context)
   // Free plan users cannot select a fund
   const [manualFund, setManualFund] = useState<PensionFund | null>(null);
@@ -221,6 +376,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
   const [orizzonteAnni, setOrizzonteAnni] = useState(20);
   const [tassoRendimento, setTassoRendimento] = useState(5.0);
   const [ral, setRal] = useState(30000);
+  const [annoPrimaAdesione, setAnnoPrimaAdesione] = useState(2020);
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === activeStep);
 
@@ -383,14 +539,78 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
         })}
       </div>
 
-      {/* ── Fund Selector ────────────────────────────────────── */}
+      {/* ── Fund Selector with mode toggle ────────────────── */}
       <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-800/60 dark:border-slate-800 p-5 sm:p-6 shadow-sm" data-tour="fund-selector">
-        <FundSelector
-          selectedFund={manualFund}
-          onSelect={setManualFund}
-          onClear={() => setManualFund(null)}
-          isFreePlan={isFreePlan}
-        />
+        {/* Mode toggle (only for paid users) */}
+        {!isFreePlan && (
+          <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-200 dark:border-slate-700">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Modalità</span>
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5">
+              <button
+                onClick={() => { setSimulationMode('single'); }}
+                className={`relative px-4 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
+                  simulationMode === 'single'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                  Singola
+                </span>
+              </button>
+              <button
+                onClick={() => { setSimulationMode('compare'); }}
+                className={`relative px-4 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
+                  simulationMode === 'compare'
+                    ? 'bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-sm'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  Confronto
+                </span>
+              </button>
+            </div>
+            {simulationMode === 'compare' && (
+              <span className="text-[10px] text-violet-600 dark:text-violet-400 font-medium">
+                Fino a {MAX_SIMULATION_FUNDS} fondi
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Single mode: fund selector */}
+        {simulationMode === 'single' && (
+          <FundSelector
+            selectedFund={manualFund}
+            onSelect={setManualFund}
+            onClear={() => setManualFund(null)}
+            isFreePlan={isFreePlan}
+          />
+        )}
+
+        {/* Comparison mode: multi-fund selector */}
+        {isComparisonMode && (
+          <div>
+            <MultiFundSelector
+              selectedFunds={comparisonFunds}
+              onAdd={handleAddComparisonFund}
+              onRemove={handleRemoveComparisonFund}
+              maxFunds={MAX_SIMULATION_FUNDS}
+            />
+            {comparisonFunds.length < 2 && (
+              <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">
+                Seleziona almeno 2 fondi per visualizzare il confronto simulazione.
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Step Content ─────────────────────────────────────── */}
@@ -407,6 +627,10 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
               setOrizzonteAnni(values.orizzonteAnni);
               setTassoRendimento(values.tassoRendimento);
             }}
+            isComparisonMode={isComparisonMode}
+            comparisonFunds={comparisonFunds}
+            annoPrimaAdesione={annoPrimaAdesione}
+            onRemoveComparisonFund={handleRemoveComparisonFund}
           />
         )}
 
@@ -421,6 +645,10 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
             onValuesChange={(values) => {
               setRal(values.ral);
             }}
+            isComparisonMode={isComparisonMode}
+            comparisonFunds={comparisonFunds}
+            annoPrimaAdesione={annoPrimaAdesione}
+            onRemoveComparisonFund={handleRemoveComparisonFund}
           />
         )}
 
@@ -433,8 +661,11 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
             tassoRendimento={tassoRendimento}
             theme={theme}
             onValuesChange={(values) => {
-              // annoPrimaAdesione is managed internally
+              setAnnoPrimaAdesione(values.annoPrimaAdesione);
             }}
+            isComparisonMode={isComparisonMode}
+            comparisonFunds={comparisonFunds}
+            onRemoveComparisonFund={handleRemoveComparisonFund}
           />
         )}
       </div>

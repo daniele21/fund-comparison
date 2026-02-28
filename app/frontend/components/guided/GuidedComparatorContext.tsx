@@ -4,6 +4,9 @@ import type { EntryMode, UserProfile } from '../../types';
 export const MIN_SELECTED_FUNDS_FOR_COMPARE = 2;
 export const MAX_SELECTED_FUNDS = 3;
 
+/** Fund IDs passed from the compare page to the simulator for multi-fund simulation */
+export const MAX_SIMULATION_FUNDS = 3;
+
 type GuidedState = {
   entryMode: EntryMode;
   setEntryMode: (mode: EntryMode) => void;
@@ -16,15 +19,26 @@ type GuidedState = {
   removeSelectedFund: (id: string) => void;
   clearSelectedFunds: () => void;
   setSelectedFundId: (id: string | null) => void;
+  /** Fund IDs queued for multi-fund simulation */
+  simulationFundIds: string[];
+  setSimulationFundIds: (ids: string[]) => void;
+  clearSimulationFundIds: () => void;
 };
 
 const GuidedComparatorContext = createContext<GuidedState | undefined>(undefined);
 
 export const GuidedComparatorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [entryMode, setEntryMode] = useState<EntryMode>(null);
-  const [profile, setProfileState] = useState<UserProfile>({});
+  const [profileState, setProfileState] = useState<UserProfile>({});
   const [selectedFundId, setSelectedFundId] = useState<string | null>(null);
   const [selectedFundIds, setSelectedFundIds] = useState<string[]>([]);
+  const [simulationFundIds, setSimulationFundIdsState] = useState<string[]>([]);
+
+  const setSimulationFundIds = useCallback((ids: string[]) => {
+    setSimulationFundIdsState(ids.slice(0, MAX_SIMULATION_FUNDS));
+  }, []);
+
+  const clearSimulationFundIds = useCallback(() => setSimulationFundIdsState([]), []);
 
   const addSelectedFund = useCallback((id: string) => {
     setSelectedFundIds(prev => {
@@ -62,7 +76,7 @@ export const GuidedComparatorProvider: React.FC<{ children: React.ReactNode }> =
       value={{
         entryMode,
         setEntryMode,
-        profile,
+        profile: profileState,
         setProfile,
         selectedFundId,
         selectedFundIds,
@@ -71,6 +85,9 @@ export const GuidedComparatorProvider: React.FC<{ children: React.ReactNode }> =
         removeSelectedFund,
         clearSelectedFunds,
         setSelectedFundId,
+        simulationFundIds,
+        setSimulationFundIds,
+        clearSimulationFundIds,
       }}
     >
       {children}

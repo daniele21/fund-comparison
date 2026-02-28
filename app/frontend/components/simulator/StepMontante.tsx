@@ -12,6 +12,7 @@ import {
 } from '../../utils/simulatorCalc';
 import MontanteChart from './MontanteChart';
 import SimulatorSlider from './SimulatorSlider';
+import StepComparisonResults from './StepComparisonResults';
 
 interface StepMontanteProps {
   selectedFunds: PensionFund[];
@@ -24,9 +25,24 @@ interface StepMontanteProps {
     tassoRendimento: number;
   }) => void;
   onRalChange?: (ral: number) => void;
+  /** Comparison mode props */
+  isComparisonMode?: boolean;
+  comparisonFunds?: PensionFund[];
+  annoPrimaAdesione?: number;
+  onRemoveComparisonFund?: (fundId: string) => void;
 }
 
-const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, ral, onValuesChange, onRalChange }) => {
+const StepMontante: React.FC<StepMontanteProps> = ({
+  selectedFunds,
+  theme,
+  ral,
+  onValuesChange,
+  onRalChange,
+  isComparisonMode = false,
+  comparisonFunds = [],
+  annoPrimaAdesione = 2020,
+  onRemoveComparisonFund,
+}) => {
   const [montanteIniziale, setMontanteIniziale] = useState(5000);
   const [contributoVolontarioAnnuo, setContributoVolontarioAnnuo] = useState(2000);
   const [orizzonteAnni, setOrizzonteAnni] = useState(20);
@@ -233,6 +249,21 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, ral, 
         )}
       </div>
 
+      {/* ── Results: comparison vs single ─────────────────── */}
+      {isComparisonMode && comparisonFunds.length >= 2 ? (
+        <StepComparisonResults
+          activeStep="montante"
+          funds={comparisonFunds}
+          montanteIniziale={montanteIniziale}
+          contributoVolontarioAnnuo={contributoVolontarioAnnuo}
+          orizzonteAnni={orizzonteAnni}
+          tassoRendimento={tassoRendimento}
+          ral={ral}
+          annoPrimaAdesione={annoPrimaAdesione}
+          theme={theme}
+          onRemoveFund={onRemoveComparisonFund}
+        />
+      ) : (
       <div className="space-y-5 sm:space-y-6">
         <div>
           <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ecco quanto accumulerai</h4>
@@ -281,6 +312,7 @@ const StepMontante: React.FC<StepMontanteProps> = ({ selectedFunds, theme, ral, 
           </p>
         </div>
       </div>
+      )}
     </div>
   );
 };
