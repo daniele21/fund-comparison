@@ -1,7 +1,7 @@
 {
   "id": "/",
   "name": "Comparatore Fondi Pensione",
-  "short_name": "Fondi",
+  "short_name": "Fondi Pensione",
   "description": "Confronta fondi pensione aperti e negoziali con simulazioni e indicatori chiave.",
   "lang": "it-IT",
   "start_url": "/",

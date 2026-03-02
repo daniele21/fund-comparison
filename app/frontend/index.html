@@ -20,7 +20,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script>
       // Set theme before page loads to prevent FOUC
       if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -28,18 +27,6 @@
       } else {
         document.documentElement.classList.remove('dark')
       }
-      
-      // Configure Tailwind dark mode
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            },
-          },
-        },
-      };
     </script>
   <script type="importmap">
 {
@@ -71,6 +58,7 @@
       (function() {
         if (window.innerWidth >= 768) return;
         var root = document.getElementById('root');
+        var timer = null;
         function shiftThirdPartyFixed() {
           var els = document.body.getElementsByTagName('*');
           for (var i = 0; i < els.length; i++) {
@@ -87,11 +75,20 @@
             }
           }
         }
-        // Run repeatedly to catch late-injected or re-styled widgets
-        setInterval(shiftThirdPartyFixed, 2000);
-        // Also run on DOM mutations
-        new MutationObserver(function() { setTimeout(shiftThirdPartyFixed, 200); })
-          .observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+        // Debounced: run at most once per 2s on DOM mutations (avoids blocking main thread)
+        function scheduleShift() {
+          if (timer) return;
+          timer = setTimeout(function() { timer = null; shiftThirdPartyFixed(); }, 2000);
+        }
+        // Run a few times on startup for late-injected widgets, then stop interval
+        var runs = 0;
+        var startupInterval = setInterval(function() {
+          shiftThirdPartyFixed();
+          if (++runs >= 5) clearInterval(startupInterval);
+        }, 2000);
+        // Also watch for new third-party widgets (debounced)
+        new MutationObserver(scheduleShift)
+          .observe(document.body, { childList: true, subtree: true });
       })();
     </script>
   </body>

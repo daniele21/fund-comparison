@@ -9,12 +9,11 @@ interface HomePageProps {
 const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
+      {/* Hero Section — no ScrollReveal/AnimatedButton so CTA buttons are immediately interactive */}
       <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        <div className="absolute inset-0 bg-grid-slate-100 dark:bg-grid-slate-700/25 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.05))]" />
+        <div className="absolute inset-0 pointer-events-none bg-grid-slate-100 dark:bg-grid-slate-700/25 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.05))]" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <ScrollReveal animation="fade-up" delay={0}>
             <div className="text-center max-w-4xl mx-auto">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-700 dark:text-blue-300 text-sm font-medium mb-6 border border-blue-200 dark:border-blue-800">
@@ -38,45 +37,40 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 Strumenti avanzati per confrontare fondi pensione, simulare la tua pensione futura e prendere decisioni informate per il tuo benessere finanziario.
               </p>
 
-              {/* CTA Buttons */}
+              {/* CTA Buttons — plain <button> elements for zero-delay interactivity */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <AnimatedButton
+                <button
                   onClick={() => onNavigate('simulator')}
-                  variant="primary"
-                  size="lg"
-                  className="w-full sm:w-auto shadow-lg shadow-blue-500/30 dark:shadow-blue-500/20"
+                  className="w-full sm:w-auto px-6 py-3 text-lg font-semibold rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/30 dark:shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
                   Simula la tua Pensione
-                </AnimatedButton>
+                </button>
                 
-                <AnimatedButton
+                <button
                   onClick={() => onNavigate('choose-fund')}
-                  variant="secondary"
-                  size="lg"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto px-6 py-3 text-lg font-semibold rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                   Confronta Fondi
-                </AnimatedButton>
+                </button>
               </div>
             </div>
-          </ScrollReveal>
         </div>
 
         {/* Decorative Elements */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/10 dark:bg-blue-600/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-400/10 dark:bg-cyan-600/10 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/10 dark:bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-400/10 dark:bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
       </section>
 
       {/* Features Grid */}
       <section className="py-20 lg:py-28 bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ScrollReveal animation="fade-up" delay={0.1}>
+          <ScrollReveal variant="fadeIn" delay={0.1}>
             <div className="text-center mb-16">
               <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-4">
                 Tutto quello che ti serve per decidere
@@ -90,7 +84,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           {/* Feature Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Simulatore Card */}
-            <ScrollReveal animation="slide-up" delay={0.1}>
+            <ScrollReveal variant="slideUp" delay={0.05}>
               <button
                 onClick={() => onNavigate('simulator')}
                 className="group relative bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-800/50 border-2 border-blue-200 dark:border-blue-900/50 rounded-2xl p-8 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 text-left w-full"
@@ -122,7 +116,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             </ScrollReveal>
 
             {/* Confronta Fondi Card */}
-            <ScrollReveal animation="slide-up" delay={0.2}>
+            <ScrollReveal variant="slideUp" delay={0.1}>
               <button
                 onClick={() => onNavigate('choose-fund')}
                 className="group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-8 hover:shadow-xl hover:scale-[1.02] hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 text-left w-full"
@@ -149,7 +143,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             </ScrollReveal>
 
             {/* Analisi Personalizzata Card */}
-            <ScrollReveal animation="slide-up" delay={0.3}>
+            <ScrollReveal variant="slideUp" delay={0.15}>
               <button
                 onClick={() => onNavigate('have-fund')}
                 className="group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-8 hover:shadow-xl hover:scale-[1.02] hover:border-green-300 dark:hover:border-green-700 transition-all duration-300 text-left w-full"
@@ -176,7 +170,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             </ScrollReveal>
 
             {/* Statistiche Card */}
-            <ScrollReveal animation="slide-up" delay={0.4}>
+            <ScrollReveal variant="slideUp" delay={0.2}>
               <button
                 onClick={() => onNavigate('choose-fund')}
                 className="group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-8 hover:shadow-xl hover:scale-[1.02] hover:border-orange-300 dark:hover:border-orange-700 transition-all duration-300 text-left w-full"
@@ -203,7 +197,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             </ScrollReveal>
 
             {/* Guida TFR Card */}
-            <ScrollReveal animation="slide-up" delay={0.5}>
+            <ScrollReveal variant="slideUp" delay={0.25}>
               <button
                 onClick={() => onNavigate('playbook')}
                 className="group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-8 hover:shadow-xl hover:scale-[1.02] hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 text-left w-full"
@@ -230,7 +224,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             </ScrollReveal>
 
             {/* FAQ TFR Card */}
-            <ScrollReveal animation="slide-up" delay={0.6}>
+            <ScrollReveal variant="slideUp" delay={0.3}>
               <button
                 onClick={() => onNavigate('playbook')}
                 className="group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-8 hover:shadow-xl hover:scale-[1.02] hover:border-cyan-300 dark:hover:border-cyan-700 transition-all duration-300 text-left w-full"
@@ -262,7 +256,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       {/* Stats Section */}
       <section className="py-16 bg-gradient-to-br from-blue-600 to-cyan-600 dark:from-blue-900 dark:to-cyan-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ScrollReveal animation="fade-up" delay={0.2}>
+          <ScrollReveal variant="fadeIn" delay={0.1}>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
               <div className="text-center">
                 <div className="text-4xl lg:text-5xl font-bold text-white mb-2">100+</div>
@@ -288,7 +282,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       {/* CTA Section */}
       <section className="py-20 bg-white dark:bg-slate-900">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <ScrollReveal animation="fade-up" delay={0}>
+          <ScrollReveal variant="fadeIn" delay={0}>
             <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-6">
               Pronto a costruire il tuo futuro?
             </h2>

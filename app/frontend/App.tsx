@@ -34,7 +34,7 @@ const FeedbackWidget = lazy(() => import('./components/feedback/FeedbackWidget')
 const PlaybookContent = lazy(() => import('./components/PlaybookContent'));
 const TfrFaq = lazy(() => import('./components/TfrFaq'));
 const SimulatorPage = lazy(() => import('./components/simulator/SimulatorPage'));
-const HomePage = lazy(() => import('./components/HomePage'));
+import HomePage from './components/HomePage';
 const AdminPanel = lazy(() => import('./components/AdminPanel'));
 const GuidedFundTable = lazy(() => import('./components/guided/GuidedFundTable'));
 const VisualComparison = lazy(() => import('./components/VisualComparison'));
@@ -643,9 +643,7 @@ const AppContent: React.FC = () => {
                   </div>
                 )
               ) : activeSection === 'home' ? (
-                <Suspense fallback={<LazyFallback />}>
-                  <HomePage onNavigate={(section) => setActiveSection(section)} />
-                </Suspense>
+                <HomePage onNavigate={(section) => setActiveSection(section)} />
               ) : (
               <div className="space-y-6 sm:space-y-8 md:space-y-10">
                 {/* Banner primo accesso per Confronta/Analizza */}

@@ -1,7 +1,12 @@
-/* Mobile-First Global Styles */
-
-/* Import Animation Utilities */
+/* Import Animation Utilities (must precede @tailwind directives per PostCSS @import rules) */
 @import './styles/animations.css';
+
+/* Tailwind CSS build-time layers */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Mobile-First Global Styles */
 
 /* CSS Custom Properties for Professional Color Scheme */
 :root {
