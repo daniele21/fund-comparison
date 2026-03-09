@@ -20,6 +20,7 @@ import EmptyState from './components/common/EmptyState';
 import GuidedTour, { useGuidedTour, FirstVisitBanner } from './components/common/GuidedTour';
 import PwaUpdateBanner from './components/common/PwaUpdateBanner';
 import AccessStatusBanner from './components/common/AccessStatusBanner';
+import DiscountBanner from './components/common/DiscountBanner';
 import { compareFundsTourSteps, analyzeFundTourSteps } from './config/tourSteps';
 import { SECTION_COPY, buildNavItems } from './features/dashboard/config';
 import { getSortValue } from './features/dashboard/sorting';
@@ -1188,6 +1189,10 @@ const AppContent: React.FC = () => {
         onClose={() => setShowFreeBanner(false)}
         onOpenUpgrade={() => setShowUpgradeDialog(true)}
         freePlanLimit={FREE_PLAN_LIMIT}
+      />
+
+      <DiscountBanner
+        visible={!isFullAccess && Boolean(user) && !authLoading}
       />
       
       </div>
