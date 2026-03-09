@@ -421,6 +421,9 @@ const AppContent: React.FC = () => {
             }}
           />
         </Suspense>
+        <DiscountBanner
+          visible={!isFullAccess && Boolean(user) && !authLoading}
+        />
       </>
     );
   }
