@@ -13,6 +13,7 @@ from backend.routes import (
     notifications, 
     feedback, 
     admin,
+    admin_feedback,
     funds,
     simulator,
     content
@@ -74,6 +75,7 @@ app.include_router(funds.router, prefix="/api", tags=["funds"])  # Fund comparis
 app.include_router(simulator.router, prefix="/api", tags=["simulator"])  # Pension simulator
 app.include_router(content.router, prefix="/api", tags=["content"])  # Guides & FAQ
 app.include_router(admin.router, prefix="/api", tags=["admin"])  # Admin management
+app.include_router(admin_feedback.router, prefix="/api", tags=["admin", "feedback"])  # Admin feedback
 
 # Legacy routes
 app.include_router(protected.router)

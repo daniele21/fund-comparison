@@ -58,7 +58,7 @@ export const SECTION_COPY: SectionCopy = {
   },
   admin: {
     title: 'Pannello Amministrazione',
-    description: 'Gestisci utenti e richieste di accesso al sistema.',
+    description: 'Gestisci utenti, richieste di accesso e feedback degli utenti.',
     eyebrow: 'Admin',
   },
 };

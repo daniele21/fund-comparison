@@ -96,7 +96,7 @@ type FeedbackWidgetProps = {
 
 export const FeedbackWidget: React.FC<FeedbackWidgetProps> = ({ onRequireLogin }) => {
 	const { config } = useAppConfig()
-	const { user, login } = useAuth()
+	const { user, login, token } = useAuth()
 
 	// Ensure a global CSS rule exists that forces an opaque background for feedback elements
 	useEffect(() => {
@@ -189,7 +189,7 @@ export const FeedbackWidget: React.FC<FeedbackWidgetProps> = ({ onRequireLogin }
 
 		try {
 			setIsSubmitting(true)
-			await submitFeedback(payload)
+			await submitFeedback(payload, token)
 			setOpen(false)
 			notify({
 				title: 'Grazie!',

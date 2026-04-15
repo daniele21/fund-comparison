@@ -7,6 +7,7 @@ from typing import Any, Dict
 import httpx
 
 from backend.schemas.feedback import FeedbackPayload
+from backend.repositories.feedback_repository import get_feedback_repository
 from backend.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -57,20 +58,22 @@ class FeedbackService:
         logger.info("Feedback delivered to Telegram chat %s.", chat_id)
 
     def _build_message(self, payload: FeedbackPayload) -> str:
-        sections = ["Feedback received"]
+        sections = ["📩 Feedback received"]
 
-        if payload.name:
-            sections.append(f"Name: {payload.name}")
-        if payload.email:
-            sections.append(f"Email: {payload.email}")
+        if payload.feedback_type and payload.feedback_type != "generic":
+            sections.append(f"Type: {payload.feedback_type}")
         if payload.page_url:
             sections.append(f"Page: {payload.page_url}")
-        if payload.user_agent:
-            sections.append(f"User agent: {payload.user_agent}")
 
+        # Only include non-sensitive metadata (exclude user info)
         if payload.metadata:
-            sections.append("Metadata:")
-            sections.extend(self._format_metadata(payload.metadata))
+            safe_metadata = {
+                k: v for k, v in payload.metadata.items()
+                if k != "user"
+            }
+            if safe_metadata:
+                sections.append("Metadata:")
+                sections.extend(self._format_metadata(safe_metadata))
 
         sections.append("")
         sections.append(payload.message)
@@ -102,5 +105,12 @@ _SERVICE = FeedbackService()
 
 
 async def submit_feedback(payload: FeedbackPayload) -> None:
-    """Submit feedback through the configured delivery channel."""
+    """Submit feedback through the configured delivery channel and persist it."""
+    # Persist to Firestore (best-effort; don't fail submission if storage fails)
+    try:
+        repo = get_feedback_repository()
+        await repo.create(payload.model_dump(exclude_none=True))
+    except Exception:
+        logger.exception("Failed to persist feedback to Firestore – continuing with delivery.")
+
     await _SERVICE.submit_feedback(payload)

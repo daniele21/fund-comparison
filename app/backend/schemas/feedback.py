@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
@@ -40,3 +40,32 @@ class FeedbackResponse(BaseModel):
     """Response returned after feedback submission."""
 
     status: Literal["accepted"] = "accepted"
+
+
+class FeedbackEntry(BaseModel):
+    """A stored feedback entry returned to admin."""
+
+    id: str
+    message: str
+    feedback_type: str = "generic"
+    name: Optional[str] = None
+    email: Optional[str] = None
+    page_url: Optional[str] = None
+    user_agent: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+    status: str = "new"  # new | read | archived
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+
+class FeedbackListResponse(BaseModel):
+    """Paginated list of feedback entries."""
+
+    items: List[FeedbackEntry]
+    next_cursor: Optional[str] = None
+
+
+class FeedbackStatusUpdate(BaseModel):
+    """Request body to update feedback status."""
+
+    status: Literal["new", "read", "archived"]

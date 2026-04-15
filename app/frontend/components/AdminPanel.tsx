@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../auth';
+import AdminFeedbackPanel from './AdminFeedbackPanel';
 
 interface AdminUser {
   id: string;
@@ -20,7 +21,7 @@ export const AdminPanel: React.FC = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTab, setSelectedTab] = useState<'pending' | 'all'>('pending');
+  const [selectedTab, setSelectedTab] = useState<'pending' | 'all' | 'feedback'>('pending');
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -73,7 +74,7 @@ export const AdminPanel: React.FC = () => {
   };
 
   useEffect(() => {
-    if (user?.isAdmin) {
+    if (user?.isAdmin && selectedTab !== 'feedback') {
       fetchUsers();
     }
   }, [user, selectedTab]);
@@ -195,7 +196,7 @@ export const AdminPanel: React.FC = () => {
               Pannello Admin
             </h2>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-              Gestisci gli utenti e le richieste di accesso
+              Gestisci gli utenti, le richieste di accesso e i feedback
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -229,10 +230,23 @@ export const AdminPanel: React.FC = () => {
           >
             Tutti gli utenti
           </button>
+          <button
+            onClick={() => setSelectedTab('feedback')}
+            className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+              selectedTab === 'feedback'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
+                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            💬 Feedback
+          </button>
         </div>
       </div>
 
       {/* Content */}
+      {selectedTab === 'feedback' ? (
+        <AdminFeedbackPanel />
+      ) : (
       <div className="rounded-2xl border border-slate-200 bg-white/90 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
         {loading ? (
           <div className="p-8 text-center">
@@ -391,6 +405,7 @@ export const AdminPanel: React.FC = () => {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };
