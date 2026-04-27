@@ -57,6 +57,9 @@ app/backend/config.development.json
 app/backend/Makefile
 app/backend/pyproject.toml
 app/firestore-access.json
+app/firestore-access.json.backup
+**/firestore-access.json
+**/firestore-access.json.backup
 .deploy/backend
 .deploy/frontend
 app/backend/.env.production

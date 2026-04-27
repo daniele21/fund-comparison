@@ -12,7 +12,7 @@ Vai a: https://console.cloud.google.com/apis/credentials
 
 ### 2. Seleziona il tuo OAuth 2.0 Client ID
 
-Cerca e clicca sul Client ID che inizia con: `your-google-oauth-client-id`
+Cerca e clicca sul Client ID configurato nel Secret Manager o nell ambiente locale
 
 ### 3. Configura le Origini JavaScript Autorizzate
 
