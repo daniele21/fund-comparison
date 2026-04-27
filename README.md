@@ -1,4 +1,4 @@
-# Comparatore Fondi Pensione
+# Pension Fund Comparator
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=111)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=fff)](https://www.typescriptlang.org/)
@@ -6,250 +6,250 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38B2AC?logo=tailwindcss&logoColor=fff)](https://tailwindcss.com/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=fff)](https://fastapi.tiangolo.com/)
 [![Firebase](https://img.shields.io/badge/Firebase-hosting_%2B_auth_%2B_firestore-FFCA28?logo=firebase&logoColor=111)](https://firebase.google.com/)
-[![PWA](https://img.shields.io/badge/PWA-installabile-5A0FC8)](https://web.dev/explore/progressive-web-apps)
+[![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8)](https://web.dev/explore/progressive-web-apps)
 [![Cloud Run](https://img.shields.io/badge/Cloud_Run-backend-4285F4?logo=googlecloud&logoColor=fff)](https://cloud.google.com/run)
 
-Comparatore Fondi Pensione è una Progressive Web App per confrontare fondi pensione italiani, capire costi e rendimenti, simulare scenari previdenziali e gestire accessi free, subscriber e admin tramite backend FastAPI.
+Pension Fund Comparator is a Progressive Web App for comparing Italian pension funds, understanding costs and returns, simulating retirement scenarios, and managing free, subscriber, and admin access through a FastAPI backend.
 
-Il progetto combina un'esperienza frontend guidata con dati statici sui fondi, API protette, autenticazione Google o invite code, gestione ruoli, notifiche operative e deploy separato per ambienti `test` e `prod`.
+The project combines a guided frontend experience with static pension fund data, protected APIs, Google OAuth or invite-code authentication, role management, operational notifications, and separate deployment flows for `test` and `prod` environments.
 
-## Missione
+## Mission
 
-Aiutare una persona a scegliere con più consapevolezza un fondo pensione, trasformando dati difficili da leggere in confronti chiari, percorsi guidati e simulazioni comprensibili.
+Help people choose a pension fund with more confidence by turning hard-to-read data into clear comparisons, guided flows, and understandable simulations.
 
-Il prodotto privilegia:
+The product focuses on:
 
-- confronto rapido tra fondi pensione con metriche comparabili;
-- spiegazioni pratiche per utenti non specialisti;
-- simulatore previdenziale per stimare scenari di montante e fiscalità;
-- accesso freemium con upgrade controllato da ruoli e piano;
-- backend modulare con auth, pagamenti, notifiche e admin separati dalla UI;
-- PWA installabile con fallback offline documentato.
+- fast pension fund comparison with comparable metrics;
+- practical explanations for non-specialist users;
+- a retirement simulator for estimating accumulated capital and tax scenarios;
+- freemium access with role- and plan-controlled upgrades;
+- a modular backend where auth, billing, notifications, and admin logic are separated from the UI;
+- an installable PWA with a documented offline fallback.
 
-## Problema che risolve
+## Problem It Solves
 
-Scegliere un fondo pensione richiede di confrontare costi, categorie, performance storiche, orizzonte temporale e regole fiscali. Le fonti ufficiali sono autorevoli ma non sempre facili da usare in una decisione quotidiana.
+Choosing a pension fund requires comparing costs, categories, historical performance, time horizon, and tax rules. Official sources are authoritative, but they are not always easy to use for day-to-day decisions.
 
-Questo repository costruisce un'esperienza più operativa: l'utente può esplorare i fondi, selezionarne alcuni, confrontarli visivamente, leggere guide contestuali e usare il simulatore per capire l'impatto di contribuzione, rendimento e deducibilità.
+This repository builds a more operational experience: users can explore funds, select a subset, compare them visually, read contextual guides, and use the simulator to understand the impact of contributions, returns, and tax deductibility.
 
-## Funzionalità principali
+## Key Features
 
-- Home con ingresso a simulatore, confronto fondi, guide e flussi guidati.
-- Dataset fondi pensione caricato nel frontend da sorgenti statiche in `data/`.
-- Tabella fondi con filtri, ordinamento, dettaglio fondo e selezione multipla.
-- Confronto visuale tra fondi selezionati con grafici e insight.
-- Simulatore previdenziale con step su montante, confronto e fiscalità.
-- Guide, FAQ, glossario e contenuti educativi via API dedicate.
-- Tour guidati contestuali per simulatore, confronto fondi e analisi fondo.
-- Piano free con limite sui risultati visibili e piano full access per subscriber.
-- Google OAuth, invite code e modalità no-auth per sviluppo controllato.
-- Sessione tramite cookie HttpOnly/JWT e guardie ruolo/piano lato backend.
-- Dashboard admin per utenti, approvazioni, ruoli, status e feedback.
-- Notifiche Telegram per eventi admin e richieste utente.
-- Integrazione Stripe predisposta per billing e webhook.
-- PWA con manifest, service worker versionato, fallback offline e banner update.
-- Deploy backend su Cloud Run e frontend su Firebase Hosting.
+- Home screen with entry points for the simulator, fund comparison, guides, and guided flows.
+- Pension fund dataset loaded in the frontend from static sources in `data/`.
+- Fund table with filters, sorting, fund details, and multi-selection.
+- Visual comparison of selected funds with charts and insights.
+- Retirement simulator with steps for accumulated capital, comparison, and taxation.
+- Guides, FAQ, glossary, and educational content through dedicated APIs.
+- Contextual guided tours for the simulator, fund comparison, and fund analysis.
+- Free plan with limited visible results and full-access plan for subscribers.
+- Google OAuth, invite codes, and no-auth mode for controlled development.
+- Session handling through HttpOnly cookies/JWT and backend role/plan guards.
+- Admin dashboard for users, approvals, roles, status, and feedback.
+- Telegram notifications for admin events and user requests.
+- Stripe integration prepared for billing and webhooks.
+- PWA with manifest, versioned service worker, offline fallback, and update banner.
+- Backend deployment on Cloud Run and frontend deployment on Firebase Hosting.
 
-## Anteprima funzionale
+## Product Preview
 
-Le schermate seguenti mostrano i flussi principali dell'app: ingresso mobile-first, simulazione previdenziale, confronto tra fondi, lista fondi filtrabile e lettura dei risultati. Il mobile racconta l'esperienza PWA quotidiana; il desktop evidenzia le viste più dense, dove simulazione, grafici e tabelle hanno bisogno di più spazio.
+The screenshots below show the main app flows: mobile-first entry, retirement simulation, fund comparison, filterable fund list, and result analysis. The mobile view reflects the everyday PWA experience; the desktop view highlights denser screens where simulations, charts, and tables need more space.
 
-| Home mobile | Simulatore desktop |
+| Mobile home | Desktop simulator |
 |---|---|
-| <img src="screenshots/mobile/Screenshot%202026-04-27%20alle%2011.48.34.png" alt="Home mobile del Comparatore Fondi Pensione con CTA per simulatore e confronto fondi" width="220"> | <img src="screenshots/desktop/Screenshot%202026-04-27%20alle%2011.51.25.png" alt="Vista desktop del simulatore con slider per capitale, contributo, RAL e anni alla pensione" width="430"> |
-| Primo ingresso con navigazione bottom, tema scuro e azioni principali sempre raggiungibili. | Input guidati, privacy banner e parametri principali disposti su griglia desktop. |
+| <img src="screenshots/mobile/Screenshot%202026-04-27%20alle%2011.48.34.png" alt="Mobile home screen of Pension Fund Comparator with simulator and fund comparison CTAs" width="220"> | <img src="screenshots/desktop/Screenshot%202026-04-27%20alle%2011.51.25.png" alt="Desktop simulator view with sliders for capital, contribution, gross income, and years to retirement" width="430"> |
+| First entry with bottom navigation, dark theme, and primary actions always within reach. | Guided inputs, privacy banner, and main parameters arranged in a desktop grid. |
 
-| Risultati simulazione desktop | Confronto desktop | Lista fondi desktop |
+| Desktop simulation results | Desktop comparison | Desktop fund list |
 |---|---|---|
-| <img src="screenshots/desktop/Screenshot%202026-04-27%20alle%2011.51.31.png" alt="Vista desktop dei risultati del simulatore con capitale accumulato, guadagno dai rendimenti e grafico di crescita" width="300"> | <img src="screenshots/desktop/Screenshot%202026-04-27%20alle%2011.51.45.png" alt="Vista desktop del confronto tra due fondi con grafici performance e costi ISC" width="300"> | <img src="screenshots/desktop/Screenshot%202026-04-27%20alle%2011.51.54.png" alt="Vista desktop della tabella fondi con filtri, ricerca, selezione e metriche di costo e rendimento" width="300"> |
-| Sintesi di versato, montante stimato, rendimento e curva di crescita anno per anno. | Confronto affiancato di performance e costi per capire velocemente quale fondo e' piu' efficiente. | Tabella ampia con ricerca, filtri, categorie, tipo fondo, costo annuo e rendimenti storici. |
+| <img src="screenshots/desktop/Screenshot%202026-04-27%20alle%2011.51.31.png" alt="Desktop simulator results with accumulated capital, investment gain, and growth chart" width="300"> | <img src="screenshots/desktop/Screenshot%202026-04-27%20alle%2011.51.45.png" alt="Desktop comparison between two funds with performance and ISC cost charts" width="300"> | <img src="screenshots/desktop/Screenshot%202026-04-27%20alle%2011.51.54.png" alt="Desktop fund table with filters, search, selection, and cost and return metrics" width="300"> |
+| Summary of contributions, estimated accumulated capital, returns, and year-by-year growth curve. | Side-by-side comparison of performance and costs to quickly identify the more efficient fund. | Wide table with search, filters, categories, fund type, annual cost, and historical returns. |
 
-## Privacy e sicurezza
+## Privacy and Security
 
-Il perimetro applicativo tratta dati utente, sessioni, ruoli, feedback, notifiche e pagamenti. Le regole principali sono:
+The application perimeter handles user data, sessions, roles, feedback, notifications, and payments. The main rules are:
 
-- i segreti non devono stare nel frontend e vanno gestiti con Secret Manager in deploy;
-- il frontend usa solo variabili `VITE_*`;
-- il backend usa variabili `APP_*`, cookie sicuri, CORS configurato e middleware di sicurezza;
-- i controlli di ruolo e piano sono centralizzati in `auth/`, `security/` e nei service backend;
-- le route admin richiedono permessi espliciti;
-- webhook e integrazioni esterne devono verificare firma e idempotenza;
-- le notifiche operative non devono esporre dati sensibili oltre il necessario.
+- secrets must not live in the frontend and must be managed through Secret Manager in deployed environments;
+- the frontend only uses `VITE_*` variables;
+- the backend uses `APP_*` variables, secure cookies, configured CORS, and security middleware;
+- role and plan checks are centralized in `auth/`, `security/`, and backend services;
+- admin routes require explicit permissions;
+- webhooks and external integrations must verify signatures and handle idempotency;
+- operational notifications must not expose more sensitive data than necessary.
 
-Per i dettagli vedere [AUTH_AND_NOTIFICATIONS.md](docs/AUTH_AND_NOTIFICATIONS.md), [ROLE_MANAGEMENT.md](docs/ROLE_MANAGEMENT.md), [ADMIN_CONFIGURATION.md](docs/ADMIN_CONFIGURATION.md) e [PWA_RUNBOOK.md](docs/PWA_RUNBOOK.md).
+For details, see [AUTH_AND_NOTIFICATIONS.md](docs/AUTH_AND_NOTIFICATIONS.md), [ROLE_MANAGEMENT.md](docs/ROLE_MANAGEMENT.md), [ADMIN_CONFIGURATION.md](docs/ADMIN_CONFIGURATION.md), and [PWA_RUNBOOK.md](docs/PWA_RUNBOOK.md).
 
-## Stack tecnico
+## Technical Stack
 
-| Area | Tecnologia |
+| Area | Technology |
 |---|---|
 | Frontend | React 19, TypeScript, Vite 6 |
 | Styling | Tailwind CSS 3, CSS custom properties |
-| UI e animazioni | Radix Dialog, Lucide React, Framer Motion, React Joyride |
+| UI and animations | Radix Dialog, Lucide React, Framer Motion, React Joyride |
 | Data fetching | Axios, TanStack Query |
-| Grafici | Recharts |
+| Charts | Recharts |
 | Backend | FastAPI, Pydantic v2, Uvicorn |
-| Auth | Google OAuth, Firebase Admin, PyJWT, cookie HttpOnly |
-| Database/cache | Firestore, Redis opzionale |
-| Billing/notifiche | Stripe, Telegram |
+| Auth | Google OAuth, Firebase Admin, PyJWT, HttpOnly cookies |
+| Database/cache | Firestore, optional Redis |
+| Billing/notifications | Stripe, Telegram |
 | Observability | Logging middleware, request id, Prometheus metrics |
 | Deploy | Cloud Run, Firebase Hosting, Firebase Firestore rules |
 
-## Architettura del repo
+## Repository Architecture
 
 ```text
 app/
-  frontend/                 SPA React, componenti, PWA e dati client
-    components/             UI, flussi guidati, admin, simulatore e confronto
-    components/common/      Molecole condivise e banner applicativi
-    features/dashboard/     Routing e configurazione dashboard
-    utils/                  PWA, calcoli simulatore, label e colori
-    public/                 manifest, service worker e fallback offline
+  frontend/                 React SPA, components, PWA, and client data
+    components/             UI, guided flows, admin, simulator, and comparison
+    components/common/      Shared molecules and application banners
+    features/dashboard/     Dashboard routing and configuration
+    utils/                  PWA, simulator calculations, labels, and colors
+    public/                 Manifest, service worker, and offline fallback
 
-  backend/                  API FastAPI
-    routes/                 Route HTTP per auth, fondi, simulator, admin, content
-    services/               Logica applicativa e integrazioni operative
-    auth/                   Modelli, dipendenze e guardie auth
-    security/               Guardie e policy autorizzative
+  backend/                  FastAPI API
+    routes/                 HTTP routes for auth, funds, simulator, admin, content
+    services/               Application logic and operational integrations
+    auth/                   Auth models, dependencies, and guards
+    security/               Authorization guards and policies
     providers/              Firestore, Firebase Auth, Redis, Stripe, Shopify
-    middleware/             Security headers, request id e logging
-    config/                 Settings, env, feature flags e policy
+    middleware/             Security headers, request id, and logging
+    config/                 Settings, env, feature flags, and policies
 
-data/                       Dataset statici e input locali sui fondi
-docs/                       Runbook, guide operative e note architetturali
-infra/                      Firebase rules, indexes e configurazioni deploy
-scripts/                    Automazioni per deploy, test e configurazione admin
-spec_dev.md                 Template e note feature
+data/                       Static datasets and local pension fund inputs
+docs/                       Runbooks, operational guides, and architecture notes
+infra/                      Firebase rules, indexes, and deployment configuration
+scripts/                    Automation for deploy, tests, and admin configuration
+spec_dev.md                 Feature template and notes
 ```
 
-Le regole di contribuzione e qualità sono in [AGENTS.md](AGENTS.md). Prima di modificare auth, billing, ruoli, notifiche, PWA o contratti API, leggere anche la documentazione in `docs/`.
+Contribution and quality rules are in [AGENTS.md](AGENTS.md). Before changing auth, billing, roles, notifications, PWA behavior, or API contracts, also read the relevant documentation in `docs/`.
 
-## Come eseguire in locale
+## Running Locally
 
-Prerequisiti:
+Prerequisites:
 
 - Node.js 18+;
 - pnpm;
 - Python 3.11+;
-- ambiente virtuale Python consigliato;
-- credenziali/configurazione Firebase solo se si usa Google OAuth o Firestore reale.
+- a Python virtual environment is recommended;
+- Firebase credentials/configuration only if you use Google OAuth or a real Firestore instance.
 
 ### Backend
 
-1. Installa le dipendenze:
+1. Install dependencies:
 
    ```bash
    cd app/backend
    pip install -r requirements.txt
    ```
 
-2. Prepara la configurazione locale:
+2. Prepare the local configuration:
 
    ```bash
    cp .env.development .env
    ```
 
-3. Aggiorna `.env` con valori reali o di sviluppo. Per sviluppo rapido puoi usare `APP_AUTH_MODE=invite_code`.
+3. Update `.env` with real or development values. For quick development, you can use `APP_AUTH_MODE=invite_code`.
 
-4. Avvia l'API dalla root del repository:
+4. Start the API from the repository root:
 
    ```bash
    cd /Users/moltisantid/Personal/fund-comparison/app
    uvicorn backend.main:app --reload --host 127.0.0.1 --port 8001
    ```
 
-Endpoint utili:
+Useful endpoints:
 
 - `GET http://127.0.0.1:8001/health`
-- `GET http://127.0.0.1:8001/docs` se `APP_API_DOCS_ENABLED=true`
+- `GET http://127.0.0.1:8001/docs` if `APP_API_DOCS_ENABLED=true`
 - `GET http://127.0.0.1:8001/metrics`
 
 ### Frontend
 
-1. Installa le dipendenze:
+1. Install dependencies:
 
    ```bash
    cd app/frontend
    pnpm install
    ```
 
-2. Crea `app/frontend/.env.local`:
+2. Create `app/frontend/.env.local`:
 
    ```bash
    VITE_API_BASE=http://127.0.0.1:8001
    VITE_PUBLIC_ANALYTICS_KEY=dev-analytics
    ```
 
-3. Avvia Vite:
+3. Start Vite:
 
    ```bash
    pnpm dev
    ```
 
-Il frontend viene servito da Vite su `http://localhost:5173`.
+The frontend is served by Vite at `http://localhost:5173`.
 
-## Configurazione auth e accessi
+## Auth and Access Configuration
 
-Modalità supportate:
+Supported modes:
 
-| Modalità | Variabile | Uso |
+| Mode | Variable | Usage |
 |---|---|---|
-| Google OAuth | `APP_AUTH_MODE=google` | Flusso reale con Google, Firebase Auth e Firestore |
-| Invite code | `APP_AUTH_MODE=invite_code` | Sviluppo o accesso controllato tramite codici |
-| No auth | `APP_AUTH_MODE=none` | Solo iterazioni locali UI/API non sensibili |
+| Google OAuth | `APP_AUTH_MODE=google` | Real flow with Google, Firebase Auth, and Firestore |
+| Invite code | `APP_AUTH_MODE=invite_code` | Development or controlled access through codes |
+| No auth | `APP_AUTH_MODE=none` | Local-only UI/API iterations for non-sensitive work |
 
-Ruoli principali:
+Main roles:
 
-- `free`: accesso demo e primi risultati disponibili;
-- `subscriber`: accesso completo dopo richiesta o approvazione;
-- `admin`: accesso completo più dashboard e gestione utenti.
+- `free`: demo access and first results available;
+- `subscriber`: full access after request or approval;
+- `admin`: full access plus dashboard and user management.
 
-Per setup completo vedere [GOOGLE_OAUTH_SETUP.md](docs/GOOGLE_OAUTH_SETUP.md), [AUTH_AND_NOTIFICATIONS.md](docs/AUTH_AND_NOTIFICATIONS.md) e [ROLE_MANAGEMENT.md](docs/ROLE_MANAGEMENT.md).
+For the full setup, see [GOOGLE_OAUTH_SETUP.md](docs/GOOGLE_OAUTH_SETUP.md), [AUTH_AND_NOTIFICATIONS.md](docs/AUTH_AND_NOTIFICATIONS.md), and [ROLE_MANAGEMENT.md](docs/ROLE_MANAGEMENT.md).
 
 ## PWA
 
-Il frontend include una baseline PWA reale:
+The frontend includes a real PWA baseline:
 
 - `app/frontend/public/manifest.webmanifest`;
 - `app/frontend/public/sw.js`;
 - `app/frontend/public/offline.html`;
-- registrazione service worker in `app/frontend/utils/pwa.ts`;
-- banner update in `app/frontend/components/common/PwaUpdateBanner.tsx`;
-- header Firebase Hosting no-cache per service worker, manifest e fallback offline.
+- service worker registration in `app/frontend/utils/pwa.ts`;
+- update banner in `app/frontend/components/common/PwaUpdateBanner.tsx`;
+- Firebase Hosting no-cache headers for the service worker, manifest, and offline fallback.
 
-Quando cambi cache, shell o asset precache, aggiorna `CACHE_VERSION` in `sw.js` e segui [PWA_RUNBOOK.md](docs/PWA_RUNBOOK.md).
+When changing cache behavior, app shell, or precached assets, update `CACHE_VERSION` in `sw.js` and follow [PWA_RUNBOOK.md](docs/PWA_RUNBOOK.md).
 
-## Script disponibili
+## Available Scripts
 
 ### Frontend
 
-| Comando | Scopo |
+| Command | Purpose |
 |---|---|
-| `pnpm dev` | Avvia Vite in sviluppo |
-| `pnpm build` | Genera la build di produzione |
-| `pnpm preview` | Serve localmente la build |
+| `pnpm dev` | Starts Vite in development |
+| `pnpm build` | Generates the production build |
+| `pnpm preview` | Serves the build locally |
 
 ### Backend
 
-| Comando | Scopo |
+| Command | Purpose |
 |---|---|
-| `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8001` | Avvia API in locale dalla directory `app/` |
-| `pytest` | Esegue i test Python disponibili |
-| `python scripts/oauth_preflight.py --envfile .env` | Verifica configurazione OAuth dal backend |
+| `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8001` | Starts the local API from the `app/` directory |
+| `pytest` | Runs the available Python tests |
+| `python scripts/oauth_preflight.py --envfile .env` | Verifies OAuth configuration from the backend |
 
 ### Deploy
 
-| Comando | Scopo |
+| Command | Purpose |
 |---|---|
-| `scripts/deploy/deploy_backend.sh --env test --build` | Build e deploy backend test su Cloud Run |
-| `scripts/deploy/deploy_frontend.sh --env test` | Build e deploy frontend test su Firebase Hosting |
-| `scripts/deploy/deploy_all.sh --env test --build-backend` | Deploy completo test |
-| `scripts/deploy/deploy_all.sh --env prod --build-backend` | Deploy completo produzione |
+| `scripts/deploy/deploy_backend.sh --env test --build` | Builds and deploys the test backend to Cloud Run |
+| `scripts/deploy/deploy_frontend.sh --env test` | Builds and deploys the test frontend to Firebase Hosting |
+| `scripts/deploy/deploy_all.sh --env test --build-backend` | Runs a full test deployment |
+| `scripts/deploy/deploy_all.sh --env prod --build-backend` | Runs a full production deployment |
 
-## Deploy test/prod
+## Test/Prod Deployment
 
-Il workflow consigliato è documentato in [DEPLOY_TEST_PROD.md](docs/DEPLOY_TEST_PROD.md).
+The recommended workflow is documented in [DEPLOY_TEST_PROD.md](docs/DEPLOY_TEST_PROD.md).
 
-Setup una tantum:
+One-time setup:
 
 ```bash
 cp infra/deploy/environments/test.env.example infra/deploy/environments/test.env
@@ -260,60 +260,60 @@ cp infra/deploy/backend/backend_env.test.json.example app/backend/env_test.json
 cp infra/deploy/backend/backend_env.prod.json.example app/backend/env_prod.json
 ```
 
-Deploy test:
+Test deployment:
 
 ```bash
 scripts/deploy/deploy_all.sh --env test --build-backend
 ```
 
-Deploy produzione:
+Production deployment:
 
 ```bash
 scripts/deploy/deploy_all.sh --env prod --build-backend
 ```
 
-Regole operative:
+Operational rules:
 
-- valori non sensibili nei file env di ambiente;
-- segreti in Secret Manager e mapping `*.secrets`;
-- `VITE_API_BASE` coerente con il backend target prima della build frontend;
-- verifica post-deploy su `/health`, login, routing SPA e chiamate API.
+- non-sensitive values live in environment files;
+- secrets live in Secret Manager and `*.secrets` mappings;
+- `VITE_API_BASE` must match the target backend before building the frontend;
+- after deployment, verify `/health`, login, SPA routing, and API calls.
 
-## Qualità e verifiche
+## Quality and Verification
 
-Per modifiche frontend:
+For frontend changes:
 
 ```bash
 cd app/frontend
 pnpm build
 ```
 
-Per modifiche backend:
+For backend changes:
 
 ```bash
 cd app/backend
 pytest
 ```
 
-Il repository non espone al momento script frontend dedicati per `lint` o `typecheck` in `package.json`; se una modifica li richiede, aggiungere lo script o documentare la verifica manuale eseguita.
+The repository currently does not expose dedicated frontend `lint` or `typecheck` scripts in `package.json`; if a change requires them, add the script or document the manual verification performed.
 
-Per feature non banali aggiornare `spec_dev.md` e la documentazione pertinente in `docs/`, includendo scope, impatti, piano test, rischi e rollback.
+For non-trivial features, update `spec_dev.md` and the relevant documentation in `docs/`, including scope, impacts, test plan, risks, and rollback.
 
-## Documentazione utile
+## Useful Documentation
 
-- [Quickstart Google OAuth + Telegram](QUICKSTART.md)
+- [Google OAuth + Telegram quickstart](QUICKSTART.md)
 - [PWA runbook](docs/PWA_RUNBOOK.md)
-- [Deploy test/prod](docs/DEPLOY_TEST_PROD.md)
-- [Auth e notifiche](docs/AUTH_AND_NOTIFICATIONS.md)
-- [Gestione ruoli](docs/ROLE_MANAGEMENT.md)
-- [Configurazione admin](docs/ADMIN_CONFIGURATION.md)
-- [Troubleshooting admin](docs/ADMIN_TROUBLESHOOTING.md)
-- [Setup Google OAuth](docs/GOOGLE_OAUTH_SETUP.md)
-- [Setup Telegram](docs/TELEGRAM_SETUP.md)
-- [Piano simulatore previdenziale](docs/PIANO_SIMULATORE_PREVIDENZIALE.md)
+- [Test/prod deployment](docs/DEPLOY_TEST_PROD.md)
+- [Auth and notifications](docs/AUTH_AND_NOTIFICATIONS.md)
+- [Role management](docs/ROLE_MANAGEMENT.md)
+- [Admin configuration](docs/ADMIN_CONFIGURATION.md)
+- [Admin troubleshooting](docs/ADMIN_TROUBLESHOOTING.md)
+- [Google OAuth setup](docs/GOOGLE_OAUTH_SETUP.md)
+- [Telegram setup](docs/TELEGRAM_SETUP.md)
+- [Retirement simulator plan](docs/PIANO_SIMULATORE_PREVIDENZIALE.md)
 
-## Stato del progetto
+## Project Status
 
-Comparatore Fondi Pensione è un'app PWA in evoluzione. Il perimetro attuale include confronto fondi, simulatore previdenziale, contenuti educativi, auth, ruoli, admin, feedback, notifiche e deploy multi-ambiente.
+Pension Fund Comparator is an evolving PWA. The current scope includes fund comparison, retirement simulator, educational content, auth, roles, admin, feedback, notifications, and multi-environment deployment.
 
-Sono aree da trattare con particolare attenzione: contratti API, configurazione segreti, flussi OAuth, controlli ruolo/piano, pagamenti, service worker e dataset dei fondi.
+Areas that require special care: API contracts, secrets configuration, OAuth flows, role/plan checks, payments, service worker behavior, and the pension fund dataset.
