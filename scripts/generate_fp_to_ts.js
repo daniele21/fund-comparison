@@ -276,6 +276,7 @@ function readAndMap() {
 function buildBackupTsContent(allRows) {
   const tsLines = [
     `import { PensionFund, FundCategory } from '../types';`,
+    `import { calculateFundRating } from '../utils/fundRating';`,
     ``,
     `const parseFloatOrNull = (val: string): number | null => {`,
     `  if (val === null || val.trim() === '') return null;`,
@@ -316,7 +317,7 @@ function buildBackupTsContent(allRows) {
   tsLines.push(`    seen[baseId] = count;`);
   tsLines.push(`    const id = count === 1 ? baseId : generateId(n_albo, comparto, count);`);
   tsLines.push(``);
-  tsLines.push(`    return {`);
+  tsLines.push(`    const fundWithoutRating: Omit<PensionFund, 'rating'> = {`);
   tsLines.push(`      id,`);
   tsLines.push(`    type: type as 'FPN' | 'FPA' | 'PIP',`);
   tsLines.push(`    nAlbo: parseInt(n_albo, 10),`);
@@ -342,6 +343,7 @@ function buildBackupTsContent(allRows) {
   tsLines.push(`    categoriaContratto: categoria_contratto || null,`);
   tsLines.push(`    sitoWeb: sito_web || null,`);
   tsLines.push(`    };`);
+  tsLines.push(`    return { ...fundWithoutRating, rating: calculateFundRating(fundWithoutRating) };`);
   tsLines.push(`  }).filter(fund => fund.linea); // Filter out any potentially invalid rows`);
   tsLines.push(`})();`);
 

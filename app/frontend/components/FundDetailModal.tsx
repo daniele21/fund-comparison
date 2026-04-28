@@ -3,6 +3,7 @@ import { PensionFund } from '../types';
 import { CATEGORY_MAP } from '../constants';
 import PerformanceChart from './PerformanceChart';
 import CostChart from './CostChart';
+import { ratingBadgeClasses } from '../utils/fundRating';
 
 interface FundDetailModalProps {
   fund: PensionFund | null;
@@ -20,6 +21,15 @@ const ValueRow: React.FC<{ label: string; value: number | null; isPercentage?: b
     </div>
   );
 };
+
+const RatingValueRow: React.FC<{ label: string; value: number | string | null }> = ({ label, value }) => (
+  <div className="flex justify-between items-center py-2 sm:py-3 gap-2">
+    <p className="text-gray-600 dark:text-gray-300 text-left flex-1 min-w-0 truncate" title={label}>{label}</p>
+    <p className="font-semibold text-slate-800 dark:text-slate-100 tabular-nums shrink-0">
+      {value ?? 'N/A'}
+    </p>
+  </div>
+);
 
 const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose, theme, onFundSelect, isSelected }) => {
   const [isMobile, setIsMobile] = React.useState(false);
@@ -157,6 +167,43 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
                   <div>
                       <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">N° Albo</p>
                       <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200">{fund.nAlbo}</p>
+                  </div>
+                </div>
+            </div>
+
+            {/* Rating Section */}
+            <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3 md:p-4 mb-3 sm:mb-4 md:mb-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5 sm:gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-lime-700 dark:text-lime-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.52 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.52 4.674c.3.921-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.52-4.674a1 1 0 00-.363-1.118L3.082 10.1c-.783-.57-.38-1.81.588-1.81h4.915a1 1 0 00.95-.69l1.514-4.674z" />
+                      </svg>
+                      Rating del comparto
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                      {fund.rating.ammissibile
+                        ? `Score netto ponderato sui periodi disponibili. ISC ${fund.rating.iscOrizzonte ?? 'N/D'} utilizzato.`
+                        : fund.rating.motivoEsclusione}
+                    </p>
+                  </div>
+                  <span className={`inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-bold ${ratingBadgeClasses(fund.rating.classeRating)}`}>
+                    Rating {fund.rating.classeRating ?? 'N/D'}
+                    {fund.rating.ratingScore != null && <span className="ml-2 tabular-nums">{fund.rating.ratingScore.toFixed(2)}</span>}
+                  </span>
+                </div>
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="divide-y divide-gray-200 dark:divide-slate-700 bg-white/70 dark:bg-slate-800/50 rounded-lg px-2.5 sm:px-3 md:px-4 text-xs sm:text-sm">
+                    <RatingValueRow label="Descrizione" value={fund.rating.descrizioneRating} />
+                    <RatingValueRow label="Tipo adesione" value={fund.rating.tipoAdesione} />
+                    <RatingValueRow label="ISC usato" value={fund.rating.iscUtilizzato != null ? `${fund.rating.iscUtilizzato.toFixed(2)}%` : null} />
+                    <RatingValueRow label="Orizzonte ISC" value={fund.rating.iscOrizzonte} />
+                  </div>
+                  <div className="divide-y divide-gray-200 dark:divide-slate-700 bg-white/70 dark:bg-slate-800/50 rounded-lg px-2.5 sm:px-3 md:px-4 text-xs sm:text-sm">
+                    <RatingValueRow label="Score 3 anni" value={fund.rating.scores.score3y != null ? fund.rating.scores.score3y.toFixed(2) : null} />
+                    <RatingValueRow label="Score 5 anni" value={fund.rating.scores.score5y != null ? fund.rating.scores.score5y.toFixed(2) : null} />
+                    <RatingValueRow label="Score 10 anni" value={fund.rating.scores.score10y != null ? fund.rating.scores.score10y.toFixed(2) : null} />
+                    <RatingValueRow label="Score 20 anni" value={fund.rating.scores.score20y != null ? fund.rating.scores.score20y.toFixed(2) : null} />
                   </div>
                 </div>
             </div>

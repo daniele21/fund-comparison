@@ -1,4 +1,5 @@
 import { PensionFund, FundCategory } from '../types';
+import { calculateFundRating } from '../utils/fundRating';
 
 const parseFloatOrNull = (val: string): number | null => {
   if (val === null || val.trim() === '') return null;
@@ -442,7 +443,7 @@ export const pensionFundsData: PensionFund[] = (() => {
     seen[baseId] = count;
     const id = count === 1 ? baseId : generateId(n_albo, comparto, count);
 
-    return {
+    const fundWithoutRating: Omit<PensionFund, 'rating'> = {
       id,
     type: type as 'FPN' | 'FPA' | 'PIP',
     nAlbo: parseInt(n_albo, 10),
@@ -468,5 +469,6 @@ export const pensionFundsData: PensionFund[] = (() => {
     categoriaContratto: categoria_contratto || null,
     sitoWeb: sito_web || null,
     };
+    return { ...fundWithoutRating, rating: calculateFundRating(fundWithoutRating) };
   }).filter(fund => fund.linea); // Filter out any potentially invalid rows
 })();

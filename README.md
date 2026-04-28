@@ -9,7 +9,7 @@
 [![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8)](https://web.dev/explore/progressive-web-apps)
 [![Cloud Run](https://img.shields.io/badge/Cloud_Run-backend-4285F4?logo=googlecloud&logoColor=fff)](https://cloud.google.com/run)
 
-Pension Fund Comparator is a Progressive Web App for comparing Italian pension funds, understanding costs and returns, simulating retirement scenarios, and managing free, subscriber, and admin access through a FastAPI backend.
+Pension Fund Comparator is a Progressive Web App, branded for Accademia Previdenza, for comparing Italian pension funds, understanding costs, ratings and returns, simulating retirement scenarios, and managing free, subscriber, and admin access through a FastAPI backend.
 
 The project combines a guided frontend experience with static pension fund data, protected APIs, Google OAuth or invite-code authentication, role management, operational notifications, and separate deployment flows for `test` and `prod` environments.
 
@@ -37,6 +37,7 @@ This repository builds a more operational experience: users can explore funds, s
 - Home screen with entry points for the simulator, fund comparison, guides, and guided flows.
 - Pension fund dataset loaded in the frontend from static sources in `data/`.
 - Fund table with filters, sorting, fund details, and multi-selection.
+- Per-comparto rating based on historical returns net of selected ISC, shown in fund lists and details.
 - Visual comparison of selected funds with charts and insights.
 - Retirement simulator with steps for accumulated capital, comparison, and taxation.
 - Guides, FAQ, glossary, and educational content through dedicated APIs.
@@ -47,7 +48,7 @@ This repository builds a more operational experience: users can explore funds, s
 - Admin dashboard for users, approvals, roles, status, and feedback.
 - Telegram notifications for admin events and user requests.
 - Stripe integration prepared for billing and webhooks.
-- PWA with manifest, versioned service worker, offline fallback, and update banner.
+- PWA with Accademia Previdenza manifest/icons, versioned service worker, offline fallback, and update banner.
 - Backend deployment on Cloud Run and frontend deployment on Firebase Hosting.
 
 ## Product Preview

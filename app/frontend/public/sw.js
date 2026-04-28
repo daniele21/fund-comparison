@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'fund-comparison-pwa';
-const CACHE_VERSION = '2026-03-01-v2';
+const CACHE_VERSION = '2026-04-28-v1';
 const APP_SHELL_CACHE = `${CACHE_PREFIX}-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${CACHE_VERSION}`;
 const API_RUNTIME_CACHE = `${CACHE_PREFIX}-api-${CACHE_VERSION}`;
@@ -11,8 +11,9 @@ const APP_SHELL_URLS = [
   '/index.html',
   '/offline.html',
   '/manifest.webmanifest',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  '/brand/icon-192.png',
+  '/brand/icon-512.png',
+  '/brand/logo-accprev.webp',
 ];
 
 function isStaticAssetRequest(request) {
@@ -128,7 +129,7 @@ async function staleWhileRevalidate(request, event) {
   }
 
   if (request.destination === 'image') {
-    const fallbackIcon = await caches.match('/icons/icon-192.png');
+    const fallbackIcon = await caches.match('/brand/icon-192.png');
     if (fallbackIcon) {
       return fallbackIcon;
     }

@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { PensionFund, SortConfig, SortableKey } from '../types';
 import { CATEGORY_MAP, CATEGORY_COLORS } from '../constants';
 import { motion, useInView } from 'framer-motion';
+import { ratingBadgeClasses } from '../utils/fundRating';
 
 interface FundTableProps {
   funds: PensionFund[];
@@ -134,6 +135,25 @@ const RendimentoCell: React.FC<{ value: number | null; label?: string; isMobile?
     return <td className="px-2 py-4 whitespace-nowrap text-sm text-right">{content}</td>;
 };
 
+const RatingBadge: React.FC<{ fund: PensionFund; compact?: boolean }> = ({ fund, compact = false }) => {
+    const label = fund.rating.classeRating ?? 'N/D';
+    const score = fund.rating.ratingScore != null ? fund.rating.ratingScore.toFixed(2) : null;
+    const title = fund.rating.ammissibile
+        ? `Rating ${label}: ${fund.rating.descrizioneRating ?? ''}. Score ${score}. ISC ${fund.rating.iscOrizzonte ?? 'N/D'} usato.`
+        : fund.rating.motivoEsclusione ?? 'Rating non calcolabile';
+
+    return (
+        <span
+            className={`inline-flex items-center justify-center gap-1.5 rounded-full border font-bold tabular-nums ${ratingBadgeClasses(fund.rating.classeRating)} ${compact ? 'px-2 py-1 text-[11px]' : 'px-3 py-1 text-xs'}`}
+            title={title}
+            aria-label={title}
+        >
+            <span>Rating {label}</span>
+            {score && <span className="font-semibold opacity-80">{score}</span>}
+        </span>
+    );
+};
+
 
 const FundTable: React.FC<FundTableProps> = ({
   funds,
@@ -165,6 +185,7 @@ const FundTable: React.FC<FundTableProps> = ({
                         <tr>
                             <SortableHeader label="Selezione" sortKey="selected" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="center" />
                             <SortableHeader label="Fondo" sortKey="linea" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
+                            <SortableHeader label="Rating" sortKey="ratingScore" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" align="center" />
                             <SortableHeader label="Categoria" sortKey="categoria" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
                             <SortableHeader label="Tipo" sortKey="type" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
                             <SortableHeader label="Costo Annuo" sortKey="costoAnnuo" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" align="right" />
@@ -217,6 +238,9 @@ const FundTable: React.FC<FundTableProps> = ({
                                         )}
                                     </div>
                                 </td>
+                                <td className="px-2 py-4 whitespace-nowrap text-center">
+                                    <RatingBadge fund={fund} />
+                                </td>
                                 <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium">
                                     <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
                                         {CATEGORY_MAP[fund.categoria]}
@@ -238,7 +262,7 @@ const FundTable: React.FC<FundTableProps> = ({
                             </AnimatedTableRow>
                         )) : (
                             <tr>
-                                <td colSpan={10} className="text-center py-16 text-slate-500 dark:text-slate-400">
+                                <td colSpan={11} className="text-center py-16 text-slate-500 dark:text-slate-400">
                                     <p className="font-semibold">Nessun fondo trovato</p>
                                     <p className="text-sm">Prova a modificare i filtri per trovare quello che cerchi.</p>
                                 </td>
@@ -303,6 +327,7 @@ const FundTable: React.FC<FundTableProps> = ({
                         <option value="ultimi20Anni">📈 Rendimento 20 Anni</option>
                     </optgroup>
                     <optgroup label="Altri">
+                        <option value="ratingScore">Rating</option>
                         <option value="costoAnnuo">💰 Costo Annuo</option>
                         <option value="selected">✓ Selezionati</option>
                         <option value="linea">🏢 Nome Fondo</option>
@@ -374,6 +399,8 @@ const FundTable: React.FC<FundTableProps> = ({
                             </svg>
                             <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">{CATEGORY_MAP[fund.categoria]}</span>
                         </div>
+
+                        <RatingBadge fund={fund} compact />
                         
                         {/* Website Link Badge */}
                         {fund.sitoWeb && (
@@ -394,6 +421,18 @@ const FundTable: React.FC<FundTableProps> = ({
 
                     {/* Key Metrics Grid */}
                     <div className="grid grid-cols-2 gap-1.5 sm:gap-2 px-2.5 sm:px-3 pb-1.5 sm:pb-2">
+                        {/* Rating Metric */}
+                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2 sm:p-2.5">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-0.5">Rating</p>
+                            <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200 tabular-nums">
+                                {fund.rating.classeRating ?? 'N/D'}
+                                {fund.rating.ratingScore != null && (
+                                    <span className="ml-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                        {fund.rating.ratingScore.toFixed(2)}
+                                    </span>
+                                )}
+                            </p>
+                        </div>
                         {/* Cost Metric */}
                         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2 sm:p-2.5">
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-0.5">Costo Annuo</p>
@@ -403,7 +442,7 @@ const FundTable: React.FC<FundTableProps> = ({
                         </div>
                         
                         {/* Best Return Metric (5Y) */}
-                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2 sm:p-2.5">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2 sm:p-2.5 col-span-2">
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-0.5">Rend. 5A</p>
                             <p className={`text-base sm:text-lg font-bold tabular-nums ${
                                 fund.rendimenti.ultimi5Anni === null 

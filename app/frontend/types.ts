@@ -1,6 +1,6 @@
 export interface PensionFund {
   id: string;
-  type: 'FPN' | 'FPA' | 'PIP';
+  type: FundType;
   societa: string | null;
   pip: string; // "fondo" from CSV
   nAlbo: number;
@@ -23,11 +23,37 @@ export interface PensionFund {
   };
   categoriaContratto: string | null; // Category/Contract reference (FPN funds only)
   sitoWeb: string | null; // Website (FPN funds only)
+  rating: FundRating;
 }
 
+export type FundType = 'FPN' | 'FPA' | 'PIP';
 export type FundCategory = 'GAR' | 'BIL' | 'AZN' | 'OBB MISTO' | 'OBB PURO' | 'OBB';
+export type TipoAdesione = 'individuale' | 'collettiva';
+export type RatingIscOrizzonte = '10y' | '5y';
+export type FundRatingClass = 'A' | 'B' | 'C' | 'D' | 'E';
 
-export type SortableKey = keyof PensionFund | 'ultimoAnno' | 'ultimi3Anni' | 'ultimi5Anni' | 'ultimi10Anni' | 'ultimi20Anni' | 'selected';
+export interface FundRatingScores {
+  score3y: number | null;
+  score5y: number | null;
+  score10y: number | null;
+  score15y: number | null;
+  score20y: number | null;
+  score25y: number | null;
+}
+
+export interface FundRating {
+  ammissibile: boolean;
+  motivoEsclusione: string | null;
+  iscUtilizzato: number | null;
+  iscOrizzonte: RatingIscOrizzonte | null;
+  scores: FundRatingScores;
+  ratingScore: number | null;
+  classeRating: FundRatingClass | null;
+  descrizioneRating: string | null;
+  tipoAdesione: TipoAdesione;
+}
+
+export type SortableKey = keyof PensionFund | 'ultimoAnno' | 'ultimi3Anni' | 'ultimi5Anni' | 'ultimi10Anni' | 'ultimi20Anni' | 'ratingScore' | 'selected';
 
 export interface SortConfig {
   key: SortableKey;

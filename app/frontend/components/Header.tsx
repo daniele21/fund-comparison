@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../auth';
 import { AnimatedButton } from './animations/AnimatedButton';
+import { BRAND_TOKENS } from '../config/brandTokens';
 
 interface NavSubItem {
   id: string;
@@ -194,13 +195,13 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
       }`}>
         {/* Left side: Logo and Title */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-          <img src="/icons/Favicon_sfondo%20bianco.png" alt="Logo" className="h-8 w-8 sm:h-12 sm:w-12 object-contain flex-shrink-0" />
+          <img src={BRAND_TOKENS.logo.horizontal} alt={BRAND_TOKENS.name} className="h-8 w-auto max-w-[132px] sm:h-12 sm:max-w-[220px] object-contain flex-shrink-0" />
           <div className="leading-tight min-w-0">
             <span className="text-sm sm:text-xl md:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight block whitespace-nowrap overflow-hidden text-ellipsis">
-              Comparatore Fondi Pensione
+              {BRAND_TOKENS.productName}
             </span>
             <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 block sm:hidden whitespace-nowrap overflow-hidden text-ellipsis">
-              Il fondo migliore per te
+              {BRAND_TOKENS.shortName}
             </span>
           </div>
         </div>

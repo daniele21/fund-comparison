@@ -20,6 +20,8 @@ export const getSortValue = (fund: PensionFund, key: SortableKey): string | numb
       return fund.rendimenti.ultimi10Anni;
     case 'ultimi20Anni':
       return fund.rendimenti.ultimi20Anni;
+    case 'ratingScore':
+      return fund.rating.ratingScore;
     default:
       return null;
   }

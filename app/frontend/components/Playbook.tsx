@@ -1,5 +1,6 @@
 import React from 'react';
 import Footer from './Footer';
+import { BRAND_TOKENS } from '../config/brandTokens';
 
 interface PlaybookProps {
   onStart: () => void;
@@ -29,13 +30,13 @@ const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
       </div>
 
       <div className="relative isolate overflow-hidden flex-1">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100 via-white to-slate-50 dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-950"></div>
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-lime-100 via-white to-slate-50 dark:from-green-950/30 dark:via-slate-900 dark:to-slate-950"></div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32 pb-20 text-center">
-          <div className="inline-flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-950/50 p-10 sm:p-12 rounded-3xl mb-12 sm:mb-14 border border-blue-200 dark:border-blue-800/50 shadow-sm">
+          <div className="inline-flex items-center justify-center bg-gradient-to-br from-lime-50 to-green-100 dark:from-green-900/30 dark:to-green-950/50 p-6 sm:p-8 rounded-3xl mb-12 sm:mb-14 border border-lime-200 dark:border-green-800/50 shadow-sm">
             <img
-              src="/icons/Logo%20Verticale_trasparente.png"
-              alt="Logo verticale"
-              className="h-36 w-36 sm:h-64 sm:w-64 object-contain"
+              src={BRAND_TOKENS.logo.horizontal}
+              alt={BRAND_TOKENS.name}
+              className="h-24 w-auto max-w-[300px] sm:h-36 sm:max-w-[520px] object-contain"
               loading="lazy"
             />
           </div>
@@ -48,7 +49,7 @@ const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
           <div className="mt-8 sm:mt-10">
             <button
               onClick={onStart}
-              className="inline-flex items-center gap-x-2 px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-base sm:text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 dark:focus:ring-offset-slate-900 transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 active:scale-100 active:translate-y-0"
+              className="inline-flex items-center gap-x-2 px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-green-700 to-lime-600 text-white text-base sm:text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-green-800 hover:to-lime-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-700 dark:focus:ring-offset-slate-900 transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5 active:scale-100 active:translate-y-0"
             >
               Accedi per iniziare
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" /></svg>

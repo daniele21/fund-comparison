@@ -55,7 +55,7 @@ const AppContent: React.FC = () => {
       return stored;
     }
 
-    return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
+    return 'light';
   });
   const [activeSection, setActiveSection] = useState<DashboardSection>(
     () => resolveRouteFromPathname(window.location.pathname).section

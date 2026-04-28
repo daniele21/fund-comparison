@@ -1,5 +1,5 @@
 {
-  "name": "Comparatore Fondi Pensione",
-  "description": "A web application to compare the performance and characteristics of Italian pension funds (Fondi Pensione). Users can filter, sort, and visualize data to make informed decisions.",
+  "name": "Accademia Previdenza",
+  "description": "A web application to compare Italian pension funds, ratings, costs, and returns with Accademia Previdenza branding.",
   "requestFramePermissions": []
 }

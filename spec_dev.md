@@ -104,6 +104,105 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 
 ---
 
+## Feature Note - Branding Accademia Previdenza e Rating Comparti
+
+## 1. Overview
+- Feature name: Branding configurabile Accademia Previdenza + rating comparti
+- Owner: Codex
+- Date: 2026-04-28
+- Status: `done`
+- Related issue/PR: n/a
+
+## 2. Problem Statement
+- Current behavior: la UI usava branding Financial Suite/Comparatore e mostrava costi/rendimenti senza rating sintetico.
+- Pain points: identita non allineata al materiale Accademia Previdenza e assenza di un indicatore netto sintetico vicino ai fondi.
+- Impatto su utenti/business: confronto meno leggibile e brand meno riconoscibile.
+
+## 3. Goals and Non-Goals
+### Goals
+- Centralizzare il brand kit in configurazione semplice da cambiare.
+- Calcolare rating per ogni comparto FPN/FPA/PIP usando il documento `docs/calcolo-rating.md`.
+- Mostrare rating accanto ai fondi, nelle card mobile e nel dettaglio.
+
+### Non-Goals
+- Nessuna migrazione backend: `/funds` resta mock e la UI usa dataset statico.
+- Nessun redesign esteso del layout.
+- Nessuna nuova sorgente dati per data nascita comparto o rendimenti 15/25 anni.
+
+## 4. Scope
+- Frontend scope (`app/frontend/...`): brand tokens, asset PWA, rating model, tabella, card mobile, modale dettaglio, ordinamento.
+- Backend scope (`app/backend/...`): nessuno.
+- Data/config scope (`data/`, `infra/`, env vars): rigenerazione `app/frontend/data/funds.ts` da CSV esistenti; nessuna env var.
+- Out of scope: API funds production, auth, billing, ruoli.
+
+## 5. User and UX Definition
+- User persona principale: utente che confronta fondi pensione e vuole un indicatore sintetico leggibile.
+- User journey principale: lista fondi -> ordinamento rating -> apertura dettaglio -> lettura breakdown.
+- Entry points: `choose-fund`, `have-fund`, modale dettaglio fondo.
+- Stati UX richiesti:
+  - Loading: invariato.
+  - Empty: invariato.
+  - Error: rating non calcolabile mostra motivazione.
+  - Success: classe rating, score e ISC usato visibili.
+
+## 6. Technical Design
+- API endpoints toccati/nuovi: nessuno.
+- Request/response contracts: esteso tipo frontend `PensionFund.rating`.
+- Validation strategy: calcolo puro in `utils/fundRating.ts` con `null` espliciti per dati mancanti.
+- Service/domain logic changes: rating calcolato in generazione dataset e riusabile dai componenti.
+- External integrations coinvolte: nessuna.
+- Error handling strategy: comparti senza rendimento 3 anni o ISC mostrano `N/D` e motivo esclusione.
+- Backward compatibility considerations: componenti che ricevono `PensionFund` richiedono dataset rigenerato.
+
+## 7. Security and Permissions
+- Auth model coinvolto: nessun impatto.
+- Role/plan checks richiesti: nessun impatto.
+- Dati sensibili trattati: nessuno.
+- Rischi sicurezza e mitigazioni: nessun nuovo input utente o secret.
+
+## 8. Responsiveness and Accessibility
+- Breakpoint verificati: rating in colonna desktop e badge/metrica mobile.
+- Keyboard/focus behavior: invariato; ordinamento rating usa header button esistente.
+- Label/semantics requirements: badge rating con `aria-label` e title descrittivo.
+- Note mobile-specific: card mantiene metriche compatte senza nascondere costo/rendimento.
+
+## 9. Performance Considerations
+- Rendering strategy: rating calcolato una volta nel dataset statico generato.
+- Query/API performance notes: nessuna query nuova.
+- Caching/debouncing/throttling notes: service worker versionato per nuovi asset brand.
+- Observability/logging notes: n/a.
+
+## 10. Testing Strategy
+- Unit tests: non aggiunti per assenza di runner frontend configurato.
+- Route/API tests: n/a.
+- Integration tests: n/a.
+- UI/manual QA scenarios: lista fondi desktop/mobile, ordinamento rating, modale dettaglio, PWA metadata.
+- Edge cases: rendimento 3 anni mancante, ISC 10 anni assente con fallback 5 anni, score negativo.
+- Failure path cases: rating non calcolabile con motivazione.
+- Commands to run:
+  - Frontend: `pnpm build`.
+
+## 11. Documentation Deliverables
+- Files aggiornati in `docs/`: `docs/rating-fondi.md`.
+- `README.md` update richiesto: `yes`.
+- Runbook/operational notes: incluso rollback in `docs/rating-fondi.md`.
+
+## 12. Rollout and Risk Management
+- Rollout plan: deploy frontend standard.
+- Deploy targets: `local | test | production`.
+- Env/secrets changes: nessuno.
+- Monitoring after deploy: verifica asset brand, manifest, cache PWA, tabella rating.
+- Rollback plan: revert brand assets/config e rigenerazione dataset senza rating.
+
+## 13. Acceptance Criteria
+- [x] Scope implementato senza regressioni note sul build Vite.
+- [x] Contratti frontend aggiornati.
+- [x] UX rating copre stati calcolabile/non calcolabile.
+- [x] Documentazione aggiornata.
+- [x] Verifica `pnpm build` eseguita.
+
+---
+
 ## Feature Note - Tour Guidato Contestuale con Highlight Dinamico
 
 ## 1. Overview

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import FinancialSuiteBadge from './FinancialSuiteBadge';
+import { BRAND_TOKENS } from '../config/brandTokens';
 
 interface FooterProps {
   sidebarCollapsed?: boolean;
@@ -86,7 +87,7 @@ const Footer: React.FC<FooterProps> = ({ sidebarCollapsed = false, hasSidebar = 
           
           {/* Right: Copyright */}
           <div className="text-center sm:text-right text-slate-500 dark:text-slate-500 font-medium">
-            © {new Date().getFullYear()} Financial Suite
+            © {new Date().getFullYear()} {BRAND_TOKENS.name}
           </div>
         </div>
       </div>
