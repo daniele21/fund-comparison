@@ -15,10 +15,20 @@ Create `app/frontend/.env.local` (ignored by git) with the values needed for you
 ```bash
 VITE_API_BASE=http://localhost:8000        # Backend origin used for API calls
 VITE_PUBLIC_ANALYTICS_KEY=dev-analytics    # Optional analytics identifier
+VITE_FIREBASE_PROJECT_ID=financial-suite   # Selects the project-bound brand palette
 ```
 
 Any variable prefixed with `VITE_` becomes available via `import.meta.env`.
 Do not place backend variables (`APP_*`) in frontend env files.
+
+### Project-Bound Brand Palette
+
+Brand colors are centralized in `config/brandTokens.ts` and exposed to the app through CSS variables in `index.css`. The active style is resolved from `VITE_FIREBASE_PROJECT_ID`:
+
+- `financial-suite` uses the current green legacy palette.
+- `accademia-previdenza` uses the institutional blue palette.
+
+Do not hardcode component colors for brand, charts, focus rings, or primary actions. Add new project palette mappings in `FIREBASE_PROJECT_BRAND_STYLES` and update the related CSS variable block instead.
 
 ## Install & Run
 
@@ -67,7 +77,7 @@ pnpm build
 firebase deploy --only hosting
 ```
 
-Remember to set the appropriate `VITE_API_BASE` (and other env vars) before building. In CI, you can export them as environment variables or write them to a temporary `.env.local`.
+Remember to set the appropriate `VITE_API_BASE`, `VITE_FIREBASE_PROJECT_ID` and other env vars before building. In CI, you can export them as environment variables or write them to a temporary `.env.local`.
 
 ## Developing Against Authentication
 

@@ -667,4 +667,32 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - Rollback:
   1. ripristino file toccati in `components/simulator`, `guided`, `PerformanceChart`;
   2. ripristino costanti/utility (`simulatorCalc.ts`, `fundPerformance.ts`);
-  3. redeploy frontend.
+ 3. redeploy frontend.
+
+---
+
+## Feature Note - Palette Brand per Progetto Firebase (2026-04-28)
+
+### Scope e motivazione
+- Centralizzata la palette in `app/frontend/config/brandTokens.ts`.
+- Mantenuti due stili configurabili:
+  - `legacy` per `financial-suite`;
+  - `institutional` per `accademia-previdenza`, con palette blu da immagine.
+- La scelta dello stile dipende da `VITE_FIREBASE_PROJECT_ID`, non da colori hardcoded nei componenti.
+
+### Impatti frontend/backend/config
+- Frontend:
+  - `index.css` espone le CSS variables di brand;
+  - `tailwind.config.js` rimappa le utility cromatiche sui token;
+  - grafici, tooltip, slider e feedback usano token/CSS variables.
+- Config deploy:
+  - aggiunto `FRONTEND_VITE_FIREBASE_PROJECT_ID` agli env frontend/deploy.
+- Backend: nessun impatto.
+
+### Piano test e risultati
+- Eseguito: `cd app/frontend && pnpm build`.
+- Risultato: build ok; resta il warning Vite preesistente su chunk > 500 kB.
+
+### Rischi aperti e rollback
+- Rischio: componenti con SVG/asset esterni possono mantenere colori propri se sono loghi o icone provider.
+- Rollback: riportare `FIREBASE_PROJECT_BRAND_STYLES` a un solo mapping `legacy` e redeploy frontend.

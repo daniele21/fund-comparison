@@ -3,16 +3,16 @@
  */
 
 export const CHART_COLORS = [
-  '#0ea5e9', // sky
-  '#14b8a6', // teal
-  '#8b5cf6', // violet
-  '#f59e0b', // amber
-  '#f43f5e', // rose
-  '#6366f1', // indigo
-  '#ec4899', // pink
-  '#22c55e', // green
-  '#d97706', // yellow-600
-  '#64748b'  // slate
+  'rgb(var(--brand-chart-1-rgb) / 1)',
+  'rgb(var(--brand-chart-2-rgb) / 1)',
+  'rgb(var(--brand-chart-3-rgb) / 1)',
+  'rgb(var(--brand-chart-4-rgb) / 1)',
+  'rgb(var(--brand-chart-5-rgb) / 1)',
+  'rgb(var(--brand-chart-6-rgb) / 1)',
+  'rgb(var(--brand-primary-rgb) / 1)',
+  'rgb(var(--brand-primary-bright-rgb) / 1)',
+  'rgb(var(--brand-accent-rgb) / 1)',
+  'rgb(var(--brand-text-rgb) / 1)',
 ];
 
 /**
@@ -26,7 +26,12 @@ export const getColorForFund = (fundId: string, selectedFundIds: string[]): stri
 
 export const withAlpha = (color: string, alpha = 0.15): string => {
   if (!color) {
-    return `rgba(148, 163, 184, ${alpha})`;
+    return `rgb(var(--brand-primary-rgb) / ${alpha})`;
+  }
+
+  const rgbVarMatch = color.match(/^rgb\(var\((--[\w-]+)\)\s*\/\s*[\d.]+\)$/);
+  if (rgbVarMatch) {
+    return `rgb(var(${rgbVarMatch[1]}) / ${alpha})`;
   }
 
   if (!color.startsWith('#')) {

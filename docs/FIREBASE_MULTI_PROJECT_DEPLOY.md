@@ -102,6 +102,17 @@ VITE_FIREBASE_PROJECT_ID=accademia-previdenza
 
 La configurazione web Firebase (`apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`, `appId`) non e' un secret, ma la API key deve essere limitata nelle impostazioni Google Cloud/Firebase quando possibile.
 
+## Palette per Progetto
+
+Il frontend lega la palette al progetto Firebase tramite `VITE_FIREBASE_PROJECT_ID`, risolta in `app/frontend/config/brandTokens.ts`:
+
+| Firebase project | Brand style |
+|---|---|
+| `financial-suite` | `legacy` (palette verde attuale) |
+| `accademia-previdenza` | `institutional` (palette blu `#071156`, `#0B196F`, `#122385`, `#5D8BF4`, `#D1D4EA`, testo `#333333`) |
+
+Lo script di deploy passa tutte le variabili `FRONTEND_VITE_*` al build Vite. Ogni file ambiente deve quindi impostare `FRONTEND_VITE_FIREBASE_PROJECT_ID` coerente con `FIREBASE_PROJECT_ID`, altrimenti il bundle usa la palette default `legacy`.
+
 ## Branch-Based Deploy
 
 Strategia consigliata:

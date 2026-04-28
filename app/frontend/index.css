@@ -8,8 +8,51 @@
 
 /* Mobile-First Global Styles */
 
-/* CSS Custom Properties for Professional Color Scheme */
+/* CSS Custom Properties sourced from config/brandTokens.ts */
 :root {
+  --brand-text: #0c0c0c;
+  --brand-white: #ffffff;
+  --brand-primary: #196b24;
+  --brand-primary-deep: #0f3f16;
+  --brand-primary-bright: #4ea72e;
+  --brand-accent: #8ed873;
+  --brand-accent-surface: #d9f2d0;
+  --brand-surface: #f3faef;
+
+  --brand-text-rgb: 12 12 12;
+  --brand-white-rgb: 255 255 255;
+  --brand-primary-rgb: 25 107 36;
+  --brand-primary-deep-rgb: 15 63 22;
+  --brand-primary-bright-rgb: 78 167 46;
+  --brand-accent-rgb: 142 216 115;
+  --brand-accent-surface-rgb: 217 242 208;
+  --brand-surface-rgb: 243 250 239;
+
+  --brand-chart-1: #0ea5e9;
+  --brand-chart-2: #14b8a6;
+  --brand-chart-3: #8b5cf6;
+  --brand-chart-4: #f59e0b;
+  --brand-chart-5: #f43f5e;
+  --brand-chart-6: #6366f1;
+  --brand-chart-1-rgb: 14 165 233;
+  --brand-chart-2-rgb: 20 184 166;
+  --brand-chart-3-rgb: 139 92 246;
+  --brand-chart-4-rgb: 245 158 11;
+  --brand-chart-5-rgb: 244 63 94;
+  --brand-chart-6-rgb: 99 102 241;
+
+  --brand-neutral-50-rgb: 248 250 252;
+  --brand-neutral-100-rgb: 241 245 249;
+  --brand-neutral-200-rgb: 226 232 240;
+  --brand-neutral-300-rgb: 203 213 225;
+  --brand-neutral-400-rgb: 148 163 184;
+  --brand-neutral-500-rgb: 100 116 139;
+  --brand-neutral-600-rgb: 71 85 105;
+  --brand-neutral-700-rgb: 51 65 85;
+  --brand-neutral-800-rgb: 30 41 59;
+  --brand-neutral-900-rgb: 15 23 42;
+  --brand-neutral-950-rgb: 2 6 23;
+
   --color-primary-50: #f3faef;
   --color-primary-100: #d9f2d0;
   --color-primary-200: #b3e5a1;
@@ -21,10 +64,10 @@
   --color-primary-800: #14551d;
   --color-primary-900: #0f3f16;
   
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-info: #06b6d4;
+  --color-success: var(--brand-primary-bright);
+  --color-warning: var(--brand-accent);
+  --color-danger: var(--brand-primary-deep);
+  --color-info: var(--brand-accent);
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -37,7 +80,73 @@
   --radius-xl: 1rem;
 }
 
+:root[data-brand-style="institutional"] {
+  --brand-text: #333333;
+  --brand-primary: #0b196f;
+  --brand-primary-deep: #071156;
+  --brand-primary-bright: #122385;
+  --brand-accent: #5d8bf4;
+  --brand-accent-surface: #d1d4ea;
+  --brand-surface: #f7f8fd;
+
+  --brand-text-rgb: 51 51 51;
+  --brand-primary-rgb: 11 25 111;
+  --brand-primary-deep-rgb: 7 17 86;
+  --brand-primary-bright-rgb: 18 35 133;
+  --brand-accent-rgb: 93 139 244;
+  --brand-accent-surface-rgb: 209 212 234;
+  --brand-surface-rgb: 247 248 253;
+
+  --brand-chart-1: #0b196f;
+  --brand-chart-2: #122385;
+  --brand-chart-3: #5d8bf4;
+  --brand-chart-4: #071156;
+  --brand-chart-5: #d1d4ea;
+  --brand-chart-6: #333333;
+  --brand-chart-1-rgb: 11 25 111;
+  --brand-chart-2-rgb: 18 35 133;
+  --brand-chart-3-rgb: 93 139 244;
+  --brand-chart-4-rgb: 7 17 86;
+  --brand-chart-5-rgb: 209 212 234;
+  --brand-chart-6-rgb: 51 51 51;
+
+  --brand-neutral-50-rgb: 247 248 253;
+  --brand-neutral-100-rgb: 232 235 247;
+  --brand-neutral-200-rgb: 209 212 234;
+  --brand-neutral-300-rgb: 185 197 248;
+  --brand-neutral-400-rgb: 145 170 247;
+  --brand-neutral-500-rgb: 93 139 244;
+  --brand-neutral-600-rgb: 69 92 172;
+  --brand-neutral-700-rgb: 51 51 51;
+  --brand-neutral-800-rgb: 31 37 69;
+  --brand-neutral-900-rgb: 18 25 54;
+  --brand-neutral-950-rgb: 7 17 86;
+
+  --color-primary-50: #f7f8fd;
+  --color-primary-100: #d1d4ea;
+  --color-primary-200: #b9c5f8;
+  --color-primary-300: #91aaf7;
+  --color-primary-400: #5d8bf4;
+  --color-primary-500: #122385;
+  --color-primary-600: #0b196f;
+  --color-primary-700: #071156;
+  --color-primary-800: #061047;
+  --color-primary-900: #050b33;
+}
+
 .dark {
+  --brand-neutral-50-rgb: 248 250 252;
+  --brand-neutral-100-rgb: 226 232 240;
+  --brand-neutral-200-rgb: 203 213 225;
+  --brand-neutral-300-rgb: 148 163 184;
+  --brand-neutral-400-rgb: 100 116 139;
+  --brand-neutral-500-rgb: 71 85 105;
+  --brand-neutral-600-rgb: 51 65 85;
+  --brand-neutral-700-rgb: 30 41 59;
+  --brand-neutral-800-rgb: 15 23 42;
+  --brand-neutral-900-rgb: 2 6 23;
+  --brand-neutral-950-rgb: 1 5 18;
+
   --color-primary-50: #0f3f16;
   --color-primary-100: #14551d;
   --color-primary-200: #196b24;
@@ -55,6 +164,31 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
 }
 
+:root[data-brand-style="institutional"].dark {
+  --brand-neutral-50-rgb: 247 248 253;
+  --brand-neutral-100-rgb: 209 212 234;
+  --brand-neutral-200-rgb: 185 197 248;
+  --brand-neutral-300-rgb: 145 170 247;
+  --brand-neutral-400-rgb: 93 139 244;
+  --brand-neutral-500-rgb: 69 92 172;
+  --brand-neutral-600-rgb: 44 54 104;
+  --brand-neutral-700-rgb: 31 37 69;
+  --brand-neutral-800-rgb: 18 25 54;
+  --brand-neutral-900-rgb: 8 14 36;
+  --brand-neutral-950-rgb: 4 8 24;
+
+  --color-primary-50: #050b33;
+  --color-primary-100: #061047;
+  --color-primary-200: #071156;
+  --color-primary-300: #0b196f;
+  --color-primary-400: #122385;
+  --color-primary-500: #5d8bf4;
+  --color-primary-600: #91aaf7;
+  --color-primary-700: #b9c5f8;
+  --color-primary-800: #d1d4ea;
+  --color-primary-900: #f7f8fd;
+}
+
 /* Smooth scrolling for the whole page */
 html {
   scroll-behavior: smooth;
@@ -69,7 +203,7 @@ html {
 
 /* Improve tap highlighting on mobile */
 * {
-  -webkit-tap-highlight-color: rgba(37, 99, 235, 0.1);
+  -webkit-tap-highlight-color: rgb(var(--brand-accent-rgb) / 0.1);
 }
 
 /* Ensure buttons and interactive elements have proper touch targets (minimum 44x44px as per iOS guidelines) */
@@ -136,20 +270,20 @@ textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--brand-accent-surface);
   border-radius: 4px;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: var(--brand-primary-bright);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--brand-accent);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: var(--brand-accent);
 }
 
 /* Utility classes for mobile */
@@ -247,8 +381,8 @@ a {
   height: 18px;
   border-radius: 50%;
   background: var(--slider-thumb-color, var(--color-primary-600));
-  border: 2.5px solid #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 0 0 0px var(--slider-ring-color, rgba(59, 130, 246, 0.35));
+  border: 2.5px solid var(--brand-white);
+  box-shadow: 0 1px 3px rgb(var(--brand-text-rgb) / 0.18), 0 0 0 0px var(--slider-ring-color, rgb(var(--brand-accent-rgb) / 0.35));
   cursor: pointer;
   margin-top: -6px;
   transition: box-shadow 0.2s ease, transform 0.15s ease;
@@ -278,8 +412,8 @@ a {
   height: 18px;
   border-radius: 50%;
   background: var(--slider-thumb-color, var(--color-primary-600));
-  border: 2.5px solid #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 0 0 0px var(--slider-ring-color, rgba(59, 130, 246, 0.35));
+  border: 2.5px solid var(--brand-white);
+  box-shadow: 0 1px 3px rgb(var(--brand-text-rgb) / 0.18), 0 0 0 0px var(--slider-ring-color, rgb(var(--brand-accent-rgb) / 0.35));
   cursor: pointer;
   transition: box-shadow 0.2s ease, transform 0.15s ease;
 }
@@ -302,10 +436,10 @@ a {
 
 /* Dark-mode thumb border */
 .dark .simulator-slider::-webkit-slider-thumb {
-  border-color: #1e293b;
+  border-color: var(--brand-primary-deep);
 }
 .dark .simulator-slider::-moz-range-thumb {
-  border-color: #1e293b;
+  border-color: var(--brand-primary-deep);
 }
 
 /* Safe area insets for notched devices */

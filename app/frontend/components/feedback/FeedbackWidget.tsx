@@ -19,7 +19,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 const Button = ({ variant = 'default', size = 'default', className, ...props }: ButtonProps) => {
 	const base = 'inline-flex items-center justify-center rounded-xl font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none'
 	const variantClasses: Record<ButtonVariant, string> = {
-		default: 'bg-[#196B24] text-white hover:bg-[#14551d]',
+		default: 'bg-blue-700 text-white hover:bg-blue-800',
 		ghost: 'bg-transparent text-muted-fg hover:bg-surface2/70',
 	}
 	const sizeClasses: Record<ButtonSize, string> = {
@@ -106,9 +106,9 @@ export const FeedbackWidget: React.FC<FeedbackWidgetProps> = ({ onRequireLogin }
 		const style = document.createElement('style')
 		style.id = id
 		style.textContent = `
-			.fc-feedback-opaque { background-color: #196B24 !important; color: #fff !important; }
-			.fc-feedback-opaque:hover { background-color: #14551d !important; }
-			.fc-feedback-opaque:focus { box-shadow: 0 0 0 4px rgba(25,107,36,0.18) !important; }
+			.fc-feedback-opaque { background-color: var(--brand-primary) !important; color: var(--brand-white) !important; }
+			.fc-feedback-opaque:hover { background-color: var(--brand-primary-deep) !important; }
+			.fc-feedback-opaque:focus { box-shadow: 0 0 0 4px rgb(var(--brand-primary-rgb) / 0.18) !important; }
 		`
 		document.head.appendChild(style)
 	}, [])

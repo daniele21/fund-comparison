@@ -12,7 +12,7 @@ interface PerformanceChartProps {
   isCompact?: boolean;
 }
 
-const BENCHMARK_COLOR = '#e11d48'; // A distinct rose for the benchmark
+const BENCHMARK_COLOR = 'rgb(var(--brand-chart-5-rgb) / 1)';
 
 // TFR revaluation rates based on historical ISTAT FOI data.
 // The rate is calculated annually as 1.5% + 75% of the inflation rate.
@@ -39,8 +39,8 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
   theme,
   isCompact = false,
 }) => {
-  const tickColor = theme === 'dark' ? '#94a3b8' : '#475569'; // slate-400 for dark, slate-600 for light
-  const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0'; // slate-700 for dark, slate-200 for light
+  const tickColor = theme === 'dark' ? 'rgb(var(--brand-accent-surface-rgb) / 1)' : 'rgb(var(--brand-primary-rgb) / 1)';
+  const gridColor = theme === 'dark' ? 'rgb(var(--brand-primary-bright-rgb) / 1)' : 'rgb(var(--brand-accent-surface-rgb) / 1)';
 
   // Detect if we're on mobile
   const [isMobile, setIsMobile] = React.useState(false);
@@ -91,10 +91,10 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
             <svg className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16 text-slate-300 dark:text-slate-600 mb-2 sm:mb-3 md:mb-4" viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M2 38H58" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4"/>
                 <path d="M2 2H58" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4"/>
-                <rect x="8" y="22" width="8" height="16" fill={theme === 'dark' ? '#475569' : '#e2e8f0'}/>
-                <rect x="20" y="14" width="8" height="24" fill={theme === 'dark' ? '#475569' : '#e2e8f0'}/>
-                <rect x="32" y="28" width="8" height="10" fill={theme === 'dark' ? '#475569' : '#e2e8f0'}/>
-                <rect x="44" y="8" width="8" height="30" fill={theme === 'dark' ? '#475569' : '#e2e8f0'}/>
+                <rect x="8" y="22" width="8" height="16" fill={gridColor}/>
+                <rect x="20" y="14" width="8" height="24" fill={gridColor}/>
+                <rect x="32" y="28" width="8" height="10" fill={gridColor}/>
+                <rect x="44" y="8" width="8" height="30" fill={gridColor}/>
             </svg>
             <h2 className="text-base sm:text-lg md:text-xl font-semibold mb-1 text-slate-800 dark:text-slate-200">Confronto Performance</h2>
             <p className="text-xs sm:text-sm md:text-base text-slate-500 dark:text-slate-400 px-3 sm:px-4">Seleziona 2-3 fondi dalla tabella per confrontarli qui.</p>
@@ -156,7 +156,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
                   highlightColor={BENCHMARK_COLOR}
                 />
               }
-              cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
+              cursor={{ fill: 'rgb(var(--brand-primary-rgb) / 0.1)' }}
               allowEscapeViewBox={{ x: false, y: false }}
               wrapperStyle={{ pointerEvents: 'auto', opacity: 1, zIndex: 9999 }}
             />

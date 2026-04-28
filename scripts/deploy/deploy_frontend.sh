@@ -72,9 +72,31 @@ if [[ -n "$FIREBASE_PROJECT_OVERRIDE" ]]; then
   FIREBASE_PROJECT_ID="$FIREBASE_PROJECT_OVERRIDE"
 fi
 
+case "${FIREBASE_PROJECT_ID:-}" in
+  financial)
+    RESOLVED_FIREBASE_PROJECT_ID="financial-suite"
+    ;;
+  accademia)
+    RESOLVED_FIREBASE_PROJECT_ID="accademia-previdenza"
+    ;;
+  *)
+    RESOLVED_FIREBASE_PROJECT_ID="${FIREBASE_PROJECT_ID:-}"
+    ;;
+esac
+
+if [[ -n "$FIREBASE_PROJECT_OVERRIDE" || -z "${FRONTEND_VITE_FIREBASE_PROJECT_ID:-}" ]]; then
+  FRONTEND_VITE_FIREBASE_PROJECT_ID="$RESOLVED_FIREBASE_PROJECT_ID"
+fi
+
+if [[ "$FRONTEND_VITE_FIREBASE_PROJECT_ID" != "$RESOLVED_FIREBASE_PROJECT_ID" ]]; then
+  echo "FRONTEND_VITE_FIREBASE_PROJECT_ID (${FRONTEND_VITE_FIREBASE_PROJECT_ID}) must match FIREBASE_PROJECT_ID (${RESOLVED_FIREBASE_PROJECT_ID})" >&2
+  exit 1
+fi
+
 required_vars=(
   FIREBASE_PROJECT_ID
   FRONTEND_VITE_API_BASE
+  FRONTEND_VITE_FIREBASE_PROJECT_ID
 )
 
 for var_name in "${required_vars[@]}"; do
@@ -86,6 +108,7 @@ done
 
 echo "Building frontend for ${TARGET_ENV}"
 echo "Using VITE_API_BASE=${FRONTEND_VITE_API_BASE}"
+echo "Using VITE_FIREBASE_PROJECT_ID=${FRONTEND_VITE_FIREBASE_PROJECT_ID}"
 
 frontend_env=()
 while IFS= read -r var_name; do

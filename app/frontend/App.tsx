@@ -26,6 +26,11 @@ import { SECTION_COPY, buildNavItems } from './features/dashboard/config';
 import { getSortValue } from './features/dashboard/sorting';
 import { DashboardSection, View } from './features/dashboard/types';
 import { resolveRouteFromPathname, sectionToPath } from './features/dashboard/routing';
+import {
+  BRAND_STYLES,
+  resolveBrandStyleForFirebaseProject,
+  type BrandStyleId,
+} from './config/brandTokens';
 
 const Playbook = lazy(() => import('./components/Playbook'));
 const LoginModal = lazy(() => import('./components/LoginModal'));
@@ -41,6 +46,7 @@ const GuidedFundTable = lazy(() => import('./components/guided/GuidedFundTable')
 const VisualComparison = lazy(() => import('./components/VisualComparison'));
 
 const FREE_PLAN_LIMIT = 10;
+const metaEnv = import.meta as ImportMeta & { env?: Record<string, string | undefined> };
 const LazyFallback: React.FC = () => (
   <div className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-6 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300">
     Caricamento sezione...
@@ -57,6 +63,9 @@ const AppContent: React.FC = () => {
 
     return 'light';
   });
+  const brandStyle = useMemo<BrandStyleId>(() => {
+    return resolveBrandStyleForFirebaseProject(metaEnv.env?.VITE_FIREBASE_PROJECT_ID);
+  }, []);
   const [activeSection, setActiveSection] = useState<DashboardSection>(
     () => resolveRouteFromPathname(window.location.pathname).section
   );
@@ -174,6 +183,14 @@ const AppContent: React.FC = () => {
       localStorage.setItem('theme', 'light');
     }
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.dataset.brandStyle = brandStyle;
+    const themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.content = BRAND_STYLES[brandStyle].colors.primary;
+    }
+  }, [brandStyle]);
 
   // Scroll to top when navigating between sections
   useEffect(() => {

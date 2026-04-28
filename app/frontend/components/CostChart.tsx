@@ -14,8 +14,8 @@ interface CostChartProps {
 }
 
 const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact = false, detailFund = null }) => {
-  const tickColor = theme === 'dark' ? '#94a3b8' : '#475569';
-  const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0';
+  const tickColor = theme === 'dark' ? 'rgb(var(--brand-accent-surface-rgb) / 1)' : 'rgb(var(--brand-primary-rgb) / 1)';
+  const gridColor = theme === 'dark' ? 'rgb(var(--brand-primary-bright-rgb) / 1)' : 'rgb(var(--brand-accent-surface-rgb) / 1)';
   
   // Detect if we're on mobile
   const [isMobile, setIsMobile] = React.useState(false);
@@ -151,7 +151,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
               />
               <Tooltip
                 content={<ChartTooltip sorter={costTooltipSorter} />}
-                cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
+                cursor={{ fill: 'rgb(var(--brand-primary-rgb) / 0.1)' }}
                 position={tooltipPosition}
                 offset={0}
                 allowEscapeViewBox={{ x: false, y: false }}
@@ -176,9 +176,9 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
             <svg className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16 text-slate-300 dark:text-slate-600 mb-2 sm:mb-3 md:mb-4" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M2 38H38" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4"/>
               <path d="M2 2V38" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4"/>
-              <rect x="2" y="8" width="22" height="6" fill={theme === 'dark' ? '#475569' : '#e2e8f0'}/>
-              <rect x="2" y="17" width="32" height="6" fill={theme === 'dark' ? '#475569' : '#e2e8f0'}/>
-              <rect x="2" y="26" width="16" height="6" fill={theme === 'dark' ? '#475569' : '#e2e8f0'}/>
+              <rect x="2" y="8" width="22" height="6" fill={gridColor}/>
+              <rect x="2" y="17" width="32" height="6" fill={gridColor}/>
+              <rect x="2" y="26" width="16" height="6" fill={gridColor}/>
             </svg>
             <h2 className="text-base sm:text-lg md:text-xl font-semibold mb-1 sm:mb-2 text-slate-800 dark:text-slate-200 px-2">Confronto Costi</h2>
             <p className="text-xs sm:text-sm md:text-base text-slate-500 dark:text-slate-400 px-3 sm:px-4">I costi dei fondi selezionati appariranno qui.</p>
@@ -241,7 +241,7 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
             />
             <Tooltip
               content={<ChartTooltip sorter={costTooltipSorter} />}
-              cursor={{ fill: 'rgba(100, 116, 139, 0.1)' }}
+              cursor={{ fill: 'rgb(var(--brand-primary-rgb) / 0.1)' }}
               position={tooltipPosition}
               offset={0}
               allowEscapeViewBox={{ x: false, y: false }}

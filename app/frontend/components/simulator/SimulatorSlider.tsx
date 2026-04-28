@@ -34,10 +34,10 @@ interface SimulatorSliderProps {
 }
 
 const ACCENT_COLORS: Record<string, { track: string; thumb: string; ring: string }> = {
-  blue:    { track: 'var(--color-primary-500)', thumb: 'var(--color-primary-600)', ring: 'rgba(59,130,246,0.35)' },
-  emerald: { track: '#10b981',                  thumb: '#059669',                  ring: 'rgba(16,185,129,0.35)' },
-  amber:   { track: '#f59e0b',                  thumb: '#d97706',                  ring: 'rgba(245,158,11,0.35)' },
-  rose:    { track: '#f43f5e',                  thumb: '#e11d48',                  ring: 'rgba(244,63,94,0.35)' },
+  blue: { track: 'var(--brand-accent)', thumb: 'var(--brand-primary)', ring: 'rgb(var(--brand-accent-rgb) / 0.35)' },
+  emerald: { track: 'var(--brand-primary-bright)', thumb: 'var(--brand-primary)', ring: 'rgb(var(--brand-primary-bright-rgb) / 0.35)' },
+  amber: { track: 'var(--brand-accent)', thumb: 'var(--brand-primary-bright)', ring: 'rgb(var(--brand-accent-rgb) / 0.35)' },
+  rose: { track: 'var(--brand-primary)', thumb: 'var(--brand-primary-deep)', ring: 'rgb(var(--brand-primary-rgb) / 0.35)' },
 };
 
 const SimulatorSlider: React.FC<SimulatorSliderProps> = ({

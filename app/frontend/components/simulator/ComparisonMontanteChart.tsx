@@ -41,8 +41,8 @@ const ComparisonTooltip: React.FC<{
     <div
       className="rounded-lg border shadow-lg px-2.5 py-2 sm:px-3 sm:py-2.5"
       style={{
-        backgroundColor: isDark ? '#0f172a' : '#ffffff',
-        borderColor: isDark ? '#334155' : '#e2e8f0',
+        backgroundColor: isDark ? 'rgb(var(--brand-primary-deep-rgb) / 1)' : 'rgb(var(--brand-white-rgb) / 1)',
+        borderColor: isDark ? 'rgb(var(--brand-primary-bright-rgb) / 1)' : 'rgb(var(--brand-accent-surface-rgb) / 1)',
         maxWidth: isSmallScreen ? 200 : 320,
       }}
     >
@@ -55,7 +55,7 @@ const ComparisonTooltip: React.FC<{
           .map((entry) => {
             const m = metaMap.get(entry.dataKey);
             const seriesLabel = m?.label ?? entry.name ?? entry.dataKey;
-            const color = m?.color ?? entry.color ?? '#64748b';
+            const color = m?.color ?? entry.color ?? 'rgb(var(--brand-primary-rgb) / 1)';
             return (
               <div key={entry.dataKey} className="flex items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-1.5 min-w-0">
@@ -88,8 +88,8 @@ const ComparisonMontanteChart: React.FC<ComparisonMontanteChartProps> = ({
   theme,
   tfrDataKey,
 }) => {
-  const tickColor = theme === 'dark' ? '#94a3b8' : '#475569';
-  const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0';
+  const tickColor = theme === 'dark' ? 'rgb(var(--brand-accent-surface-rgb) / 1)' : 'rgb(var(--brand-primary-rgb) / 1)';
+  const gridColor = theme === 'dark' ? 'rgb(var(--brand-primary-bright-rgb) / 1)' : 'rgb(var(--brand-accent-surface-rgb) / 1)';
 
   const [isMobile, setIsMobile] = React.useState(false);
 
@@ -111,7 +111,7 @@ const ComparisonMontanteChart: React.FC<ComparisonMontanteChartProps> = ({
   const allMeta: FundSeriesMeta[] = [
     ...fundsMeta,
     ...(tfrDataKey
-      ? [{ dataKey: tfrDataKey, label: 'TFR in azienda', color: '#ef4444' }]
+      ? [{ dataKey: tfrDataKey, label: 'TFR in azienda', color: 'rgb(var(--brand-chart-5-rgb) / 1)' }]
       : []),
   ];
 
@@ -159,7 +159,7 @@ const ComparisonMontanteChart: React.FC<ComparisonMontanteChartProps> = ({
             type="monotone"
             dataKey={tfrDataKey}
             name="TFR in azienda"
-            stroke="#ef4444"
+            stroke="rgb(var(--brand-chart-5-rgb) / 1)"
             strokeWidth={2}
             strokeDasharray="5 5"
             dot={false}

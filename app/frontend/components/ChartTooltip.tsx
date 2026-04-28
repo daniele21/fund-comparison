@@ -49,7 +49,7 @@ const ChartTooltip: React.FC<ChartTooltipProps> = ({
       className="p-2 sm:p-3 border border-slate-200 dark:border-slate-600 rounded-lg sm:rounded-xl shadow-lg"
       style={{
         opacity: 1,
-        backgroundColor: isDark ? '#0f172a' : '#ffffff',
+        backgroundColor: isDark ? 'rgb(var(--brand-primary-deep-rgb) / 1)' : 'rgb(var(--brand-white-rgb) / 1)',
         zIndex: 9999,
         maxWidth: isMobile ? 220 : 320,
       }}
@@ -72,7 +72,7 @@ const ChartTooltip: React.FC<ChartTooltipProps> = ({
           const color =
             isHighlight && highlightColor
               ? highlightColor
-              : entry.color || entry.stroke || entry.fill || '#64748b';
+              : entry.color || entry.stroke || entry.fill || 'rgb(var(--brand-primary-rgb) / 1)';
           const value = valueFormatter(entry.value as number | string | undefined);
 
           const rowBackground = withAlpha(color, isHighlight ? 0.25 : isDark ? 0.3 : 0.12);

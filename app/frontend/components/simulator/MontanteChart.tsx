@@ -14,10 +14,10 @@ import { formatCurrency } from '../../utils/simulatorCalc';
 
 /* ── Custom tooltip for simulator charts ──────────────────────── */
 const SERIES_META: Record<string, { label: string; color: string }> = {
-  montanteSenzaFiscale: { label: 'Senza beneficio fiscale', color: '#3b82f6' },
-  montanteConFiscale: { label: 'Con beneficio fiscale', color: '#10b981' },
-  montanteTFR: { label: 'TFR in azienda', color: '#ef4444' },
-  versatoCumulato: { label: 'Importi versati', color: '#0f766e' },
+  montanteSenzaFiscale: { label: 'Senza beneficio fiscale', color: 'rgb(var(--brand-chart-1-rgb) / 1)' },
+  montanteConFiscale: { label: 'Con beneficio fiscale', color: 'rgb(var(--brand-chart-2-rgb) / 1)' },
+  montanteTFR: { label: 'TFR in azienda', color: 'rgb(var(--brand-chart-5-rgb) / 1)' },
+  versatoCumulato: { label: 'Importi versati', color: 'rgb(var(--brand-chart-4-rgb) / 1)' },
 };
 
 const SimulatorTooltip: React.FC<{ active?: boolean; payload?: any[]; label?: number; theme: string }> = ({
@@ -34,8 +34,8 @@ const SimulatorTooltip: React.FC<{ active?: boolean; payload?: any[]; label?: nu
     <div
       className="rounded-lg border shadow-lg px-2.5 py-2 sm:px-3 sm:py-2.5"
       style={{
-        backgroundColor: isDark ? '#0f172a' : '#ffffff',
-        borderColor: isDark ? '#334155' : '#e2e8f0',
+        backgroundColor: isDark ? 'rgb(var(--brand-primary-deep-rgb) / 1)' : 'rgb(var(--brand-white-rgb) / 1)',
+        borderColor: isDark ? 'rgb(var(--brand-primary-bright-rgb) / 1)' : 'rgb(var(--brand-accent-surface-rgb) / 1)',
         maxWidth: isSmallScreen ? 200 : 280,
       }}
     >
@@ -48,7 +48,7 @@ const SimulatorTooltip: React.FC<{ active?: boolean; payload?: any[]; label?: nu
           .map((entry: any) => {
             const meta = SERIES_META[entry.dataKey as string];
             const seriesLabel = meta?.label ?? entry.name ?? entry.dataKey;
-            const color = meta?.color ?? entry.color ?? '#64748b';
+            const color = meta?.color ?? entry.color ?? 'rgb(var(--brand-primary-rgb) / 1)';
             return (
               <div key={entry.dataKey} className="flex items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-1.5 min-w-0">
@@ -81,8 +81,8 @@ const MontanteChart: React.FC<MontanteChartProps> = ({
   showTFR = true,
   showVersatoCumulato = false,
 }) => {
-  const tickColor = theme === 'dark' ? '#94a3b8' : '#475569';
-  const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0';
+  const tickColor = theme === 'dark' ? 'rgb(var(--brand-accent-surface-rgb) / 1)' : 'rgb(var(--brand-primary-rgb) / 1)';
+  const gridColor = theme === 'dark' ? 'rgb(var(--brand-primary-bright-rgb) / 1)' : 'rgb(var(--brand-accent-surface-rgb) / 1)';
 
   const [isMobile, setIsMobile] = React.useState(false);
 
@@ -124,20 +124,20 @@ const MontanteChart: React.FC<MontanteChartProps> = ({
       <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="colorMontanteSenzaFiscale" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+            <stop offset="5%" stopColor={SERIES_META.montanteSenzaFiscale.color} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={SERIES_META.montanteSenzaFiscale.color} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="colorMontanteConFiscale" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+            <stop offset="5%" stopColor={SERIES_META.montanteConFiscale.color} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={SERIES_META.montanteConFiscale.color} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="colorMontanteTFR" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2} />
-            <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+            <stop offset="5%" stopColor={SERIES_META.montanteTFR.color} stopOpacity={0.2} />
+            <stop offset="95%" stopColor={SERIES_META.montanteTFR.color} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="colorVersatoCumulato" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#0f766e" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#0f766e" stopOpacity={0} />
+            <stop offset="5%" stopColor={SERIES_META.versatoCumulato.color} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={SERIES_META.versatoCumulato.color} stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
@@ -179,7 +179,7 @@ const MontanteChart: React.FC<MontanteChartProps> = ({
             type="monotone"
             dataKey="montanteTFR"
             name="TFR in azienda"
-            stroke="#ef4444"
+            stroke={SERIES_META.montanteTFR.color}
             strokeWidth={2}
             strokeDasharray="5 5"
             fill="url(#colorMontanteTFR)"
@@ -192,7 +192,7 @@ const MontanteChart: React.FC<MontanteChartProps> = ({
           type="monotone"
           dataKey="montanteSenzaFiscale"
           name="Senza beneficio fiscale"
-          stroke="#3b82f6"
+          stroke={SERIES_META.montanteSenzaFiscale.color}
           strokeWidth={2.5}
           fill="url(#colorMontanteSenzaFiscale)"
           dot={false}
@@ -204,7 +204,7 @@ const MontanteChart: React.FC<MontanteChartProps> = ({
             type="monotone"
             dataKey="montanteConFiscale"
             name="Con beneficio fiscale"
-            stroke="#10b981"
+            stroke={SERIES_META.montanteConFiscale.color}
             strokeWidth={2.5}
             fill="url(#colorMontanteConFiscale)"
             dot={false}
@@ -217,7 +217,7 @@ const MontanteChart: React.FC<MontanteChartProps> = ({
             type="monotone"
             dataKey="versatoCumulato"
             name="Importi versati"
-            stroke="#0f766e"
+            stroke={SERIES_META.versatoCumulato.color}
             strokeWidth={2.5}
             fill="url(#colorVersatoCumulato)"
             dot={false}
