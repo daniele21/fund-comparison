@@ -4,10 +4,10 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  scripts/deploy/deploy_backend.sh --env <test|prod> [--config <path>] [--build]
+  scripts/deploy/deploy_backend.sh --env <name> [--config <path>] [--build]
 
 Options:
-  --env       Target environment (test or prod)
+  --env       Target environment name. Defaults config path to infra/deploy/environments/<name>.env
   --config    Path to environment config file (default: infra/deploy/environments/<env>.env)
   --build     Build and push image with Cloud Build before deploy
 EOF
@@ -49,8 +49,8 @@ if [[ -z "$TARGET_ENV" ]]; then
   exit 1
 fi
 
-if [[ "$TARGET_ENV" != "test" && "$TARGET_ENV" != "prod" ]]; then
-  echo "--env must be one of: test, prod" >&2
+if [[ ! "$TARGET_ENV" =~ ^[A-Za-z0-9._-]+$ ]]; then
+  echo "--env must contain only letters, numbers, dot, underscore, or dash" >&2
   exit 1
 fi
 

@@ -67,6 +67,7 @@ app/backend/deploy_from_env.py
 app/backend/DEPLOY.md
 app/backend/env_prod.json
 app/backend/env_test.json
+app/backend/env_*.json
 infra/deploy/environments/*.env
 infra/deploy/secrets/*.secrets
 app/backend/README_DEPLOY.md

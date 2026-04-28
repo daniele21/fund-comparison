@@ -75,8 +75,32 @@ Ogni file ambiente deve impostare almeno:
 FIREBASE_PROJECT_ID=financial-suite
 FIREBASE_DEPLOY_MODE=live
 FIREBASE_HOSTING_TARGET=app
+BACKEND_ENV_VARS_FILE=app/backend/env_financial_test.json
 FRONTEND_VITE_API_BASE=https://<cloud-run-backend>
 ```
+
+Non riusare lo stesso `app/backend/env_test.json` per progetti diversi. Ogni progetto Firebase/GCP deve avere un proprio file backend locale, per esempio:
+
+```bash
+app/backend/env_financial_test.json
+app/backend/env_accademia_test.json
+```
+
+Questi file sono ignorati da git tramite `app/backend/env_*.json`.
+
+Lo script passa automaticamente al build frontend tutte le variabili con prefisso `FRONTEND_VITE_`, rimuovendo `FRONTEND_`. Per esempio:
+
+```bash
+FRONTEND_VITE_FIREBASE_PROJECT_ID=accademia-previdenza
+```
+
+diventa:
+
+```bash
+VITE_FIREBASE_PROJECT_ID=accademia-previdenza
+```
+
+La configurazione web Firebase (`apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`, `appId`) non e' un secret, ma la API key deve essere limitata nelle impostazioni Google Cloud/Firebase quando possibile.
 
 ## Branch-Based Deploy
 

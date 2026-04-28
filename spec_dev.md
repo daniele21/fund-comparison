@@ -140,6 +140,7 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - API endpoints toccati/nuovi: nessuno.
 - Request/response contracts: nessuno.
 - Validation strategy: lo script valida `--env` con caratteri sicuri e richiede `FIREBASE_PROJECT_ID` dopo eventuale override.
+- Frontend env mapping: tutte le variabili `FRONTEND_VITE_*` vengono passate al build come `VITE_*`, inclusa eventuale configurazione Firebase web per progetto.
 - External integrations coinvolte: Firebase Hosting e Firestore deploy CLI.
 - Backward compatibility considerations: i comandi `scripts/deploy/deploy_frontend.sh --env test|prod` restano validi.
 
@@ -173,6 +174,7 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 ## 10. Acceptance Criteria
 - [x] Alias Firebase configurati per entrambi i progetti.
 - [x] Deploy frontend selezionabile da CLI/CI senza modificare file per branch.
+- [x] Variabili frontend per-progetto supportate tramite mapping `FRONTEND_VITE_*`.
 - [x] Documentazione aggiornata con setup, comandi, rischi e rollback.
 
 ---

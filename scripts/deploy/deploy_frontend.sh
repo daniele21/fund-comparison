@@ -86,19 +86,17 @@ done
 
 echo "Building frontend for ${TARGET_ENV}"
 echo "Using VITE_API_BASE=${FRONTEND_VITE_API_BASE}"
-if [[ -n "${FRONTEND_VITE_PUBLIC_ANALYTICS_KEY:-}" ]]; then
-  (
-    cd app/frontend
-    VITE_API_BASE="$FRONTEND_VITE_API_BASE" \
-    VITE_PUBLIC_ANALYTICS_KEY="$FRONTEND_VITE_PUBLIC_ANALYTICS_KEY" \
-      pnpm build
-  )
-else
-  (
-    cd app/frontend
-    VITE_API_BASE="$FRONTEND_VITE_API_BASE" pnpm build
-  )
-fi
+
+frontend_env=()
+while IFS= read -r var_name; do
+  vite_name="${var_name#FRONTEND_}"
+  frontend_env+=("${vite_name}=${!var_name}")
+done < <(compgen -A variable FRONTEND_VITE_ | sort)
+
+(
+  cd app/frontend
+  env "${frontend_env[@]}" pnpm build
+)
 
 if command -v rg >/dev/null 2>&1; then
   verify_cmd=(rg -q --fixed-strings "${FRONTEND_VITE_API_BASE}" app/frontend/dist)

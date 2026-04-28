@@ -104,6 +104,7 @@ Server:
 - Backend: `app/backend/env_test.json` o `app/backend/env_prod.json` + `--set-secrets`.
 - Frontend: build-time `VITE_API_BASE` dalla config ambiente deploy.
 - Firebase: progetto scelto tramite `FIREBASE_PROJECT_ID` nel file ambiente o `--firebase-project` nello script frontend.
+- Se deployi lo stesso ambiente su progetti Firebase/GCP diversi, usa file backend separati con `BACKEND_ENV_VARS_FILE` (es. `app/backend/env_accademia_test.json`) invece di modificare ogni volta `app/backend/env_test.json`.
 
 ## Verifiche post-deploy
 
