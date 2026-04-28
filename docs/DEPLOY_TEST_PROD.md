@@ -71,6 +71,9 @@ Note:
 - Il build usa `FRONTEND_VITE_API_BASE` dal file ambiente.
 - In `test`, usa `FIREBASE_DEPLOY_MODE=channel` + `FIREBASE_CHANNEL_ID=test`.
 - In `prod`, usa `FIREBASE_DEPLOY_MODE=live`.
+- `FIREBASE_PROJECT_ID` puo' essere `financial-suite` o `accademia-previdenza`.
+- Per override esplicito del progetto in CI: `scripts/deploy/deploy_frontend.sh --env prod --firebase-project financial` oppure `--firebase-project accademia`.
+- Per il flusso branch-based tra i due progetti Firebase, vedi `docs/FIREBASE_MULTI_PROJECT_DEPLOY.md`.
 
 ## Deploy completo backend + frontend
 
@@ -100,6 +103,7 @@ Locale:
 Server:
 - Backend: `app/backend/env_test.json` o `app/backend/env_prod.json` + `--set-secrets`.
 - Frontend: build-time `VITE_API_BASE` dalla config ambiente deploy.
+- Firebase: progetto scelto tramite `FIREBASE_PROJECT_ID` nel file ambiente o `--firebase-project` nello script frontend.
 
 ## Verifiche post-deploy
 

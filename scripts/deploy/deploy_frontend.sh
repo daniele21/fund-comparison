@@ -4,16 +4,19 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  scripts/deploy/deploy_frontend.sh --env <test|prod> [--config <path>]
+  scripts/deploy/deploy_frontend.sh --env <name> [--config <path>] [--firebase-project <project-id-or-alias>]
 
 Options:
-  --env       Target environment (test or prod)
+  --env       Target environment name. Defaults config path to infra/deploy/environments/<name>.env
   --config    Path to environment config file (default: infra/deploy/environments/<env>.env)
+  --firebase-project
+              Override FIREBASE_PROJECT_ID from the config file. Useful for branch-based deploys.
 EOF
 }
 
 TARGET_ENV=""
 CONFIG_FILE=""
+FIREBASE_PROJECT_OVERRIDE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -23,6 +26,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --config)
       CONFIG_FILE="${2:-}"
+      shift 2
+      ;;
+    --firebase-project)
+      FIREBASE_PROJECT_OVERRIDE="${2:-}"
       shift 2
       ;;
     -h|--help)
@@ -43,8 +50,8 @@ if [[ -z "$TARGET_ENV" ]]; then
   exit 1
 fi
 
-if [[ "$TARGET_ENV" != "test" && "$TARGET_ENV" != "prod" ]]; then
-  echo "--env must be one of: test, prod" >&2
+if [[ ! "$TARGET_ENV" =~ ^[A-Za-z0-9._-]+$ ]]; then
+  echo "--env must contain only letters, numbers, dot, underscore, or dash" >&2
   exit 1
 fi
 
@@ -60,6 +67,10 @@ fi
 
 # shellcheck disable=SC1090
 source "$CONFIG_FILE"
+
+if [[ -n "$FIREBASE_PROJECT_OVERRIDE" ]]; then
+  FIREBASE_PROJECT_ID="$FIREBASE_PROJECT_OVERRIDE"
+fi
 
 required_vars=(
   FIREBASE_PROJECT_ID
@@ -117,5 +128,9 @@ if [[ "$FIREBASE_DEPLOY_MODE" == "channel" ]]; then
   fi
 else
   echo "Deploying Hosting live on project ${FIREBASE_PROJECT_ID}"
-  firebase deploy --only hosting --project "$FIREBASE_PROJECT_ID"
+  if [[ -n "${FIREBASE_HOSTING_TARGET:-}" ]]; then
+    firebase deploy --only "hosting:${FIREBASE_HOSTING_TARGET}" --project "$FIREBASE_PROJECT_ID"
+  else
+    firebase deploy --only hosting --project "$FIREBASE_PROJECT_ID"
+  fi
 fi

@@ -1,12 +1,21 @@
 {
   "projects": {
-    "default": "financial-suite"
+    "default": "financial-suite",
+    "financial": "financial-suite",
+    "accademia": "accademia-previdenza"
   },
   "targets": {
     "financial-suite": {
       "hosting": {
         "app": [
           "fund-comparison-0685938029"
+        ]
+      }
+    },
+    "accademia-previdenza": {
+      "hosting": {
+        "app": [
+          "accademia-previdenza"
         ]
       }
     }

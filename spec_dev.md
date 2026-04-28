@@ -104,6 +104,79 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 
 ---
 
+## Feature Note - Firebase Multi-Project Deploy
+
+## 1. Overview
+- Feature name: Deploy Firebase selezionabile tra Financial Suite e Accademia Previdenza
+- Owner: Codex
+- Date: 2026-04-28
+- Status: `done`
+- Related issue/PR: n/a
+
+## 2. Problem Statement
+- Current behavior: `.firebaserc` puntava solo a `financial-suite` e la documentazione conteneva project id legacy non allineati.
+- Pain points: per dedicare branch diversi a progetti Firebase diversi sarebbe stato necessario modificare configurazioni per branch, aumentando il rischio di divergenza.
+- Impatto su utenti/business: deploy piu' esposto a errori di progetto, target Hosting o backend API.
+
+## 3. Goals and Non-Goals
+### Goals
+- Aggiungere alias Firebase per `financial-suite` e `accademia-previdenza`.
+- Mantenere `firebase.json` unico con target logico `app`.
+- Consentire override progetto nello script frontend per CI branch-based.
+- Documentare setup, verifica, rischi e rollback.
+
+### Non-Goals
+- Nessun deploy eseguito.
+- Nessuna modifica a Cloud Run, auth, billing, ruoli o Firestore rules.
+- Nessuna introduzione di segreti o file env reali versionati.
+
+## 4. Scope
+- Frontend scope (`app/frontend/...`): nessuno.
+- Backend scope (`app/backend/...`): nessuno.
+- Data/config scope (`data/`, `infra/`, env vars): `.firebaserc`, deploy frontend script, documentazione Firebase.
+- Out of scope: provisioning dei siti Firebase e creazione database Firestore.
+
+## 5. Technical Design
+- API endpoints toccati/nuovi: nessuno.
+- Request/response contracts: nessuno.
+- Validation strategy: lo script valida `--env` con caratteri sicuri e richiede `FIREBASE_PROJECT_ID` dopo eventuale override.
+- External integrations coinvolte: Firebase Hosting e Firestore deploy CLI.
+- Backward compatibility considerations: i comandi `scripts/deploy/deploy_frontend.sh --env test|prod` restano validi.
+
+## 6. Security and Permissions
+- Auth model coinvolto: nessun impatto.
+- Role/plan checks richiesti: nessun impatto.
+- Dati sensibili trattati: nessuno.
+- Rischi sicurezza e mitigazioni: nessun secret aggiunto; project selection esplicita in script e docs.
+
+## 7. Testing Strategy
+- Unit tests: n/a.
+- Route/API tests: n/a.
+- Integration tests: n/a.
+- UI/manual QA scenarios: n/a.
+- Commands to run:
+  - Config: `bash -n scripts/deploy/deploy_frontend.sh`
+  - Docs/config inspection: `git diff --check`
+
+## 8. Documentation Deliverables
+- Files aggiornati in `docs/`: `docs/FIREBASE_MULTI_PROJECT_DEPLOY.md`, `docs/DEPLOY_TEST_PROD.md`.
+- `README.md` update richiesto: `yes`.
+- Runbook/operational notes: `infra/firebase/README.md`.
+
+## 9. Rollout and Risk Management
+- Rollout plan: verificare site id Hosting nei due progetti, poi usare branch CI con `--firebase-project`.
+- Deploy targets: `financial-suite | accademia-previdenza`.
+- Env/secrets changes: nessun secret; eventuali file env reali devono restare ignorati.
+- Monitoring after deploy: URL Hosting, SPA refresh, OAuth redirect, API base, service worker.
+- Rollback plan: rollback release Hosting o revert `.firebaserc`/script.
+
+## 10. Acceptance Criteria
+- [x] Alias Firebase configurati per entrambi i progetti.
+- [x] Deploy frontend selezionabile da CLI/CI senza modificare file per branch.
+- [x] Documentazione aggiornata con setup, comandi, rischi e rollback.
+
+---
+
 ## Feature Note - Branding Accademia Previdenza e Rating Comparti
 
 ## 1. Overview

@@ -243,12 +243,14 @@ When changing cache behavior, app shell, or precached assets, update `CACHE_VERS
 |---|---|
 | `scripts/deploy/deploy_backend.sh --env test --build` | Builds and deploys the test backend to Cloud Run |
 | `scripts/deploy/deploy_frontend.sh --env test` | Builds and deploys the test frontend to Firebase Hosting |
+| `scripts/deploy/deploy_frontend.sh --env prod --firebase-project financial` | Deploys frontend Hosting to `financial-suite` |
+| `scripts/deploy/deploy_frontend.sh --env prod --firebase-project accademia` | Deploys frontend Hosting to `accademia-previdenza` |
 | `scripts/deploy/deploy_all.sh --env test --build-backend` | Runs a full test deployment |
 | `scripts/deploy/deploy_all.sh --env prod --build-backend` | Runs a full production deployment |
 
 ## Test/Prod Deployment
 
-The recommended workflow is documented in [DEPLOY_TEST_PROD.md](docs/DEPLOY_TEST_PROD.md).
+The recommended environment workflow is documented in [DEPLOY_TEST_PROD.md](docs/DEPLOY_TEST_PROD.md). Firebase Hosting can be deployed to either `financial-suite` or `accademia-previdenza`; see [FIREBASE_MULTI_PROJECT_DEPLOY.md](docs/FIREBASE_MULTI_PROJECT_DEPLOY.md) for branch-based project selection.
 
 One-time setup:
 

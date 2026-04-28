@@ -1,12 +1,19 @@
 # Firebase Deployment
 
-This directory holds the Firebase configuration for the project. The repo is now ready to deploy the Vite frontend to Firebase Hosting and manage Firestore security rules/indexes through the Firebase CLI.
+This directory holds the Firebase configuration for the project. The repo can deploy the Vite frontend to Firebase Hosting and manage Firestore security rules/indexes through the Firebase CLI.
+
+The repository supports two Firebase projects through `.firebaserc` aliases:
+
+- `financial` -> `financial-suite`
+- `accademia` -> `accademia-previdenza`
+
+Use [Firebase multi-project deploy](../../docs/FIREBASE_MULTI_PROJECT_DEPLOY.md) for the branch-based deployment flow.
 
 ## Prerequisites
 
 - Node.js 18+ and either `pnpm` (preferred) or `npm` available on your PATH
 - Firebase CLI: `npm install -g firebase-tools`
-- Access to the Firebase project `financial-porforlio-analyser` (or update `.firebaserc` with your project id)
+- Access to the Firebase project you want to deploy to: `financial-suite` or `accademia-previdenza`
 
 ## One-time setup
 
@@ -14,10 +21,10 @@ This directory holds the Firebase configuration for the project. The repo is now
 # Authenticate the CLI
 firebase login
 
-# Verify you are pointing at the right project
-firebase apps:list
-# or explicitly select the default project
-firebase use gen-lang-client-0685938029
+# Verify aliases and the selected project
+firebase projects:list
+firebase use financial
+firebase use accademia
 ```
 
 If you plan to use the emulators locally, start them with:
@@ -35,8 +42,9 @@ pnpm --dir app/frontend install
 # Build the production bundle
 pnpm --dir app/frontend build
 
-# Deploy static hosting + Firestore rules/indexes
-firebase deploy --only hosting,firestore
+# Deploy static hosting + Firestore rules/indexes to the selected project
+firebase deploy --only hosting,firestore --project financial
+firebase deploy --only hosting,firestore --project accademia
 ```
 
 For a two-environment flow (`test`/`prod`) with Cloud Run + Hosting, use the dedicated runbook:
@@ -46,6 +54,7 @@ For a two-environment flow (`test`/`prod`) with Cloud Run + Hosting, use the ded
 In particular:
 - `test` can be deployed to a Hosting preview channel (`firebase hosting:channel:deploy ...`)
 - `prod` should deploy to live Hosting (`firebase deploy --only hosting`)
+- project selection must be explicit with `--project` or `FIREBASE_PROJECT_ID`.
 
 The Hosting configuration in `firebase.json` serves the contents of `app/frontend/dist` and rewrites all requests to `index.html` so client-side routing works. Remember to set `VITE_API_BASE` during your frontend build so calls go to the deployed backend (for example a Cloud Run URL).
 
