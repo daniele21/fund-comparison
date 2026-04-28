@@ -124,3 +124,69 @@ export interface SimulatorResult {
   montanteNetto: number;
   rendimentoNettoPercentuale: number;
 }
+
+export interface SimulationReportInput {
+  funds: PensionFund[];
+  montanteIniziale: number;
+  contributoVolontarioAnnuo: number;
+  orizzonteAnni: number;
+  ral: number;
+  annoPrimaAdesione: number;
+  generatedAt: Date;
+}
+
+export interface SimulationReportChartPoint {
+  anno: number;
+  tfr: number;
+  [seriesKey: string]: number;
+}
+
+export interface SimulationReportFundMeta {
+  dataKey: string;
+  label: string;
+  color: string;
+}
+
+export interface SimulationFundResult {
+  fund: PensionFund;
+  color: string;
+  dataKey: string;
+  tassoRendimento: number;
+  rendimentoLabel: string;
+  rendimentoYears: number;
+  totaleVersato: number;
+  montanteFinale: number;
+  guadagnoRendimenti: number;
+  rendimentoPercentuale: number;
+  risparmioAnnuo: number;
+  risparmioFiscaleTotale: number;
+  montanteConFiscale: number;
+  differenzaMontante: number;
+  differenzaPercentuale: number;
+  aliquotaMarginale: number;
+  aliquotaSostitutiva: number;
+  anniPartecipazione: number;
+  montanteNetto: number;
+  impostaSostitutiva: number;
+  rendimentoNettoPercentuale: number;
+}
+
+export interface SimulationReportModel {
+  generatedAt: Date;
+  parameters: {
+    montanteIniziale: number;
+    contributoVolontarioAnnuo: number;
+    tfrAnnuoDatore: number;
+    contributoTotaleAnnuo: number;
+    ral: number;
+    orizzonteAnni: number;
+    annoPrimaAdesione: number;
+  };
+  funds: SimulationFundResult[];
+  fundsMeta: SimulationReportFundMeta[];
+  chartData: {
+    montante: SimulationReportChartPoint[];
+    fiscale: SimulationReportChartPoint[];
+    netto: SimulationReportChartPoint[];
+  };
+}

@@ -259,6 +259,84 @@ textarea {
   font-size: 16px; /* Prevents iOS zoom on focus */
 }
 
+/* Printable simulator report: kept measurable for Recharts, hidden from the interactive UI. */
+.simulation-print-report,
+.fund-comparison-print-report {
+  position: fixed;
+  top: 0;
+  left: -10000px;
+  width: 794px;
+  min-height: 1123px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    overflow: visible !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .simulation-print-report,
+  .simulation-print-report *,
+  .fund-comparison-print-report,
+  .fund-comparison-print-report * {
+    visibility: visible !important;
+  }
+
+  .simulation-print-report,
+  .fund-comparison-print-report {
+    position: absolute !important;
+    inset: 0 auto auto 0 !important;
+    z-index: 99999 !important;
+    width: 100% !important;
+    min-height: auto !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    color: #0f172a !important;
+    background: #ffffff !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .simulation-print-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 18px;
+  }
+
+  .print-report-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 18px;
+  }
+
+  .simulation-print-report .recharts-wrapper,
+  .simulation-print-report .recharts-responsive-container,
+  .simulation-print-report svg,
+  .fund-comparison-print-report .recharts-wrapper,
+  .fund-comparison-print-report .recharts-responsive-container,
+  .fund-comparison-print-report svg {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .simulation-print-report button,
+  .fund-comparison-print-report button {
+    display: none !important;
+  }
+}
+
 /* Mobile-optimized scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

@@ -696,3 +696,42 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 ### Rischi aperti e rollback
 - Rischio: componenti con SVG/asset esterni possono mantenere colori propri se sono loghi o icone provider.
 - Rollback: riportare `FIREBASE_PROJECT_BRAND_STYLES` a un solo mapping `legacy` e redeploy frontend.
+
+---
+
+## Feature Note - Export PDF Simulazione e Confronto Fondi (2026-04-28)
+
+### Scope e motivazione
+- Aggiunta esportazione PDF client-side del simulatore tramite `window.print()`.
+- Il report include fondi selezionati, parametri, KPI dei tre step, grafici e disclaimer.
+- Il pulsante e' visibile ma disabilitato finche' non viene selezionato almeno un fondo.
+- Aggiunta esportazione PDF anche alla sezione Confronta Fondi con riepilogo fondi, rating, performance e costi.
+
+### Impatti frontend/backend/config
+- Frontend:
+  - `SimulatorPage` espone CTA export e decide i fondi esportabili da modalita' singola/confronto.
+  - `SimulationPdfReport` renderizza la vista stampabile.
+  - `VisualComparison` espone CTA export per il confronto.
+  - `FundComparisonPdfReport` renderizza il report confronto fondi.
+  - `buildSimulationReportModel` centralizza i dati del report con tipi espliciti.
+  - `index.css` contiene regole print dedicate per nascondere la UI interattiva e mostrare solo il report attivo.
+- Backend/config: nessun endpoint, secret o configurazione nuova.
+
+### Contratti/tipi aggiornati
+- Aggiunti tipi frontend:
+  - `SimulationReportInput`;
+  - `SimulationFundResult`;
+  - `SimulationReportModel`;
+  - tipi di supporto per chart point e metadata.
+- Nessuna modifica a contratti API.
+
+### Piano test e risultati
+- Eseguito: `cd app/frontend && pnpm build`.
+- Risultato: build ok; resta warning Vite preesistente su chunk > 500 kB.
+- Eseguito: `cd app/frontend && pnpm exec tsc --noEmit`.
+- Risultato: KO per errori TypeScript preesistenti in componenti animazione/recharts/import-meta/hook feedback e `data/funds copy.ts`.
+- Rieseguito `pnpm build` dopo aggiunta export confronto fondi: ok.
+
+### Rischi aperti e rollback
+- Rischio: preview PDF browser-specific sui grafici Recharts; QA manuale richiesta su Chrome/Safari.
+- Rollback: rimuovere viste report, utility modello, CTA export e CSS print, poi redeploy frontend.

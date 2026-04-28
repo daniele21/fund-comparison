@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { Download, FileText } from 'lucide-react';
 import type { PensionFund } from '../../types';
 import { pensionFundsData } from '../../data/funds';
 import { getRendimentoProxyWithLabel, formatPercentage } from '../../utils/simulatorCalc';
-import { formatFundLabel } from '../../utils/fundLabel';
+import { buildSimulationReportModel } from '../../utils/simulationReport';
 import { useAuth } from '../../auth';
 import { SUBSCRIPTION_URL } from '../../constants';
 import { useGuidedComparator, MAX_SIMULATION_FUNDS } from '../guided/GuidedComparatorContext';
@@ -10,6 +11,7 @@ import StepMontante from './StepMontante';
 import StepFiscale from './StepFiscale';
 import StepImpostaPensione from './StepImpostaPensione';
 import SimulatorDisclaimer from './SimulatorDisclaimer';
+import SimulationPdfReport from './SimulationPdfReport';
 import SectionHeader from '../common/SectionHeader';
 import GuidedTour, { useGuidedTour, FirstVisitBanner } from '../common/GuidedTour';
 import { simulatorTourSteps } from '../../config/tourSteps';
@@ -377,8 +379,59 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
   const [tassoRendimento, setTassoRendimento] = useState(5.0);
   const [ral, setRal] = useState(30000);
   const [annoPrimaAdesione, setAnnoPrimaAdesione] = useState(2020);
+  const [reportGeneratedAt, setReportGeneratedAt] = useState(() => new Date());
+  const [printQueued, setPrintQueued] = useState(false);
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === activeStep);
+
+  const exportFunds = useMemo(() => {
+    if (isComparisonMode) return comparisonFunds;
+    return activeFunds;
+  }, [activeFunds, comparisonFunds, isComparisonMode]);
+
+  const canExportPdf = exportFunds.length >= 1;
+
+  const reportModel = useMemo(() => {
+    if (!canExportPdf) return null;
+
+    return buildSimulationReportModel({
+      funds: exportFunds,
+      montanteIniziale,
+      contributoVolontarioAnnuo,
+      orizzonteAnni,
+      ral,
+      annoPrimaAdesione,
+      generatedAt: reportGeneratedAt,
+    });
+  }, [
+    annoPrimaAdesione,
+    canExportPdf,
+    contributoVolontarioAnnuo,
+    exportFunds,
+    montanteIniziale,
+    orizzonteAnni,
+    ral,
+    reportGeneratedAt,
+  ]);
+
+  const handleExportPdf = useCallback(() => {
+    if (!canExportPdf) return;
+    setReportGeneratedAt(new Date());
+    setPrintQueued(true);
+  }, [canExportPdf]);
+
+  React.useEffect(() => {
+    if (!printQueued || !reportModel) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.print();
+        setPrintQueued(false);
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [printQueued, reportModel]);
 
   const goNext = useCallback(() => {
     const next = Math.min(STEPS.length - 1, currentStepIndex + 1);
@@ -541,6 +594,36 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
 
       {/* ── Fund Selector with mode toggle ────────────────── */}
       <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:bg-slate-800/60 dark:border-slate-800 p-3 sm:p-5 md:p-6 shadow-sm" data-tour="fund-selector">
+        <div className="mb-5 flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/40 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white text-blue-600 shadow-sm dark:bg-slate-800 dark:text-blue-400">
+              <FileText className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Esporta simulazione in PDF</h3>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                {canExportPdf
+                  ? `Il report includera ${exportFunds.length === 1 ? 'il fondo selezionato' : `${exportFunds.length} fondi selezionati`}, parametri, grafici e riepilogo fiscale.`
+                  : 'Seleziona almeno un fondo per esportare il report completo della simulazione.'}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            disabled={!canExportPdf}
+            aria-disabled={!canExportPdf}
+            className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+              canExportPdf
+                ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700 hover:shadow-md focus-visible:outline-blue-600'
+                : 'cursor-not-allowed border border-slate-200 bg-white text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500'
+            }`}
+          >
+            <Download className="h-4 w-4" aria-hidden="true" />
+            Esporta PDF
+          </button>
+        </div>
+
         {/* Mode toggle (only for paid users) */}
         {!isFreePlan && (
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-5 pb-4 border-b border-slate-200 dark:border-slate-700">
@@ -733,6 +816,8 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
         storageKey="simulator"
         showSkipButton={true}
       />
+
+      {reportModel && <SimulationPdfReport model={reportModel} />}
     </div>
   );
 };
