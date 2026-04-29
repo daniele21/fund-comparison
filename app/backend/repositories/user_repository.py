@@ -157,7 +157,19 @@ class FirestoreUserRepository:
 
     async def list_pending_users(self, *, limit: int = 25) -> ListUsersResult:
         """Get all users with pending status (awaiting admin approval)."""
-        return await self.list(limit=limit, status="pending")
+        limit = max(1, min(limit, 100))
+
+        def _query():
+            query = self._collection.where(
+                filter=firestore.FieldFilter("status", "==", "pending")
+            ).limit(limit)
+            return list(query.stream())
+
+        snapshots = await asyncio.to_thread(_query)
+        items = [self._serialize(s.id, s.to_dict() or {}) for s in snapshots]
+        items.sort(key=lambda item: item.get("created_at") or "", reverse=True)
+        next_cursor = snapshots[-1].id if snapshots and len(snapshots) == limit else None
+        return ListUsersResult(items=items, next_cursor=next_cursor)
 
     async def delete(self, user_id: str) -> None:
         await asyncio.to_thread(lambda: self._collection.document(user_id).delete())
