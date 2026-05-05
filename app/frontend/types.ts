@@ -133,6 +133,7 @@ export interface SimulationReportInput {
   ral: number;
   annoPrimaAdesione: number;
   generatedAt: Date;
+  customerEmail?: string | null;
 }
 
 export interface SimulationReportChartPoint {
@@ -173,6 +174,7 @@ export interface SimulationFundResult {
 
 export interface SimulationReportModel {
   generatedAt: Date;
+  customerEmail?: string | null;
   parameters: {
     montanteIniziale: number;
     contributoVolontarioAnnuo: number;

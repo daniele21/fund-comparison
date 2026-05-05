@@ -51,6 +51,7 @@ export const buildSimulationReportModel = (input: SimulationReportInput): Simula
     ral,
     annoPrimaAdesione,
     generatedAt,
+    customerEmail,
   } = input;
 
   const annoCorrente = generatedAt.getFullYear();
@@ -123,6 +124,7 @@ export const buildSimulationReportModel = (input: SimulationReportInput): Simula
 
   return {
     generatedAt,
+    customerEmail,
     parameters: {
       montanteIniziale,
       contributoVolontarioAnnuo,

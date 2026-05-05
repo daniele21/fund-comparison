@@ -402,6 +402,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
       ral,
       annoPrimaAdesione,
       generatedAt: reportGeneratedAt,
+      customerEmail: user?.email ?? null,
     });
   }, [
     annoPrimaAdesione,
@@ -412,6 +413,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
     orizzonteAnni,
     ral,
     reportGeneratedAt,
+    user?.email,
   ]);
 
   const handleExportPdf = useCallback(() => {

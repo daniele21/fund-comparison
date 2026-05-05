@@ -1,6 +1,7 @@
 import React from 'react';
 import { Download, FileText } from 'lucide-react';
 import { PensionFund } from '@/types';
+import { useAuth } from '@/auth';
 import { useGuidedComparator, MAX_SELECTED_FUNDS, MIN_SELECTED_FUNDS_FOR_COMPARE } from './guided/GuidedComparatorContext';
 import SelectedFundsBar from './SelectedFundsBar';
 import PerformanceChart from './PerformanceChart';
@@ -14,6 +15,7 @@ interface VisualComparisonProps {
 }
 
 const VisualComparison: React.FC<VisualComparisonProps> = ({ appSelectedFunds, fundById, theme }) => {
+  const { user } = useAuth();
   const { selectedFundIds, toggleSelectedFund, clearSelectedFunds } = useGuidedComparator();
   const [reportGeneratedAt, setReportGeneratedAt] = React.useState(() => new Date());
   const [printQueued, setPrintQueued] = React.useState(false);
@@ -106,6 +108,7 @@ const VisualComparison: React.FC<VisualComparisonProps> = ({ appSelectedFunds, f
         funds={fundsToShow}
         selectedFundIds={exportFundIds}
         generatedAt={reportGeneratedAt}
+        customerEmail={user?.email ?? null}
       />
     </div>
   );

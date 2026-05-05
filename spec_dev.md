@@ -699,11 +699,12 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 
 ---
 
-## Feature Note - Export PDF Simulazione e Confronto Fondi (2026-04-28)
+## Feature Note - Export PDF Simulazione e Confronto Fondi (2026-04-28, aggiornato 2026-05-05)
 
 ### Scope e motivazione
 - Aggiunta esportazione PDF client-side del simulatore tramite `window.print()`.
-- Il report include fondi selezionati, parametri, KPI dei tre step, grafici e disclaimer.
+- Il report include fondi selezionati, parametri, KPI dei tre step, grafici, commenti narrativi e disclaimer.
+- I layout stampabili seguono template A4 fissi a tre pagine, coerenti con gli esempi di report singolo fondo e confronto piu' fondi.
 - Il pulsante e' visibile ma disabilitato finche' non viene selezionato almeno un fondo.
 - Aggiunta esportazione PDF anche alla sezione Confronta Fondi con riepilogo fondi, rating, performance e costi.
 
@@ -713,8 +714,10 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
   - `SimulationPdfReport` renderizza la vista stampabile.
   - `VisualComparison` espone CTA export per il confronto.
   - `FundComparisonPdfReport` renderizza il report confronto fondi.
+  - `PdfReportLayout` centralizza header, footer, sezioni, metriche e disclaimer.
+  - `pdfReportNarratives` genera executive summary e commenti deterministici da fondi/risultati.
   - `buildSimulationReportModel` centralizza i dati del report con tipi espliciti.
-  - `index.css` contiene regole print dedicate per nascondere la UI interattiva e mostrare solo il report attivo.
+  - `index.css` contiene regole print dedicate per nascondere la UI interattiva e mostrare solo il report attivo in A4 con page break espliciti.
 - Backend/config: nessun endpoint, secret o configurazione nuova.
 
 ### Contratti/tipi aggiornati
@@ -723,6 +726,7 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
   - `SimulationFundResult`;
   - `SimulationReportModel`;
   - tipi di supporto per chart point e metadata.
+- `SimulationReportInput` e `SimulationReportModel` includono `customerEmail?: string | null` per riportare l'indirizzo nel footer del PDF senza introdurre persistenza.
 - Nessuna modifica a contratti API.
 
 ### Piano test e risultati
@@ -730,8 +734,9 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - Risultato: build ok; resta warning Vite preesistente su chunk > 500 kB.
 - Eseguito: `cd app/frontend && pnpm exec tsc --noEmit`.
 - Risultato: KO per errori TypeScript preesistenti in componenti animazione/recharts/import-meta/hook feedback e `data/funds copy.ts`.
-- Rieseguito `pnpm build` dopo aggiunta export confronto fondi: ok.
+- Rieseguito `pnpm build` dopo template A4 a tre pagine: ok.
 
 ### Rischi aperti e rollback
 - Rischio: preview PDF browser-specific sui grafici Recharts; QA manuale richiesta su Chrome/Safari.
-- Rollback: rimuovere viste report, utility modello, CTA export e CSS print, poi redeploy frontend.
+- Rischio: testi narrativi o nomi fondo molto lunghi possono richiedere ritocco puntuale di spacing/font in preview A4.
+- Rollback: rimuovere viste report aggiornate, primitive PDF, utility narrative, campo `customerEmail` e CSS print A4, poi redeploy frontend.

@@ -1,7 +1,7 @@
 # Export PDF simulazione e confronto fondi
 
 ## Scope e motivazione
-La feature consente di esportare la simulazione previdenziale e il confronto fondi in PDF generati dal browser tramite stampa/salva PDF. L'obiettivo e' produrre report leggibili con gli stessi elementi principali della webapp: fondi selezionati, parametri, KPI, grafici, costi, rendimenti e disclaimer.
+La feature consente di esportare la simulazione previdenziale e il confronto fondi in PDF generati dal browser tramite stampa/salva PDF. L'obiettivo e' produrre report leggibili in formato A4, con struttura fissa a tre pagine: fondi selezionati, parametri, KPI, grafici, costi, rendimenti, commenti narrativi e disclaimer.
 
 ## Comportamento utente - simulatore
 - Il blocco "Esporta simulazione in PDF" e' visibile nel simulatore vicino al selettore fondi.
@@ -13,15 +13,19 @@ La feature consente di esportare la simulazione previdenziale e il confronto fon
 ## Comportamento utente - confronto fondi
 - Il blocco "Esporta confronto in PDF" e' visibile nella sezione Confronta Fondi.
 - Il pulsante resta disabilitato finche' non viene selezionato almeno un fondo.
-- Il report include pill dei fondi selezionati, card riepilogative, badge per miglior rendimento/costi minori, grafico performance e grafico costi.
+- Il report include fondi selezionati, badge per miglior rendimento/costi minori/rating, grafico performance, grafico costi, tabella riepilogativa e commento finale.
 - Con 2-3 fondi il report e' comparativo; con un solo fondo diventa un riepilogo stampabile del fondo selezionato.
 
 ## Design tecnico
 - Nessun endpoint backend e nessuna nuova dipendenza PDF.
 - L'export usa `window.print()` e viste React stampabili nascoste dalla UI interattiva.
-- Il modello dati del report e' costruito da `buildSimulationReportModel`, con tipi espliciti in `app/frontend/types.ts`.
-- Il report confronto fondi usa `FundComparisonPdfReport` e riusa `PerformanceChart`/`CostChart`.
-- I report forzano resa chiara su sfondo bianco, nascondono la chrome applicativa in stampa e mantengono sezioni/grafici con page break controllati.
+- Il modello dati del report simulazione e' costruito da `buildSimulationReportModel`, con tipi espliciti in `app/frontend/types.ts` e `customerEmail` opzionale.
+- I report usano primitive condivise in `app/frontend/components/reports/PdfReportLayout.tsx`.
+- I testi deterministici di executive summary/commenti sono in `app/frontend/utils/pdfReportNarratives.ts`.
+- `SimulationPdfReport` renderizza sempre tre pagine A4: copertina/parametri, crescita+beneficio fiscale, netto+TFR.
+- `FundComparisonPdfReport` renderizza sempre tre pagine A4: copertina/metodologia, confronto performance, confronto costi.
+- Il report confronto fondi riusa `PerformanceChart`/`CostChart` in modalita' compatta.
+- I report forzano resa chiara su sfondo bianco, nascondono la chrome applicativa in stampa e usano `@page A4` con page break espliciti.
 - Tutti i calcoli restano client-side; i dati di simulazione non vengono salvati o trasmessi.
 
 ## Test e QA
@@ -35,8 +39,10 @@ QA manuale consigliato prima del rilascio:
 - Modalita' confronto: export con 2-3 fondi e grafici leggibili.
 - Utente Free: export visibile ma bloccato con microcopy coerente.
 - Chrome/Safari: stampa/salva PDF con grafici, KPI e disclaimer visibili.
+- Preview PDF: verificare che ogni report resti su tre pagine A4 e che il footer mostri pagina/email.
 - Confronto Fondi: export con 1, 2 e 3 fondi; verifica badge miglior rendimento/costi minori e grafici leggibili.
 
 ## Rischi e rollback
 - Rischio principale: i grafici Recharts possono dipendere dal layout del browser durante la stampa; verificare sempre preview PDF su browser target.
-- Rollback: rimuovere `SimulationPdfReport`, `FundComparisonPdfReport`, `buildSimulationReportModel`, i blocchi export in `SimulatorPage`/`VisualComparison` e le regole print in `index.css`, poi redeploy frontend.
+- Rischio secondario: testi narrativi lunghi o nomi fondo molto estesi possono richiedere micro-regolazioni di font/spacing per restare nei vincoli A4.
+- Rollback: ripristinare `SimulationPdfReport`, `FundComparisonPdfReport`, `CostChart`, `buildSimulationReportModel`, i blocchi export in `SimulatorPage`/`VisualComparison` e le regole print in `index.css`, poi redeploy frontend.

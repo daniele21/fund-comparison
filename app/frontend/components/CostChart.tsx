@@ -209,10 +209,16 @@ const CostChart: React.FC<CostChartProps> = ({ selectedFunds, theme, isCompact =
 
   return (
     <div className={`${isCompact ? '' : 'p-2 sm:p-3 md:p-4 lg:p-6 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm border border-slate-200 dark:border-slate-700'} min-w-0 overflow-hidden`}>
-       <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-800 dark:text-slate-200 px-1">Confronto Costi (ISC %)</h2>
-       <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2 sm:mb-3 md:mb-4 bg-slate-50 dark:bg-slate-700/50 p-2 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 mt-2">
-           L'<strong>Indicatore Sintetico di Costo (ISC)</strong> mostra l'impatto percentuale dei costi sul montante accumulato{!isMobile && ', anno dopo anno'}. <strong>Una linea più bassa significa un fondo più efficiente.</strong>
-       </p>
+       {isCompact ? (
+         <h3 className="text-sm sm:text-base md:text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2 sm:mb-3 md:mb-4 px-1">Costi (ISC %)</h3>
+       ) : (
+         <>
+           <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-800 dark:text-slate-200 px-1">Confronto Costi (ISC %)</h2>
+           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2 sm:mb-3 md:mb-4 bg-slate-50 dark:bg-slate-700/50 p-2 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 mt-2">
+               L'<strong>Indicatore Sintetico di Costo (ISC)</strong> mostra l'impatto percentuale dei costi sul montante accumulato{!isMobile && ', anno dopo anno'}. <strong>Una linea più bassa significa un fondo più efficiente.</strong>
+           </p>
+         </>
+       )}
       <div ref={chartWrapperRef} className="min-w-0" style={{ width: '100%', height: isMobile ? (isCompact ? 200 : 250) : (isCompact ? 280 : 380) }}>
         <ResponsiveContainer>
           <LineChart 
