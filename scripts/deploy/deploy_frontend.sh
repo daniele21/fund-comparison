@@ -10,7 +10,7 @@ Options:
   --env       Target environment name. Defaults config path to infra/deploy/environments/<name>.env
   --config    Path to environment config file (default: infra/deploy/environments/<env>.env)
   --firebase-project
-              Override FIREBASE_PROJECT_ID from the config file. Useful for branch-based deploys.
+              Override the Firebase project derived from GCP_PROJECT_ID. Useful for branch-based deploys.
 EOF
 }
 
@@ -68,6 +68,8 @@ fi
 # shellcheck disable=SC1090
 source "$CONFIG_FILE"
 
+FIREBASE_PROJECT_ID="${FIREBASE_PROJECT_ID:-${GCP_PROJECT_ID:-}}"
+
 if [[ -n "$FIREBASE_PROJECT_OVERRIDE" ]]; then
   FIREBASE_PROJECT_ID="$FIREBASE_PROJECT_OVERRIDE"
 fi
@@ -84,19 +86,11 @@ case "${FIREBASE_PROJECT_ID:-}" in
     ;;
 esac
 
-if [[ -n "$FIREBASE_PROJECT_OVERRIDE" || -z "${FRONTEND_VITE_FIREBASE_PROJECT_ID:-}" ]]; then
-  FRONTEND_VITE_FIREBASE_PROJECT_ID="$RESOLVED_FIREBASE_PROJECT_ID"
-fi
-
-if [[ "$FRONTEND_VITE_FIREBASE_PROJECT_ID" != "$RESOLVED_FIREBASE_PROJECT_ID" ]]; then
-  echo "FRONTEND_VITE_FIREBASE_PROJECT_ID (${FRONTEND_VITE_FIREBASE_PROJECT_ID}) must match FIREBASE_PROJECT_ID (${RESOLVED_FIREBASE_PROJECT_ID})" >&2
-  exit 1
-fi
+FRONTEND_VITE_FIREBASE_PROJECT_ID="$RESOLVED_FIREBASE_PROJECT_ID"
 
 required_vars=(
   FIREBASE_PROJECT_ID
   FRONTEND_VITE_API_BASE
-  FRONTEND_VITE_FIREBASE_PROJECT_ID
 )
 
 for var_name in "${required_vars[@]}"; do

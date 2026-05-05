@@ -71,7 +71,7 @@ Note:
 - Il build usa `FRONTEND_VITE_API_BASE` dal file ambiente.
 - In `test`, usa `FIREBASE_DEPLOY_MODE=channel` + `FIREBASE_CHANNEL_ID=test`.
 - In `prod`, usa `FIREBASE_DEPLOY_MODE=live`.
-- `FIREBASE_PROJECT_ID` puo' essere `financial-suite` o `accademia-previdenza`.
+- `GCP_PROJECT_ID` puo' essere `financial-suite` o `accademia-previdenza` e viene usato anche come progetto Firebase dal deploy frontend.
 - Per override esplicito del progetto in CI: `scripts/deploy/deploy_frontend.sh --env prod --firebase-project financial` oppure `--firebase-project accademia`.
 - Per il flusso branch-based tra i due progetti Firebase, vedi `docs/FIREBASE_MULTI_PROJECT_DEPLOY.md`.
 
@@ -98,12 +98,12 @@ scripts/deploy/deploy_all.sh --env prod --build-backend
 
 Locale:
 - Backend: `app/backend/.env.development` (o `APP_ENVFILE` dedicato).
-- Frontend: `app/frontend/.env.local` con `VITE_API_BASE=http://localhost:8001`.
+- Frontend: `app/frontend/.env` con `VITE_API_BASE=http://localhost:8001` e `VITE_FIREBASE_PROJECT_ID=accademia-previdenza` o `financial-suite` per scegliere brand e palette.
 
 Server:
 - Backend: `app/backend/env_test.json` o `app/backend/env_prod.json` + `--set-secrets`.
 - Frontend: build-time `VITE_API_BASE` dalla config ambiente deploy.
-- Firebase: progetto scelto tramite `FIREBASE_PROJECT_ID` nel file ambiente o `--firebase-project` nello script frontend.
+- Firebase: progetto scelto tramite `GCP_PROJECT_ID` nel file ambiente o `--firebase-project` nello script frontend.
 - Se deployi lo stesso ambiente su progetti Firebase/GCP diversi, usa file backend separati con `BACKEND_ENV_VARS_FILE` (es. `app/backend/env_accademia_test.json`) invece di modificare ogni volta `app/backend/env_test.json`.
 
 ## Verifiche post-deploy

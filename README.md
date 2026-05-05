@@ -173,10 +173,11 @@ Useful endpoints:
    pnpm install
    ```
 
-2. Create `app/frontend/.env.local`:
+2. Create `app/frontend/.env`:
 
    ```bash
    VITE_API_BASE=http://127.0.0.1:8001
+   VITE_FIREBASE_PROJECT_ID=accademia-previdenza
    VITE_PUBLIC_ANALYTICS_KEY=dev-analytics
    ```
 
@@ -250,7 +251,7 @@ When changing cache behavior, app shell, or precached assets, update `CACHE_VERS
 
 ## Test/Prod Deployment
 
-The recommended environment workflow is documented in [DEPLOY_TEST_PROD.md](docs/DEPLOY_TEST_PROD.md). Firebase Hosting can be deployed to either `financial-suite` or `accademia-previdenza`; see [FIREBASE_MULTI_PROJECT_DEPLOY.md](docs/FIREBASE_MULTI_PROJECT_DEPLOY.md) for branch-based project selection.
+The recommended environment workflow is documented in [DEPLOY_TEST_PROD.md](docs/DEPLOY_TEST_PROD.md). Firebase Hosting can be deployed to either `financial-suite` or `accademia-previdenza`; frontend branding is selected from the same `GCP_PROJECT_ID` used by deploy; see [FIREBASE_MULTI_PROJECT_DEPLOY.md](docs/FIREBASE_MULTI_PROJECT_DEPLOY.md) for branch-based project selection.
 
 One-time setup:
 

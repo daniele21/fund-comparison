@@ -15,7 +15,7 @@ La configurazione sorgente resta unica:
 
 - `.firebaserc` definisce alias progetto e mapping target Hosting.
 - `firebase.json` continua a usare il target logico `hosting.target = "app"`.
-- `scripts/deploy/deploy_frontend.sh` legge `FIREBASE_PROJECT_ID` dal file ambiente o lo riceve con `--firebase-project`.
+- `scripts/deploy/deploy_frontend.sh` legge `GCP_PROJECT_ID` dal file ambiente e lo usa anche come progetto Firebase, salvo override esplicito con `--firebase-project`.
 
 Alias disponibili:
 
@@ -45,7 +45,7 @@ Poi committa la `.firebaserc` aggiornata.
 
 ## Manual Deploy
 
-Deploy su Financial Suite:
+Deploy su progetto legacy:
 
 ```bash
 scripts/deploy/deploy_frontend.sh --env prod --firebase-project financial
@@ -72,7 +72,7 @@ scripts/deploy/deploy_frontend.sh \
 Ogni file ambiente deve impostare almeno:
 
 ```bash
-FIREBASE_PROJECT_ID=financial-suite
+GCP_PROJECT_ID=financial-suite
 FIREBASE_DEPLOY_MODE=live
 FIREBASE_HOSTING_TARGET=app
 BACKEND_ENV_VARS_FILE=app/backend/env_financial_test.json
@@ -88,10 +88,10 @@ app/backend/env_accademia_test.json
 
 Questi file sono ignorati da git tramite `app/backend/env_*.json`.
 
-Lo script passa automaticamente al build frontend tutte le variabili con prefisso `FRONTEND_VITE_`, rimuovendo `FRONTEND_`. Per esempio:
+Lo script passa automaticamente al build frontend tutte le variabili con prefisso `FRONTEND_VITE_`, rimuovendo `FRONTEND_`. Inoltre imposta sempre `VITE_FIREBASE_PROJECT_ID` dal valore risolto di `GCP_PROJECT_ID`, quindi il project id e il brand frontend hanno una sola fonte. Per esempio:
 
 ```bash
-FRONTEND_VITE_FIREBASE_PROJECT_ID=accademia-previdenza
+GCP_PROJECT_ID=accademia-previdenza
 ```
 
 diventa:
@@ -102,16 +102,16 @@ VITE_FIREBASE_PROJECT_ID=accademia-previdenza
 
 La configurazione web Firebase (`apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`, `appId`) non e' un secret, ma la API key deve essere limitata nelle impostazioni Google Cloud/Firebase quando possibile.
 
-## Palette per Progetto
+## Brand per Progetto
 
-Il frontend lega la palette al progetto Firebase tramite `VITE_FIREBASE_PROJECT_ID`, risolta in `app/frontend/config/brandTokens.ts`:
+Il frontend sceglie copy, link, loghi e palette tramite `VITE_FIREBASE_PROJECT_ID`, risolta in `app/frontend/config/brandTokens.ts`.
 
-| Firebase project | Brand style |
+| `GCP_PROJECT_ID` | Brand style |
 |---|---|
-| `financial-suite` | `legacy` (palette verde attuale) |
-| `accademia-previdenza` | `institutional` (palette blu `#071156`, `#0B196F`, `#122385`, `#5D8BF4`, `#D1D4EA`, testo `#333333`) |
+| `financial-suite` | `legacy` |
+| `accademia-previdenza` | `institutional` |
 
-Lo script di deploy passa tutte le variabili `FRONTEND_VITE_*` al build Vite. Ogni file ambiente deve quindi impostare `FRONTEND_VITE_FIREBASE_PROJECT_ID` coerente con `FIREBASE_PROJECT_ID`, altrimenti il bundle usa la palette default `legacy`.
+Ogni file ambiente deve impostare solo `GCP_PROJECT_ID` a `financial-suite` o `accademia-previdenza`; lo script lo propaga al build come `VITE_FIREBASE_PROJECT_ID` e lo usa come progetto Firebase.
 
 ## Branch-Based Deploy
 

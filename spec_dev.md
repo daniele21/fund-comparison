@@ -107,7 +107,7 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 ## Feature Note - Firebase Multi-Project Deploy
 
 ## 1. Overview
-- Feature name: Deploy Firebase selezionabile tra Financial Suite e Accademia Previdenza
+- Feature name: Deploy Firebase selezionabile per Accademia Previdenza
 - Owner: Codex
 - Date: 2026-04-28
 - Status: `done`
@@ -189,7 +189,7 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - Related issue/PR: n/a
 
 ## 2. Problem Statement
-- Current behavior: la UI usava branding Financial Suite/Comparatore e mostrava costi/rendimenti senza rating sintetico.
+- Current behavior: la UI usava branding non allineato ad Accademia Previdenza e mostrava costi/rendimenti senza rating sintetico.
 - Pain points: identita non allineata al materiale Accademia Previdenza e assenza di un indicatore netto sintetico vicino ai fondi.
 - Impatto su utenti/business: confronto meno leggibile e brand meno riconoscibile.
 
@@ -675,10 +675,10 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 
 ### Scope e motivazione
 - Centralizzata la palette in `app/frontend/config/brandTokens.ts`.
-- Mantenuti due stili configurabili:
-  - `legacy` per `financial-suite`;
-  - `institutional` per `accademia-previdenza`, con palette blu da immagine.
-- La scelta dello stile dipende da `VITE_FIREBASE_PROJECT_ID`, non da colori hardcoded nei componenti.
+- Mantenuti due preset configurabili:
+  - `VITE_FIREBASE_PROJECT_ID=financial-suite` per preset legacy Financial Suite;
+  - `VITE_FIREBASE_PROJECT_ID=accademia-previdenza` per preset Accademia Previdenza.
+- La scelta del brand dipende dal progetto env build-time, non da colori, nomi, link o loghi hardcoded nei componenti.
 
 ### Impatti frontend/backend/config
 - Frontend:
@@ -686,7 +686,7 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
   - `tailwind.config.js` rimappa le utility cromatiche sui token;
   - grafici, tooltip, slider e feedback usano token/CSS variables.
 - Config deploy:
-  - aggiunto `FRONTEND_VITE_FIREBASE_PROJECT_ID` agli env frontend/deploy.
+  - `GCP_PROJECT_ID` controlla sia progetto Firebase sia brand/palette frontend; lo script lo propaga al build come `VITE_FIREBASE_PROJECT_ID`.
 - Backend: nessun impatto.
 
 ### Piano test e risultati
@@ -695,7 +695,7 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 
 ### Rischi aperti e rollback
 - Rischio: componenti con SVG/asset esterni possono mantenere colori propri se sono loghi o icone provider.
-- Rollback: riportare `FIREBASE_PROJECT_BRAND_STYLES` a un solo mapping `legacy` e redeploy frontend.
+- Rollback: impostare `GCP_PROJECT_ID=financial-suite` nel file ambiente e redeploy frontend.
 
 ---
 
