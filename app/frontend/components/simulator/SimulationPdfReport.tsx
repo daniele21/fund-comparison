@@ -20,6 +20,7 @@ import ComparisonMontanteChart from './ComparisonMontanteChart';
 
 interface SimulationPdfReportProps {
   model: SimulationReportModel;
+  isPrinting?: boolean;
 }
 
 const getBestBy = (
@@ -70,7 +71,7 @@ const FundResultTable: React.FC<{
   );
 };
 
-const SimulationPdfReport: React.FC<SimulationPdfReportProps> = ({ model }) => {
+const SimulationPdfReport: React.FC<SimulationPdfReportProps> = ({ model, isPrinting = false }) => {
   if (model.funds.length === 0) return null;
 
   const primaryResult = model.funds[0];
@@ -80,7 +81,7 @@ const SimulationPdfReport: React.FC<SimulationPdfReportProps> = ({ model }) => {
   const focusForSummary = model.funds.length > 1 ? bestByNet : primaryResult;
 
   return (
-    <article className="simulation-print-report pdf-report bg-white text-slate-950">
+    <article className={`simulation-print-report pdf-report bg-white text-slate-950${isPrinting ? ' pdf-report--printing' : ''}`}>
       <PdfPage
         title="Report simulazione previdenziale"
         generatedAt={model.generatedAt}

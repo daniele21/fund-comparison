@@ -25,6 +25,7 @@ interface FundComparisonPdfReportProps {
   selectedFundIds: string[];
   generatedAt: Date;
   customerEmail?: string | null;
+  isPrinting?: boolean;
 }
 
 const formatPercent = (value: number | null): string => (
@@ -93,6 +94,7 @@ const FundComparisonPdfReport: React.FC<FundComparisonPdfReportProps> = ({
   selectedFundIds,
   generatedAt,
   customerEmail,
+  isPrinting = false,
 }) => {
   if (funds.length === 0) return null;
 
@@ -101,7 +103,7 @@ const FundComparisonPdfReport: React.FC<FundComparisonPdfReportProps> = ({
   const bestRating = getBestRatingFund(funds);
 
   return (
-    <article className="fund-comparison-print-report pdf-report bg-white text-slate-950">
+    <article className={`fund-comparison-print-report pdf-report bg-white text-slate-950${isPrinting ? ' pdf-report--printing' : ''}`}>
       <PdfPage
         title="Report confronto fondi"
         generatedAt={generatedAt}

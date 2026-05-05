@@ -819,7 +819,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
         showSkipButton={true}
       />
 
-      {reportModel && <SimulationPdfReport model={reportModel} />}
+      {reportModel && <SimulationPdfReport model={reportModel} isPrinting={printQueued} />}
     </div>
   );
 };

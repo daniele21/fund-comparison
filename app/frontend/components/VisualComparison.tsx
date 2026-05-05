@@ -109,6 +109,7 @@ const VisualComparison: React.FC<VisualComparisonProps> = ({ appSelectedFunds, f
         selectedFundIds={exportFundIds}
         generatedAt={reportGeneratedAt}
         customerEmail={user?.email ?? null}
+        isPrinting={printQueued}
       />
     </div>
   );
