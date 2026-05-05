@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import FinancialSuiteBadge from './FinancialSuiteBadge';
 import { BRAND_TOKENS } from '../config/brandTokens';
 
 interface FooterProps {
@@ -32,24 +31,24 @@ const Footer: React.FC<FooterProps> = ({ sidebarCollapsed = false, hasSidebar = 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4 text-xs text-slate-600 dark:text-slate-400">
           {/* Left: Data attribution */}
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
-            <span className="text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 leading-none">
+            <span className="inline-flex h-5 items-center text-center sm:text-left">
               Dati forniti da{' '}
               <a
                 href="https://www.covip.it/open-data"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline decoration-2 underline-offset-2 transition-colors"
+                className="ml-1 inline-flex h-5 items-center font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline decoration-2 underline-offset-2 transition-colors"
               >
                 COVIP
               </a>
             </span>
-            <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
+            <span className="hidden sm:inline-flex h-5 items-center text-slate-300 dark:text-slate-700">•</span>
             <a
               href="https://creativecommons.org/licenses/by/4.0/deed.it"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+              className="inline-flex h-5 items-center gap-1 text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
               title="Licenza Creative Commons Attribution 4.0 International"
             >
               <svg
@@ -62,18 +61,22 @@ const Footer: React.FC<FooterProps> = ({ sidebarCollapsed = false, hasSidebar = 
               </svg>
               <span className="font-medium">CC BY 4.0</span>
             </a>
-            <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
+            <span className="hidden sm:inline-flex h-5 items-center text-slate-300 dark:text-slate-700">•</span>
             <a 
-              href="https://www.iubenda.com/privacy-policy/32249970" 
-              className="iubenda-white iubenda-noiframe iubenda-embed iubenda-noiframe text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline decoration-1 underline-offset-2 transition-colors" 
+              href="https://www.iubenda.com/privacy-policy/96466936/legal" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-5 items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline decoration-1 underline-offset-2 transition-colors" 
               title="Privacy Policy"
             >
               Privacy Policy
             </a>
-            <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
+            <span className="hidden sm:inline-flex h-5 items-center text-slate-300 dark:text-slate-700">•</span>
             <a 
-              href="https://www.iubenda.com/privacy-policy/32249970/cookie-policy" 
-              className="iubenda-white iubenda-noiframe iubenda-embed iubenda-noiframe text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline decoration-1 underline-offset-2 transition-colors" 
+              href="https://www.iubenda.com/privacy-policy/96466936/cookie-policy" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-5 items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline decoration-1 underline-offset-2 transition-colors" 
               title="Cookie Policy"
             >
               Cookie Policy
@@ -82,7 +85,17 @@ const Footer: React.FC<FooterProps> = ({ sidebarCollapsed = false, hasSidebar = 
           
           {/* Center: Badge */}
           <div className="flex items-center justify-center">
-            <FinancialSuiteBadge location="footer" />
+            <div
+              className="flex items-center justify-center px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700/60 shadow-sm"
+              title={BRAND_TOKENS.name}
+              aria-label={BRAND_TOKENS.name}
+            >
+              <img
+                src={BRAND_TOKENS.logo.pwa192}
+                alt={BRAND_TOKENS.name}
+                className="h-6 w-6 rounded-sm"
+              />
+            </div>
           </div>
           
           {/* Right: Copyright */}
