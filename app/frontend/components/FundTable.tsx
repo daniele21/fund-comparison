@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { PensionFund, SortConfig, SortableKey } from '../types';
 import { CATEGORY_MAP, CATEGORY_COLORS } from '../constants';
 import { motion, useInView } from 'framer-motion';
-import { ratingBadgeClasses } from '../utils/fundRating';
+import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingBadgeClasses, ratingStarsFromClass } from '../utils/fundRating';
 
 interface FundTableProps {
   funds: PensionFund[];
@@ -136,11 +136,13 @@ const RendimentoCell: React.FC<{ value: number | null; label?: string; isMobile?
 };
 
 const RatingBadge: React.FC<{ fund: PensionFund; compact?: boolean }> = ({ fund, compact = false }) => {
-    const label = fund.rating.classeRating ?? 'N/D';
-    const score = fund.rating.ratingScore != null ? fund.rating.ratingScore.toFixed(2) : null;
+    const stars = ratingStarsFromClass(fund.rating.classeRating);
+    const starsText = formatRatingStarsText(fund.rating.classeRating);
+    const score = formatRatingScoreOutOfTen(fund.rating.ratingScore);
     const title = fund.rating.ammissibile
-        ? `Rating ${label}: ${fund.rating.descrizioneRating ?? ''}. Score ${score}. ISC ${fund.rating.iscOrizzonte ?? 'N/D'} usato.`
+        ? `Rating ${starsText}: ${fund.rating.descrizioneRating ?? ''}. Score ${score ?? 'N/D'}. ISC ${fund.rating.iscOrizzonte ?? 'N/D'} usato.`
         : fund.rating.motivoEsclusione ?? 'Rating non calcolabile';
+    const starSizeClass = compact ? 'text-[12px]' : 'text-sm';
 
     return (
         <span
@@ -148,7 +150,12 @@ const RatingBadge: React.FC<{ fund: PensionFund; compact?: boolean }> = ({ fund,
             title={title}
             aria-label={title}
         >
-            <span>Rating {label}</span>
+            <span className={`tracking-normal ${starSizeClass}`} aria-hidden="true">
+                {Array.from({ length: 5 }, (_, index) => (
+                    <span key={index} className={stars != null && index < stars ? 'opacity-100' : 'opacity-35'}>★</span>
+                ))}
+            </span>
+            <span className="sr-only">{starsText}</span>
             {score && <span className="font-semibold opacity-80">{score}</span>}
         </span>
     );
@@ -424,11 +431,19 @@ const FundTable: React.FC<FundTableProps> = ({
                         {/* Rating Metric */}
                         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2 sm:p-2.5">
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-0.5">Rating</p>
-                            <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200 tabular-nums">
-                                {fund.rating.classeRating ?? 'N/D'}
+                            <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200 tabular-nums">
+                                <span aria-hidden="true">
+                                    {Array.from({ length: 5 }, (_, starIndex) => {
+                                        const stars = ratingStarsFromClass(fund.rating.classeRating);
+                                        return (
+                                            <span key={starIndex} className={stars != null && starIndex < stars ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600'}>★</span>
+                                        );
+                                    })}
+                                </span>
+                                <span className="sr-only">{formatRatingStarsText(fund.rating.classeRating)}</span>
                                 {fund.rating.ratingScore != null && (
-                                    <span className="ml-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                                        {fund.rating.ratingScore.toFixed(2)}
+                                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                        {formatRatingScoreOutOfTen(fund.rating.ratingScore)}
                                     </span>
                                 )}
                             </p>

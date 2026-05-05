@@ -27,8 +27,8 @@ import { getSortValue } from './features/dashboard/sorting';
 import { DashboardSection, View } from './features/dashboard/types';
 import { resolveRouteFromPathname, sectionToPath } from './features/dashboard/routing';
 import {
+  BRAND_TOKENS,
   BRAND_STYLES,
-  resolveBrandStyleForFirebaseProject,
   type BrandStyleId,
 } from './config/brandTokens';
 
@@ -46,7 +46,6 @@ const GuidedFundTable = lazy(() => import('./components/guided/GuidedFundTable')
 const VisualComparison = lazy(() => import('./components/VisualComparison'));
 
 const FREE_PLAN_LIMIT = 10;
-const metaEnv = import.meta as ImportMeta & { env?: Record<string, string | undefined> };
 const LazyFallback: React.FC = () => (
   <div className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-6 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300">
     Caricamento sezione...
@@ -64,7 +63,7 @@ const AppContent: React.FC = () => {
     return 'light';
   });
   const brandStyle = useMemo<BrandStyleId>(() => {
-    return resolveBrandStyleForFirebaseProject(metaEnv.env?.VITE_FIREBASE_PROJECT_ID);
+    return BRAND_TOKENS.styleId;
   }, []);
   const [activeSection, setActiveSection] = useState<DashboardSection>(
     () => resolveRouteFromPathname(window.location.pathname).section

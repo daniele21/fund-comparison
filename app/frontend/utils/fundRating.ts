@@ -50,6 +50,34 @@ export const ratingDescriptionFromClass = (ratingClass: FundRatingClass): string
   }
 };
 
+export const ratingStarsFromClass = (ratingClass: FundRatingClass | null): number | null => {
+  switch (ratingClass) {
+    case 'A':
+      return 5;
+    case 'B':
+      return 4;
+    case 'C':
+      return 3;
+    case 'D':
+      return 2;
+    case 'E':
+      return 0;
+    default:
+      return null;
+  }
+};
+
+export const formatRatingScoreOutOfTen = (score: number | null): string | null => {
+  if (score == null) return null;
+  const clampedScore = Math.max(1, Math.min(10, score));
+  return `${clampedScore.toFixed(2)}/10`;
+};
+
+export const formatRatingStarsText = (ratingClass: FundRatingClass | null): string => {
+  const stars = ratingStarsFromClass(ratingClass);
+  return stars == null ? 'N/D' : `${stars} stelle`;
+};
+
 export const calculateFundRating = (fund: RatingInput): FundRating => {
   const tipoAdesione = tipoAdesioneFromFundType(fund.type);
 

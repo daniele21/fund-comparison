@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'fund-comparison-pwa';
-const CACHE_VERSION = '2026-04-28-v1';
+const CACHE_VERSION = '2026-05-05-brand-green-v1';
 const APP_SHELL_CACHE = `${CACHE_PREFIX}-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${CACHE_VERSION}`;
 const API_RUNTIME_CACHE = `${CACHE_PREFIX}-api-${CACHE_VERSION}`;

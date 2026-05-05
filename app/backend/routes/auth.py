@@ -1,4 +1,5 @@
 from typing import Optional
+from html import escape as html_escape
 from fastapi import APIRouter, Response, Request, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel, EmailStr
@@ -35,6 +36,44 @@ logger = logging.getLogger("uvicorn.error")
 from backend.settings import settings
 
 router = APIRouter()
+
+
+BRAND_THEMES: dict[str, dict[str, str]] = {
+    "financial-suite": {
+        "name": "Financial Suite",
+        "primary": "#196B24",
+        "primary_deep": "#0F3F16",
+        "accent": "#4EA72E",
+        "surface": "#F3FAEF",
+    },
+    "accademia-previdenza": {
+        "name": "Accademia Previdenza",
+        "primary": "#104C25",
+        "primary_deep": "#0B351A",
+        "accent": "#9ACA4F",
+        "surface": "#F7FBF0",
+    },
+}
+
+
+def _resolve_brand_theme() -> dict[str, str]:
+    """Resolve backend-rendered auth screens from the same project id used by deploy."""
+    project_id = (
+        os.getenv("APP_BRAND_PROJECT_ID")
+        or os.getenv("APP_GOOGLE_PROJECT_ID")
+        or os.getenv("GCP_PROJECT_ID")
+        or os.getenv("FIREBASE_PROJECT_ID")
+        or ""
+    ).strip().lower()
+
+    aliases = {
+        "financial": "financial-suite",
+        "financial-suite": "financial-suite",
+        "accademia": "accademia-previdenza",
+        "accademia-previdenza": "accademia-previdenza",
+    }
+    brand_id = aliases.get(project_id, "accademia-previdenza")
+    return BRAND_THEMES[brand_id]
 
 
 class InviteLoginPayload(BaseModel):
@@ -208,17 +247,30 @@ async def oauth_callback(provider: str, code: str, state: str, response: Respons
             frontend_origin,
         )
 
+        brand_theme = _resolve_brand_theme()
+        frontend_url_attr = html_escape(frontend_url, quote=True)
+        frontend_origin_js = json.dumps(frontend_origin)
+        provider_js = json.dumps(provider)
+        session_token_js = json.dumps(session.token)
+
         # NOTE: we include the session token in the postMessage payload so that
         # popup-based flows can receive a token even when cookies are not sent by
         # the browser (common in cross-origin dev). The token is only sent to the
         # configured frontend origin.
         html = f"""
         <!doctype html>
-        <html>
+        <html lang="it">
         <head>
             <meta charset="utf-8" />
-            <title>Authentication complete</title>
+            <meta name="theme-color" content="{brand_theme["primary"]}" />
+            <title>Accesso completato | {brand_theme["name"]}</title>
             <style>
+                :root {{
+                    --brand-primary: {brand_theme["primary"]};
+                    --brand-primary-deep: {brand_theme["primary_deep"]};
+                    --brand-accent: {brand_theme["accent"]};
+                    --brand-surface: {brand_theme["surface"]};
+                }}
                 body {{
                     font-family: system-ui, -apple-system, sans-serif;
                     display: flex;
@@ -226,12 +278,15 @@ async def oauth_callback(provider: str, code: str, state: str, response: Respons
                     justify-content: center;
                     height: 100vh;
                     margin: 0;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
+                    background:
+                        radial-gradient(circle at top left, color-mix(in srgb, var(--brand-accent) 22%, transparent), transparent 34rem),
+                        linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-deep) 100%);
+                    color: #ffffff;
                 }}
                 .message {{
                     text-align: center;
                     padding: 2rem;
+                    max-width: 28rem;
                 }}
                 .message h1 {{
                     margin: 0 0 0.5rem 0;
@@ -241,61 +296,66 @@ async def oauth_callback(provider: str, code: str, state: str, response: Respons
                     margin: 0;
                     opacity: 0.9;
                 }}
+                .message a {{
+                    color: #ffffff;
+                    font-weight: 700;
+                    text-underline-offset: 0.2rem;
+                }}
             </style>
         </head>
         <body>
             <div class="message">
-                <h1>✅ Authentication complete</h1>
-                <p>This window will close automatically...</p>
+                <h1>Accesso completato</h1>
+                <p>Questa finestra si chiudera automaticamente.</p>
             </div>
             <script>
                 (function() {{
-                    console.log('🔔 [Backend Callback] About to send postMessage');
-                    console.log('🎯 [Backend Callback] targetOrigin:', '{frontend_origin}');
-                    console.log('🪟 [Backend Callback] window.opener exists:', !!window.opener);
+                    console.log('[Backend Callback] About to send postMessage');
+                    console.log('[Backend Callback] targetOrigin:', {frontend_origin_js});
+                    console.log('[Backend Callback] window.opener exists:', !!window.opener);
                     
                     try {{
                         if (window.opener && !window.opener.closed) {{
                             // Send success message to parent window
                             window.opener.postMessage(
-                                {{ type: 'oauth', provider: '{provider}', status: 'success', token: '{session.token}' }}, 
-                                '{frontend_origin}'
+                                {{ type: 'oauth', provider: {provider_js}, status: 'success', token: {session_token_js} }}, 
+                                {frontend_origin_js}
                             );
-                            console.log('✅ [Backend Callback] postMessage sent successfully');
+                            console.log('[Backend Callback] postMessage sent successfully');
                             
                             // Close popup after a short delay
                             setTimeout(function() {{ 
-                                console.log('🚪 [Backend Callback] Closing popup...');
+                                console.log('[Backend Callback] Closing popup...');
                                 window.close(); 
                             }}, 1000);
                         }} else {{
-                            console.log('⚠️ [Backend Callback] No window.opener available');
-                            console.log('🔄 [Backend Callback] User must close this window manually or use the redirect link');
+                            console.log('[Backend Callback] No window.opener available');
+                            console.log('[Backend Callback] User must close this window manually or use the redirect link');
                             
                             // Show a message with a link instead of auto-redirecting
                             document.body.innerHTML = `
                                 <div class="message">
-                                    <h1>⚠️ Authentication Complete</h1>
-                                    <p>Please close this window and return to the application.</p>
+                                    <h1>Accesso completato</h1>
+                                    <p>Chiudi questa finestra e torna all'applicazione.</p>
                                     <p style="margin-top: 1rem;">
-                                        <a href="{frontend_url}" style="color: white; text-decoration: underline;">
-                                            Or click here to return to the app
+                                        <a href="{frontend_url_attr}">
+                                            Torna all'app
                                         </a>
                                     </p>
                                 </div>
                             `;
                         }}
                     }} catch (e) {{
-                        console.error('❌ [Backend Callback] Error in postMessage flow:', e);
+                        console.error('[Backend Callback] Error in postMessage flow:', e);
                         
                         // Show error message with manual link
                         document.body.innerHTML = `
                             <div class="message">
-                                <h1>⚠️ Authentication Complete</h1>
-                                <p>Please close this window and return to the application.</p>
+                                <h1>Accesso completato</h1>
+                                <p>Chiudi questa finestra e torna all'applicazione.</p>
                                 <p style="margin-top: 1rem;">
-                                    <a href="{frontend_url}" style="color: white; text-decoration: underline;">
-                                        Or click here to return to the app
+                                    <a href="{frontend_url_attr}">
+                                        Torna all'app
                                     </a>
                                 </p>
                             </div>

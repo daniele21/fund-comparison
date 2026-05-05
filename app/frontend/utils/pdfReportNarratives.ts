@@ -1,5 +1,6 @@
 import type { PensionFund, SimulationFundResult, SimulationReportModel } from '../types';
 import { formatFundLabel } from './fundLabel';
+import { formatRatingScoreOutOfTen, formatRatingStarsText } from './fundRating';
 import { formatCurrency, formatPercentage } from './simulatorCalc';
 
 const formatPercentValue = (value: number | null): string => (
@@ -22,7 +23,7 @@ const getCostValue = (fund: PensionFund): number => (
 
 export const describeFund = (fund: PensionFund): string => {
   const rating = fund.rating.ammissibile && fund.rating.classeRating
-    ? `rating ${fund.rating.classeRating}`
+    ? `rating ${formatRatingStarsText(fund.rating.classeRating)}${fund.rating.ratingScore != null ? ` (${formatRatingScoreOutOfTen(fund.rating.ratingScore)})` : ''}`
     : 'rating non disponibile';
   const performance = formatPercentValue(fund.rendimenti.ultimi10Anni ?? fund.rendimenti.ultimi5Anni);
   const cost = formatPercentValue(fund.isc.isc10a ?? fund.isc.isc5a);

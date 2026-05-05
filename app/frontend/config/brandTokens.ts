@@ -31,22 +31,22 @@ export const BRAND_STYLES = {
     colors: {
       ink: '#333333',
       white: '#FFFFFF',
-      primary: '#0B196F',
-      primaryDeep: '#071156',
-      primaryBright: '#122385',
-      accent: '#5D8BF4',
-      accentSurface: '#D1D4EA',
-      surface: '#F7F8FD',
-      success: '#122385',
-      warning: '#5D8BF4',
-      danger: '#071156',
-      info: '#5D8BF4',
+      primary: '#104C25',
+      primaryDeep: '#0B351A',
+      primaryBright: '#196B24',
+      accent: '#9ACA4F',
+      accentSurface: '#E5F2D0',
+      surface: '#F7FBF0',
+      success: '#196B24',
+      warning: '#9ACA4F',
+      danger: '#0B351A',
+      info: '#4EA72E',
       chart: {
-        1: '#0B196F',
-        2: '#122385',
-        3: '#5D8BF4',
-        4: '#071156',
-        5: '#D1D4EA',
+        1: '#104C25',
+        2: '#196B24',
+        3: '#4EA72E',
+        4: '#9ACA4F',
+        5: '#E5F2D0',
         6: '#333333',
       },
     },
@@ -55,37 +55,87 @@ export const BRAND_STYLES = {
 
 export type BrandStyleId = keyof typeof BRAND_STYLES;
 
-export const DEFAULT_BRAND_STYLE: BrandStyleId = 'legacy';
-export const FIREBASE_PROJECT_BRAND_STYLES: Record<string, BrandStyleId> = {
-  'financial-suite': 'legacy',
-  'accademia-previdenza': 'institutional',
+export const BRAND_CONFIGS = {
+  'financial-suite': {
+    id: 'financial-suite',
+    styleId: 'legacy',
+    name: 'Financial Suite',
+    productName: 'Comparatore Fondi Pensione',
+    applicationName: 'Financial Suite',
+    shortName: 'Financial',
+    tagline: 'Confronta fondi pensione e scegli con piu consapevolezza.',
+    websiteUrl: 'https://financialsuite.it',
+    logo: {
+      horizontal: '/icons/Logo Verticale_trasparente.png',
+      pwa192: '/icons/Favicon_sfondo bianco.png',
+      pwa512: '/icons/Logo Verticale_sfondo bianco.png',
+    },
+  },
+  'accademia-previdenza': {
+    id: 'accademia-previdenza',
+    styleId: 'institutional',
+    name: 'Accademia Previdenza',
+    productName: 'Comparatore Fondi Pensione',
+    applicationName: 'Accademia Previdenza',
+    shortName: 'AccPrev',
+    tagline: 'Confronta fondi pensione e scegli con piu consapevolezza.',
+    websiteUrl: 'https://www.accademiaprevidenza.it',
+    logo: {
+      horizontal: '/brand/logo-accprev.webp',
+      pwa192: '/brand/icon-192.png',
+      pwa512: '/brand/icon-512.png',
+    },
+  },
+} as const satisfies Record<string, {
+  id: string;
+  styleId: BrandStyleId;
+  name: string;
+  productName: string;
+  applicationName: string;
+  shortName: string;
+  tagline: string;
+  websiteUrl: string;
+  logo: {
+    horizontal: string;
+    pwa192: string;
+    pwa512: string;
+  };
+}>;
+
+export type BrandId = keyof typeof BRAND_CONFIGS;
+
+export const DEFAULT_BRAND_ID: BrandId = 'accademia-previdenza';
+export const DEFAULT_BRAND_STYLE: BrandStyleId = BRAND_CONFIGS[DEFAULT_BRAND_ID].styleId;
+export const PROJECT_BRAND_IDS: Record<string, BrandId> = {
+  'financial-suite': 'financial-suite',
+  'accademia-previdenza': 'accademia-previdenza',
 };
 
 export const isBrandStyleId = (value: string | null): value is BrandStyleId => {
   return value === 'legacy' || value === 'institutional';
 };
 
-export const resolveBrandStyleForFirebaseProject = (projectId?: string): BrandStyleId => {
-  if (!projectId) {
-    return DEFAULT_BRAND_STYLE;
-  }
-
-  return FIREBASE_PROJECT_BRAND_STYLES[projectId] ?? DEFAULT_BRAND_STYLE;
+export const isBrandId = (value: string | null | undefined): value is BrandId => {
+  return value === 'financial-suite' || value === 'accademia-previdenza';
 };
 
+export const resolveBrandId = (projectId?: string): BrandId => {
+  if (isBrandId(projectId)) {
+    return projectId;
+  }
+
+  return projectId ? PROJECT_BRAND_IDS[projectId] ?? DEFAULT_BRAND_ID : DEFAULT_BRAND_ID;
+};
+
+const metaEnv = import.meta as ImportMeta & { env?: Record<string, string | undefined> };
+export const ACTIVE_BRAND_ID = resolveBrandId(metaEnv.env?.VITE_FIREBASE_PROJECT_ID);
+
+const ACTIVE_BRAND_CONFIG = BRAND_CONFIGS[ACTIVE_BRAND_ID];
+
 export const BRAND_TOKENS = {
-  name: 'Accademia Previdenza',
-  productName: 'Comparatore Fondi Pensione',
-  applicationName: 'Accademia Previdenza',
-  shortName: 'AccPrev',
-  tagline: 'Confronta fondi pensione e scegli con piu consapevolezza.',
-  logo: {
-    horizontal: '/brand/logo-accprev.webp',
-    pwa192: '/brand/icon-192.png',
-    pwa512: '/brand/icon-512.png',
-  },
+  ...ACTIVE_BRAND_CONFIG,
   styles: BRAND_STYLES,
-  colors: BRAND_STYLES[DEFAULT_BRAND_STYLE].colors,
+  colors: BRAND_STYLES[ACTIVE_BRAND_CONFIG.styleId].colors,
 } as const;
 
 export type BrandTokens = typeof BRAND_TOKENS;

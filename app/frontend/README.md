@@ -10,25 +10,25 @@ This package contains the SPA for the fund comparison experience. It is built wi
 
 ## Environment Variables
 
-Create `app/frontend/.env.local` (ignored by git) with the values needed for your environment:
+Create `app/frontend/.env` (ignored by git) with the values needed for your environment:
 
 ```bash
 VITE_API_BASE=http://localhost:8000        # Backend origin used for API calls
 VITE_PUBLIC_ANALYTICS_KEY=dev-analytics    # Optional analytics identifier
-VITE_FIREBASE_PROJECT_ID=financial-suite   # Selects the project-bound brand palette
+VITE_FIREBASE_PROJECT_ID=accademia-previdenza # Selects brand and palette
 ```
 
 Any variable prefixed with `VITE_` becomes available via `import.meta.env`.
 Do not place backend variables (`APP_*`) in frontend env files.
 
-### Project-Bound Brand Palette
+### Project-Bound Brand Selection
 
-Brand colors are centralized in `config/brandTokens.ts` and exposed to the app through CSS variables in `index.css`. The active style is resolved from `VITE_FIREBASE_PROJECT_ID`:
+Brand copy, links, logos and colors are centralized in `config/brandTokens.ts` and exposed to the app through `BRAND_TOKENS` plus CSS variables in `index.css`. Set `VITE_FIREBASE_PROJECT_ID` at build time:
 
-- `financial-suite` uses the current green legacy palette.
-- `accademia-previdenza` uses the institutional blue palette.
+- `financial-suite` uses the legacy Financial Suite preset.
+- `accademia-previdenza` uses the Accademia Previdenza preset.
 
-Do not hardcode component colors for brand, charts, focus rings, or primary actions. Add new project palette mappings in `FIREBASE_PROJECT_BRAND_STYLES` and update the related CSS variable block instead.
+Do not hardcode component colors, names, logos, links, charts, focus rings, or primary actions. Add new project brand presets in `BRAND_CONFIGS` and update the related CSS variable block instead.
 
 ## Install & Run
 
@@ -77,7 +77,7 @@ pnpm build
 firebase deploy --only hosting
 ```
 
-Remember to set the appropriate `VITE_API_BASE`, `VITE_FIREBASE_PROJECT_ID` and other env vars before building. In CI, you can export them as environment variables or write them to a temporary `.env.local`.
+Remember to set the appropriate `VITE_API_BASE`, `VITE_FIREBASE_PROJECT_ID` and other env vars before building. In CI, use the deploy environment file and let `scripts/deploy/deploy_frontend.sh` derive `VITE_FIREBASE_PROJECT_ID` from `FIREBASE_PROJECT_ID`.
 
 ## Developing Against Authentication
 

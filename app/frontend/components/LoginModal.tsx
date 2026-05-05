@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../auth';
+import { BRAND_TOKENS } from '../config/brandTokens';
 
 interface LoginModalProps {
   open: boolean;
@@ -88,7 +89,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
           value={form.code}
           onChange={(e) => setForm((prev) => ({ ...prev, code: e.target.value }))}
           required
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
           placeholder="Es. 15187715"
         />
       </label>
@@ -120,7 +121,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
       <button
         type="submit"
         disabled={busy}
-        className="w-full inline-flex items-center justify-center gap-x-2 px-4 py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 disabled:opacity-60"
+        className="w-full inline-flex items-center justify-center gap-x-2 rounded-lg bg-primary px-4 py-3 font-semibold text-white hover:bg-blue-800 disabled:opacity-60"
       >
         {busy ? 'Verifica in corso…' : 'Accedi con codice invito'}
       </button>
@@ -145,9 +146,25 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
         }
       }}
     >
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-slate-800" onClick={(e) => e.stopPropagation()}>
+        <div className="border-b border-slate-200 bg-gradient-to-r from-blue-50 to-slate-50 px-6 py-5 dark:border-slate-700 dark:from-blue-950/40 dark:to-slate-900">
+          <div className="flex items-center gap-3">
+            <img
+              src={BRAND_TOKENS.logo.pwa192}
+              alt={BRAND_TOKENS.name}
+              className="h-10 w-10 rounded-md object-contain"
+            />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary dark:text-blue-300">
+                {BRAND_TOKENS.name}
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{BRAND_TOKENS.productName}</p>
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
         {isAuthenticating && !isInviteMode && !isOpenAccess && (
-          <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-300 flex items-center gap-2">
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-primary dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
             <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="4" />
               <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
@@ -181,7 +198,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
               <button
                 onClick={handleLogin}
                 disabled={isAuthenticating}
-                className="w-full inline-flex items-center justify-center gap-x-2 px-4 py-3 bg-white dark:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-semibold hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-60 shadow-sm"
+                className="w-full inline-flex items-center justify-center gap-x-2 rounded-lg border-2 border-blue-200 bg-white px-4 py-3 font-semibold text-slate-700 shadow-sm hover:border-primary hover:bg-blue-50 disabled:opacity-60 dark:border-blue-900/70 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-blue-950/30"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -202,6 +219,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onSuccess }) => 
             </div>
           </>
         )}
+        </div>
       </div>
     </div>
   );
