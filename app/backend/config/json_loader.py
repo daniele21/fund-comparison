@@ -53,51 +53,6 @@ def load_json_config(config_path: str) -> Dict[str, Any]:
     
     # Expand environment variables
     return expand_env_vars(raw_config)
-    elif isinstance(value, dict):
-        return {k: expand_env_vars(v) for k, v in value.items()}
-    elif isinstance(value, list):
-        return [expand_env_vars(item) for item in value]
-    else:
-        return value
-
-
-def load_json_config(config_path: str) -> Dict[str, Any]:
-    """Load configuration from JSON file and expand environment variables."""
-    path = Path(config_path)
-    if not path.exists():
-        raise FileNotFoundError(f"Configuration file not found: {config_path}")
-    
-    with open(path, 'r') as f:
-        raw_config = json.load(f)
-    
-    # Expand environment variables
-    return expand_env_vars(raw_config)er for the Webapp Factory API.
-
-This module allows loading configuration from JSON files in addition to
-environment variables and Python configuration files.
-"""
-
-import json
-import os
-from pathlib import Path
-from typing import Dict, Any, Optional
-
-from config.auth import AuthConfig, JWTConfig, SecurityPolicyConfig, GoogleOAuthConfig
-from config.database import DatabaseConfig, FirestoreConfig, RedisConfig
-from config.features import FeatureFlagsConfig, FeatureFlag, FeatureFlagStrategy
-from config.logging import LoggingConfig, LogHandler, LogLevel, LogFormat
-from config.base import Environment
-
-
-def load_json_config(config_path: str) -> Dict[str, Any]:
-    """Load configuration from JSON file."""
-    path = Path(config_path)
-    if not path.exists():
-        raise FileNotFoundError(f"Configuration file not found: {config_path}")
-    
-    with open(path, 'r') as f:
-        return json.load(f)
-
 
 def json_to_auth_config(json_data: Dict[str, Any]) -> AuthConfig:
     """Convert JSON data to AuthConfig object."""
@@ -161,7 +116,7 @@ def json_to_auth_config(json_data: Dict[str, Any]) -> AuthConfig:
         cookie_samesite=cookies_data.get("samesite", "lax"),
         auth_mode=auth_mode,
         invitation_codes=auth_data.get("invitation_codes", []),
-        invitation_default_plan=auth_data.get("invitation_default_plan", "full-access"),
+        invitation_default_plan=auth_data.get("invitation_default_plan", "free"),
         invitation_requires_email=auth_data.get("invitation_requires_email", True),
     )
     

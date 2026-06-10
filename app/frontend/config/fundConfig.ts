@@ -70,10 +70,10 @@ export function computeCoherenceScore(
 }
 
 export function coherenceLabelFromScore(score: number): string {
-  if (score >= 80) return 'Coerenza: ottima per il tuo profilo';
+  if (score >= 80) return 'Coerenza: ottima per il profilo cliente';
   if (score >= 60) return 'Coerenza: buona, in linea con le tue esigenze';
   if (score >= 40) return 'Coerenza: accettabile, ma valuta alternative';
-  return 'Coerenza: poco adatta al tuo orizzonte temporale';
+  return 'Coerenza: poco adatta all’orizzonte temporale indicato';
 }
 
 // UI helpers: return Tailwind classes for badge background and small dot color

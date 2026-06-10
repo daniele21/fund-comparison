@@ -28,23 +28,18 @@ const AdminIcon = () => (
 export const SECTION_COPY: SectionCopy = {
   home: {
     title: 'Benvenuto',
-    description: 'Strumenti professionali per il tuo futuro pensionistico.',
+    description: 'Workspace operativo per analisi previdenziali, confronto fondi e simulazioni cliente.',
     eyebrow: 'Home',
   },
   simulator: {
     title: 'Simulatore Previdenziale',
-    description: 'Calcola la crescita del tuo investimento, il risparmio fiscale e scopri quanto potresti accumulare per la tua pensione.',
+    description: 'Simula scenari previdenziali per il cliente usando contributi, TFR, fiscalità e rendimenti storici.',
     eyebrow: 'Simula',
   },
   'choose-fund': {
     title: 'Confronta Fondi Pensione',
-    description: 'Filtra e confronta i fondi per individuare quelli più adatti al tuo profilo e alla tua azienda.',
+    description: 'Filtra il mercato, costruisci shortlist e confronta fondi con evidenze utili alla consulenza.',
     eyebrow: 'Confronta',
-  },
-  'have-fund': {
-    title: 'Analizza il tuo Fondo',
-    description: 'Verifica come sta andando il tuo fondo attuale e confrontalo con le migliori alternative del mercato.',
-    eyebrow: 'Analizza',
   },
   playbook: {
     title: 'Guida Previdenziale',
@@ -75,9 +70,8 @@ export const buildNavItems = (isAdmin: boolean): NavItem[] => {
       label: 'Strumenti',
       icon: <ToolsIcon />,
       subItems: [
-        { id: 'simulator', label: 'Simulatore', description: 'Calcola la tua pensione' },
-        { id: 'choose-fund', label: 'Confronta Fondi', description: 'Trova il fondo ideale' },
-        { id: 'have-fund', label: 'Analizza Fondo', description: 'Verifica il tuo fondo' },
+        { id: 'simulator', label: 'Simulatore', description: 'Proietta scenari cliente' },
+        { id: 'choose-fund', label: 'Confronta Fondi', description: 'Analizza fondi e alternative' },
       ],
     },
     {

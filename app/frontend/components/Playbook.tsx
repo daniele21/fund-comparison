@@ -41,10 +41,10 @@ const Playbook: React.FC<PlaybookProps> = ({ onStart, theme, toggleTheme }) => {
             />
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight leading-tight px-2 mb-5 sm:mb-6">
-            Costruisci la tua pensione oggi,<br className="hidden sm:block" />Assicura il tuo domani.
+            La piattaforma operativa per la consulenza previdenziale.
           </h1>
           <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto px-4 leading-relaxed">
-            La pensione pubblica potrebbe non bastare. Un fondo pensione privato è una scelta strategica per un futuro sereno. Accedi per confrontare i fondi e trovare la soluzione giusta per te.
+            Confronta fondi, prepara simulazioni e porta al cliente evidenze chiare su costi, rendimenti e scenari previdenziali.
           </p>
           <div className="mt-8 sm:mt-10">
             <button

@@ -3,7 +3,7 @@ import { AnimatedButton } from './animations/AnimatedButton';
 import { ScrollReveal } from './animations/ScrollReveal';
 
 interface HomePageProps {
-  onNavigate: (section: 'simulator' | 'have-fund' | 'choose-fund' | 'playbook') => void;
+  onNavigate: (section: 'simulator' | 'choose-fund' | 'playbook') => void;
 }
 
 const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
@@ -21,20 +21,20 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                 </span>
-                Il futuro della tua pensione inizia qui
+                Toolkit per la consulenza previdenziale
               </div>
 
               {/* Main Heading */}
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
-                Costruisci il tuo
+                Analisi fondi per
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 dark:from-blue-400 dark:via-cyan-400 dark:to-blue-500">
-                  Futuro Pensionistico
+                  decisioni documentate
                 </span>
               </h1>
 
               {/* Subtitle */}
               <p className="text-xl text-slate-600 dark:text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed">
-                Strumenti avanzati per confrontare fondi pensione, simulare la tua pensione futura e prendere decisioni informate per il tuo benessere finanziario.
+                Una cassetta degli attrezzi per consulenti previdenziali: confronto fondi, simulazioni cliente e dati sintetici pronti da discutere.
               </p>
 
               {/* CTA Buttons — plain <button> elements for zero-delay interactivity */}
@@ -46,7 +46,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
-                  Simula la tua Pensione
+                  Simula scenario cliente
                 </button>
                 
                 <button
@@ -73,10 +73,10 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           <ScrollReveal variant="fadeIn" delay={0.1}>
             <div className="text-center mb-16">
               <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-                Tutto quello che ti serve per decidere
+                Tutto quello che serve per analizzare
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-                Strumenti professionali per analizzare e confrontare i fondi pensione italiani
+                Strumenti professionali per confrontare fondi pensione e preparare evidenze per il cliente
               </p>
             </div>
           </ScrollReveal>
@@ -104,7 +104,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   Simulatore Pensionistico
                 </h3>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-                  Calcola in modo preciso quanto riceverai di pensione integrativa considerando età, contributi, rendimenti e tassazione.
+                  Proietta capitale, fiscalità e netto stimato usando parametri cliente, contributi, rendimenti e tassazione.
                 </p>
                 <div className="flex items-center text-blue-600 dark:text-blue-400 font-semibold group-hover:gap-3 gap-2 transition-all">
                   Inizia la simulazione
@@ -142,10 +142,10 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               </button>
             </ScrollReveal>
 
-            {/* Analisi Personalizzata Card */}
+            {/* Analisi Fondo Cliente Card */}
             <ScrollReveal variant="slideUp" delay={0.15}>
               <button
-                onClick={() => onNavigate('have-fund')}
+                onClick={() => onNavigate('choose-fund')}
                 className="group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-8 hover:shadow-xl hover:scale-[1.02] hover:border-green-300 dark:hover:border-green-700 transition-all duration-300 text-left w-full"
               >
                 <div className="flex items-center justify-center w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
@@ -155,13 +155,13 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 </div>
 
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                  Analisi Personalizzata
+                  Analisi Fondo Cliente
                 </h3>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-                  Hai già un fondo pensione? Confrontalo con le alternative e scopri se stai facendo la scelta migliore.
+                  Parti dal fondo attuale del cliente e confrontalo con alternative della stessa categoria.
                 </p>
                 <div className="flex items-center text-green-600 dark:text-green-400 font-semibold group-hover:gap-3 gap-2 transition-all">
-                  Analizza il tuo fondo
+                  Analizza fondo cliente
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
@@ -284,10 +284,10 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal variant="fadeIn" delay={0}>
             <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-6">
-              Pronto a costruire il tuo futuro?
+              Pronto per una nuova analisi?
             </h2>
             <p className="text-xl text-slate-600 dark:text-slate-300 mb-10 max-w-2xl mx-auto">
-              Inizia ora a pianificare la tua pensione integrativa con strumenti professionali e dati sempre aggiornati.
+              Avvia una simulazione o prepara un confronto fondi con dati sempre aggiornati.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <AnimatedButton

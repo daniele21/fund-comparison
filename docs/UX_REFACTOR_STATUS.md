@@ -61,14 +61,9 @@
 - ✅ Tour hooks attivi
 - ⏳ **Da completare**: Contenuto dettagliato sezione
 
-#### ✅ Analizza Fondo (Completo)
-- ✅ SectionHeader unificato
-- ✅ FirstVisitBanner primo accesso
-- ✅ data-tour attributes:
-  - `your-fund-search` (ricerca fondo)
-  - `alternatives` (fondi alternativi)
-- ✅ GuidedTour component
-- ✅ Tour hooks attivi
+#### ✅ Analisi Fondo Cliente (Integrata)
+- ✅ Rimossa come sezione autonoma di navigazione
+- ✅ Integrata alla fine di Confronta Fondi
 - ✅ **Contenuto completo**: Search bar, selected fund card, alternatives comparison
 
 #### ✅ Playbook (Completo)
@@ -86,7 +81,7 @@
 
 ### 1. Alta Priorità ✅ COMPLETATO
 1. ✅ **Completare sezione Confronta Fondi** - Funzionale con filtri e tabella
-2. ✅ **Implementare sezione Analizza Fondo** - Completa con ricerca e alternative
+2. ✅ **Integrare Analisi Fondo Cliente in Confronta Fondi** - Completa con ricerca e alternative
 3. ✅ **Aggiornare Playbook e FAQ** - Header migrati a SectionHeader
 
 ### 2. Media Priorità
@@ -115,43 +110,9 @@
 
 ## 🔧 Come Completare le Sezioni Rimanenti
 
-### Template per Analizza Fondo
+### Stato Analisi Fondo Cliente
 
-```tsx
-{activeSection === 'have-fund' && (
-  <>
-    <GuidedFundComparator funds={pensionFundsData} ...>
-      <div className="space-y-6 sm:space-y-8">
-        
-        {/* Sezione Ricerca Fondo */}
-        <ScrollReveal variant="slideUp">
-          <section data-tour="your-fund-search" className="rounded-2xl ...">
-            <h3>Il Tuo Fondo</h3>
-            {/* Contenuto ricerca */}
-          </section>
-        </ScrollReveal>
-
-        {/* Sezione Alternative */}
-        <ScrollReveal variant="slideUp" delay={0.1}>
-          <section data-tour="alternatives" className="rounded-2xl ...">
-            <h3>Fondi Alternativi</h3>
-            {/* Tabella confronto */}
-          </section>
-        </ScrollReveal>
-
-      </div>
-    </GuidedFundComparator>
-
-    <GuidedTour
-      steps={analyzeFundTourSteps}
-      isOpen={analyzeFundTour.isOpen}
-      onClose={analyzeFundTour.closeTour}
-      onComplete={analyzeFundTour.completeTour}
-      storageKey="have-fund"
-    />
-  </>
-)}
-```
+L'analisi del fondo cliente non e' piu' una sezione autonoma. Il pannello di ricerca fondo, card selezionata e alternative e' integrato in coda a `Confronta Fondi`.
 
 ### Template per Playbook/FAQ
 
@@ -185,7 +146,7 @@
 ### Navigazione
 - **3 sezioni principali**:
   1. Home (Dashboard)
-  2. Strumenti (Simulatore, Confronta Fondi, Analizza Fondo)
+  2. Strumenti (Simulatore, Confronta Fondi)
   3. Risorse (Playbook, FAQ TFR)
 - **Dropdown animati**: Expand/collapse smooth
 - **Active state**: Evidenzia sezione e parent attivi
@@ -210,7 +171,7 @@
 ## 🐛 Known Issues
 
 ### ✅ Risolti
-- ✅ **Sezione Analizza Fondo**: Implementata con search bar e confronto alternative
+- ✅ **Analisi Fondo Cliente**: Integrata in Confronta Fondi con search bar e confronto alternative
 - ✅ **Header Playbook/FAQ**: Migrati a SectionHeader
 
 ### ⚠️ Da Testare
@@ -268,7 +229,7 @@
    - ✅ Home / Dashboard
    - ✅ Simulatore Previdenziale (con tour)
    - ✅ Confronta Fondi (con tour)
-   - ✅ Analizza Fondo (con tour e funzionalità complete)
+   - ✅ Analisi Fondo Cliente integrata in Confronta Fondi
    - ✅ Playbook
    - ✅ FAQ TFR
 
@@ -278,13 +239,13 @@
    - Tracking localStorage separato per completion e dismissal
    - Pulsante tour sempre disponibile nel SectionHeader
 
-### Funzionalità Analizza Fondo
+### Funzionalità Analisi Fondo Cliente
 
 La sezione implementata offre:
 - **Search bar intelligente**: Ricerca in tempo reale tra tutti i fondi
-- **Card fondo selezionato**: Mostra rendimenti 1Y, 5Y e ISC del tuo fondo
+- **Card fondo selezionato**: Mostra rendimenti 1Y, 5Y e ISC del fondo cliente
 - **Alternative automatiche**: Trova i 3 migliori fondi nella stessa categoria
-- **Confronto visuale**: Differenza percentuale rispetto al tuo fondo
+- **Confronto visuale**: Differenza percentuale rispetto al fondo cliente
 - **Empty states**: Feedback quando non ci sono alternative migliori
 
 ### Pronto per il Test

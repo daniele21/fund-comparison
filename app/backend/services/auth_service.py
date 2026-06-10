@@ -98,7 +98,7 @@ def _normalize_plan(plan: Optional[str], fallback: str = "free") -> str:
 
 def _build_anonymous_user(plan: Optional[str] = None) -> Dict[str, Any]:
     """Return a synthetic user payload for no-auth environments."""
-    fallback_plan = plan or "full-access"
+    fallback_plan = plan or "free"
     return {
         "id": os.getenv("APP_AUTH_NOAUTH_USER_ID", "anonymous"),
         "email": os.getenv("APP_AUTH_NOAUTH_EMAIL", "demo@example.com"),
@@ -553,7 +553,7 @@ async def get_current_user(request) -> Optional[dict]:
     auth_config = getattr(settings, "auth_config", None)
     auth_mode = getattr(auth_config, "auth_mode", AuthMode.GOOGLE)
     if auth_mode == AuthMode.NONE:
-        default_plan = getattr(auth_config, "invitation_default_plan", "full-access") if auth_config else "full-access"
+        default_plan = getattr(auth_config, "invitation_default_plan", "free") if auth_config else "free"
         return _build_anonymous_user(default_plan)
 
     # Try Authorization header first (Bearer token)

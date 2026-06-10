@@ -78,7 +78,7 @@ const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
       <div className="flex items-start gap-4">
         <span className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm sm:text-base font-bold">3</span>
         <div>
-          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">Quanto riceverai alla pensione (netto)</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">Netto stimato al pensionamento</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed max-w-xl">
             Questo passaggio combina contributo volontario, TFR automatico e reinvestimento del risparmio IRPEF per stimare il netto a pensione.
           </p>
@@ -87,14 +87,14 @@ const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
 
       <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 p-3 sm:p-5 md:p-6 lg:p-8 space-y-5 sm:space-y-6 md:space-y-8">
         <div>
-          <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Da quanto tempo sei iscritto?</h4>
-          <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1">Indica l'anno della tua prima adesione a un qualsiasi fondo pensione</p>
+          <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Anzianità previdenziale</h4>
+          <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1">Indica l'anno della prima adesione del cliente a un qualsiasi fondo pensione</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-10">
           <SimulatorSlider
-            label="Anno della tua prima adesione"
-            tooltip="L'anno in cui ti sei iscritto per la prima volta a un qualsiasi fondo pensione. Più è lontano, minore sarà l'aliquota sostitutiva."
+            label="Anno prima adesione cliente"
+            tooltip="L'anno in cui il cliente si è iscritto per la prima volta a un qualsiasi fondo pensione. Più è lontano, minore sarà l'aliquota sostitutiva."
             value={annoPrimaAdesione}
             onChange={setAnnoPrimaAdesione}
             min={1993}
@@ -134,7 +134,7 @@ const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
           <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between px-3 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 gap-1 sm:gap-2">
               <div>
-                <span className="text-xs sm:text-sm md:text-base text-slate-700 dark:text-slate-300">Totale versato di tasca tua + TFR datore</span>
+                <span className="text-xs sm:text-sm md:text-base text-slate-700 dark:text-slate-300">Totale versato dal cliente + TFR datore</span>
                 <p className="text-[11px] sm:text-xs md:text-sm text-slate-400 dark:text-slate-500 mt-0.5">
                   Volontario ({formatCurrency(contributoVolontarioAnnuo)}) + TFR ({formatCurrency(tfrAnnuoDatore)}) × {orizzonteAnni} anni
                 </p>
@@ -178,7 +178,7 @@ const StepImpostaPensione: React.FC<StepImpostaPensioneProps> = ({
           <div className="bg-emerald-50 dark:bg-emerald-950/30 border-t-2 border-emerald-300 dark:border-emerald-700 px-3 sm:px-5 md:px-6 py-4 sm:py-5 md:py-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <p className="text-xs sm:text-sm md:text-base font-bold text-emerald-800 dark:text-emerald-200">Quello che riceverai davvero</p>
+                <p className="text-xs sm:text-sm md:text-base font-bold text-emerald-800 dark:text-emerald-200">Netto stimato cliente</p>
                 <p className="text-[11px] sm:text-xs md:text-sm text-emerald-600 dark:text-emerald-400 mt-0.5 sm:mt-1">
                   Hai guadagnato +{formatPercentage(rendimentoNettoPercentuale, 1)} rispetto al versato
                 </p>

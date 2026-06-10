@@ -30,7 +30,7 @@ Comandi eseguiti:
 - `cd app/frontend && pnpm build`
 
 QA manuale da eseguire post-deploy:
-1. Avvio tour da banner e da bottone "Tour Guidato" in `simulator`, `choose-fund`, `have-fund`.
+1. Avvio tour da banner e da bottone "Tour Guidato" in `simulator` e `choose-fund`.
 2. Verifica highlight corretto su ogni target `data-tour`.
 3. Verifica skip/completion e salvataggio stato in `localStorage`.
 4. Verifica mobile viewport: tooltip leggibile, niente clipping.

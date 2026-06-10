@@ -2,7 +2,6 @@ from typing import Optional
 from html import escape as html_escape
 from fastapi import APIRouter, Response, Request, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
-from pydantic import BaseModel, EmailStr
 from datetime import datetime, timezone
 import logging
 import base64
@@ -76,19 +75,6 @@ def _resolve_brand_theme() -> dict[str, str]:
     return BRAND_THEMES[brand_id]
 
 
-class InviteLoginPayload(BaseModel):
-    code: str
-    email: Optional[EmailStr] = None
-    name: Optional[str] = None
-
-
-def _normalize_plan_value(value: Optional[str], default: str = "full-access") -> str:
-    if not value:
-        return default
-    normalized = value.strip().lower().replace(" ", "-")
-    return normalized or default
-
-
 def _require_auth_mode(*modes: AuthMode):
     auth_config = settings.auth_config
     if auth_config.auth_mode not in modes:
@@ -128,17 +114,20 @@ async def auth_configuration():
     """Expose auth mode details so the frontend can adjust UX."""
     auth_config = settings.auth_config
     google_configured = bool(auth_config.get_oauth_provider("google")) if auth_config else False
+    mode = auth_config.auth_mode if auth_config else AuthMode.GOOGLE
+    if mode == AuthMode.INVITE_CODE:
+        logger.warning("Deprecated auth mode invite_code requested; exposing google auth instead")
+        mode = AuthMode.GOOGLE
     return {
-        "mode": auth_config.auth_mode.value if auth_config else AuthMode.GOOGLE.value,
+        "mode": mode.value,
         "google": {
-            "enabled": auth_config.auth_mode == AuthMode.GOOGLE if auth_config else True,
+            "enabled": mode == AuthMode.GOOGLE,
             "configured": google_configured,
         },
         "invite": {
-            "enabled": auth_config.auth_mode == AuthMode.INVITE_CODE if auth_config else False,
-            "requiresEmail": bool(getattr(auth_config, "invitation_requires_email", True)) if auth_config else True,
-            "hasCodes": bool(getattr(auth_config, "invitation_codes", []) or []),
-            "defaultPlan": getattr(auth_config, "invitation_default_plan", "full-access"),
+            "enabled": False,
+            "deprecated": True,
+            "hasCodes": False,
         },
     }
 
@@ -391,70 +380,9 @@ async def oauth_callback(provider: str, code: str, state: str, response: Respons
 
 
 @router.post("/invite/login")
-async def invite_login(payload: InviteLoginPayload):
-    """Authenticate a user via invitation code when invite_code mode is enabled."""
-    auth_config = _require_auth_mode(AuthMode.INVITE_CODE)
-    codes = {code.strip().lower() for code in auth_config.invitation_codes if code}
-    if not codes:
-        raise HTTPException(status_code=500, detail="No invitation codes configured")
-
-    provided_code = (payload.code or "").strip().lower()
-    if not provided_code or provided_code not in codes:
-        raise HTTPException(status_code=401, detail="Invalid invitation code")
-
-    if auth_config.invitation_requires_email and not payload.email:
-        raise HTTPException(status_code=400, detail="Email is required to redeem this invitation")
-
-    email_value = (payload.email or f"invitee+{provided_code}@example.com").lower()
-    user_id = email_value
-    plan_value = _normalize_plan_value(auth_config.invitation_default_plan, "full-access")
-    display_name = payload.name or (email_value.split("@")[0] if email_value else "Invited User")
-
-    # Issue session token
-    token = create_session_token(
-        user_id=user_id,
-        email=email_value,
-        name=display_name,
-        picture=None,
-        provider="invite_code",
-        roles=["user"],
-        plan=plan_value,
-    )
-
-    try:
-        profile = UserProfileCreate(
-            id=user_id,
-            email=email_value,
-            name=display_name,
-            # Plan will be determined by upsert_user based on admin config
-        )
-        await user_service.upsert_user(profile, mark_login=True)
-    except Exception as exc:  # noqa: BLE001
-        if DefaultCredentialsError and isinstance(exc, DefaultCredentialsError):
-            logger.warning("Skipping Firestore profile upsert during invite login: %s", exc)
-        else:
-            logger.exception("Failed to persist invite login user", exc_info=True)
-
-    user_payload = {
-        "id": user_id,
-        "email": email_value,
-        "name": display_name,
-        "picture": None,
-        "roles": ["user"],
-        "plan": plan_value,
-    }
-
-    resp = JSONResponse({"token": token, "user": user_payload})
-    is_prod = getattr(settings, 'ENV', '').lower() == 'production'
-    resp.set_cookie(
-        key="session",
-        value=token,
-        httponly=True,
-        samesite=("strict" if is_prod else "lax"),
-        max_age=60 * 60 * 24 * 7,
-        secure=is_prod,
-    )
-    return resp
+async def invite_login():
+    """Deprecated invitation-code login endpoint."""
+    raise HTTPException(status_code=410, detail="Invitation-code login has been deprecated. Use Google authentication.")
 
 
 @router.get("/me")

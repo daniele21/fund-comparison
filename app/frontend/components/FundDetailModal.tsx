@@ -3,7 +3,7 @@ import { PensionFund } from '../types';
 import { CATEGORY_MAP } from '../constants';
 import PerformanceChart from './PerformanceChart';
 import CostChart from './CostChart';
-import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingBadgeClasses, ratingStarsFromClass } from '../utils/fundRating';
+import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingBadgeClasses, ratingStarsFromScore } from '../utils/fundRating';
 
 interface FundDetailModalProps {
   fund: PensionFund | null;
@@ -190,13 +190,17 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
                   <span className={`inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-bold ${ratingBadgeClasses(fund.rating.classeRating)}`}>
                     <span className="tracking-normal" aria-hidden="true">
                       {Array.from({ length: 5 }, (_, index) => {
-                        const stars = ratingStarsFromClass(fund.rating.classeRating);
+                        const stars = ratingStarsFromScore(fund.rating.ratingScore);
+                        const fillPercent = stars == null ? 0 : Math.max(0, Math.min(1, stars - index)) * 100;
                         return (
-                          <span key={index} className={stars != null && index < stars ? 'opacity-100' : 'opacity-35'}>★</span>
+                          <span key={index} className="relative inline-block text-slate-300 dark:text-slate-600">
+                            <span aria-hidden="true">★</span>
+                            <span className="absolute inset-0 overflow-hidden text-amber-500" style={{ width: `${fillPercent}%` }} aria-hidden="true">★</span>
+                          </span>
                         );
                       })}
                     </span>
-                    <span className="sr-only">{formatRatingStarsText(fund.rating.classeRating)}</span>
+                    <span className="sr-only">{formatRatingStarsText(fund.rating.ratingScore)}</span>
                     {fund.rating.ratingScore != null && <span className="ml-2 tabular-nums">{formatRatingScoreOutOfTen(fund.rating.ratingScore)}</span>}
                   </span>
                 </div>

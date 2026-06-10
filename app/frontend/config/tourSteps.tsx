@@ -18,8 +18,8 @@ export const simulatorTourSteps: TourStep[] = [
     content: (
       <div>
         <p className="mb-3">
-          Questo strumento ti guida in <strong>3 passaggi</strong> per scoprire quanto accumulerai
-          nel tuo fondo pensione, quanto risparmierai in tasse e quanto riceverai al pensionamento.
+          Questo strumento guida l&apos;analisi in <strong>3 passaggi</strong>: montante stimato,
+          risparmio fiscale e netto al pensionamento del cliente.
         </p>
         <p className="text-xs text-slate-500">
           ⏱️ Il tour dura circa 2 minuti
@@ -48,7 +48,7 @@ export const simulatorTourSteps: TourStep[] = [
           </li>
           <li className="flex items-start gap-2">
             <span className="text-purple-500 font-bold">3.</span>
-            <span><strong>Netto alla Pensione:</strong> L'importo netto che riceverai</span>
+            <span><strong>Netto alla Pensione:</strong> L'importo netto stimato</span>
           </li>
         </ul>
       </div>
@@ -61,7 +61,7 @@ export const simulatorTourSteps: TourStep[] = [
     content: (
       <div>
         <p className="mb-2">
-          Cerca il tuo fondo pensione per nome: la simulazione userà i suoi <strong>rendimenti storici reali</strong>.
+          Cerca il fondo pensione del cliente per nome: la simulazione userà i suoi <strong>rendimenti storici reali</strong>.
         </p>
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
           Se non ne selezioni uno, verrà usato un tasso predefinito del 5%.
@@ -243,97 +243,12 @@ export const compareFundsTourSteps: TourStep[] = [
 
 
 /**
- * Tour Guidato: Analizza Fondo
- */
-export const analyzeFundTourSteps: TourStep[] = [
-  {
-    target: 'body',
-    title: '🔎 Benvenuto nell\'Analisi Fondo!',
-    content: (
-      <div>
-        <p className="mb-3">
-          Hai già un fondo pensione? <strong>Scopri come sta andando</strong> e 
-          confrontalo automaticamente con le migliori alternative nella stessa categoria.
-        </p>
-        <p className="text-xs text-slate-500">
-          ⏱️ Il tour dura circa 60 secondi
-        </p>
-      </div>
-    ),
-    placement: 'center',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="your-fund-search"]',
-    title: '🎯 Trova il tuo fondo',
-    content: (
-      <div>
-        <p className="mb-2">
-          Cerca il tuo fondo per nome (es. "Cometa", "Fonchim"). Vedrai subito:
-        </p>
-        <ul className="list-disc list-inside space-y-1 text-sm">
-          <li><strong>Rend. 1Y e 5Y:</strong> Rendimenti a 1 e 5 anni</li>
-          <li><strong>ISC:</strong> Costo annuo del fondo</li>
-          <li><strong>Categoria:</strong> Il profilo di rischio</li>
-        </ul>
-        <p className="mt-2 text-xs text-slate-500">
-          Seleziona un fondo per sbloccarne l'analisi completa.
-        </p>
-      </div>
-    ),
-    placement: 'bottom',
-  },
-  {
-    target: '[data-tour="alternatives"]',
-    title: '💡 Scopri le alternative',
-    content: (
-      <div>
-        <p className="mb-2">
-          Dopo aver selezionato il tuo fondo, il sistema ti mostra fino a <strong>3 alternative migliori</strong> nella stessa
-          categoria, ordinate per rendimento a 5 anni.
-        </p>
-        <p className="text-xs text-green-600 dark:text-green-400 mt-2">
-          ✨ Per ogni alternativa vedrai quanto avresti guadagnato in più!
-        </p>
-        <p className="mt-2 text-xs text-slate-500">
-          💡 Se non vedi questa sezione, cerca prima un fondo qui sopra.
-        </p>
-      </div>
-    ),
-    placement: 'top',
-    isOptional: true,
-  },
-  {
-    target: 'body',
-    title: '✅ Perfetto!',
-    content: (
-      <div>
-        <p className="mb-3">
-          Usa questo strumento regolarmente per:
-        </p>
-        <ul className="space-y-2 text-sm bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
-          <li>✓ Monitorare la performance del tuo fondo</li>
-          <li>✓ Scoprire se esistono opzioni migliori nella stessa categoria</li>
-          <li>✓ Valutare un eventuale cambio fondo</li>
-        </ul>
-        <p className="mt-3 text-xs text-slate-500 text-center">
-          💬 Ricorda: puoi cambiare fondo gratuitamente una volta all'anno!
-        </p>
-      </div>
-    ),
-    placement: 'center',
-  },
-];
-
-
-/**
  * Helper per determinare quale tour mostrare
  */
 export const getTourStepsForSection = (section: string): TourStep[] | null => {
   const tours: Record<string, TourStep[]> = {
     simulator: simulatorTourSteps,
     'choose-fund': compareFundsTourSteps,
-    'have-fund': analyzeFundTourSteps,
   };
 
   return tours[section] || null;

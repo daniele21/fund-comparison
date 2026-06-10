@@ -5,7 +5,6 @@ export type View = 'playbook' | 'dashboard';
 export type DashboardSection =
   | 'home'
   | 'simulator'
-  | 'have-fund'
   | 'choose-fund'
   | 'playbook'
   | 'tfr-faq'

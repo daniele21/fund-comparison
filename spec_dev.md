@@ -213,7 +213,7 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 ## 5. User and UX Definition
 - User persona principale: utente che confronta fondi pensione e vuole un indicatore sintetico leggibile.
 - User journey principale: lista fondi -> ordinamento rating -> apertura dettaglio -> lettura breakdown.
-- Entry points: `choose-fund`, `have-fund`, modale dettaglio fondo.
+- Entry points storici: `choose-fund`, modale dettaglio fondo. La precedente sezione `have-fund` e' stata assorbita in `choose-fund`.
 - Stati UX richiesti:
   - Loading: invariato.
   - Empty: invariato.
@@ -314,7 +314,7 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 ## 5. User and UX Definition
 - User persona principale: utente nuovo che esplora simulator/comparison.
 - User journey principale: banner primo accesso -> avvio tour -> navigazione step contestuali.
-- Entry points (route/component): `SimulatorPage`, sezione `choose-fund`, sezione `have-fund`.
+- Entry points (route/component): `SimulatorPage`, sezione `choose-fund`.
 - Stati UX richiesti:
   - Loading: n/a.
   - Empty: se non ci sono target validi, fallback a `body`.
@@ -354,7 +354,7 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - Integration tests: n/a.
 - UI/manual QA scenarios:
   - Avvio da banner e da pulsante "Tour Guidato".
-  - Passi con spotlight su target in `simulator`, `choose-fund`, `have-fund`.
+  - Passi con spotlight su target in `simulator` e `choose-fund`.
   - Skip/close/completion con persistenza `localStorage`.
 - Edge cases: target non trovato -> fallback a `body` o skip step.
 - Failure path cases: close durante run non blocca sezione.
@@ -740,3 +740,74 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - Rischio: preview PDF browser-specific sui grafici Recharts; QA manuale richiesta su Chrome/Safari.
 - Rischio: testi narrativi o nomi fondo molto lunghi possono richiedere ritocco puntuale di spacing/font in preview A4.
 - Rollback: rimuovere viste report aggiornate, primitive PDF, utility narrative, campo `customerEmail` e CSS print A4, poi redeploy frontend.
+
+---
+
+## Feature Note - Riposizionamento Consulente e Fix Comparatore (2026-05-13)
+
+### Scope e motivazione
+- Convertito il posizionamento principale da strumento retail a workspace per consulenti finanziari previdenziali.
+- Rimosso l'accesso autonomo alla sezione "Analizza Fondo"; le relative informazioni sono ora disponibili in coda alla sezione "Confronta Fondi".
+- Corretto il rating: score finale a 1 decimale e stelle proporzionali al punteggio numerico su scala 0-10.
+- Accorpata la ricerca fondi con il titolo "Cerca fondi" e rimosso il titolo ridondante "Fondi" sopra la tabella.
+
+### Impatti frontend/backend/config
+- Frontend:
+  - aggiornati copy principali in home, playbook, dashboard, comparatore e simulatore;
+  - rimossa la voce "Analizza Fondo" da menu desktop e bottom navigation mobile;
+  - `/analyze` viene risolto verso `choose-fund` per evitare route morte;
+  - aggiunto pannello "Analisi fondo cliente" dentro `Confronta Fondi`;
+  - aggiornato rendering rating in tabella, card mobile, modale dettaglio e report PDF confronto.
+- Backend/config: nessun impatto.
+
+### Contratti/tipi aggiornati
+- `DashboardSection` non include piu' `have-fund`.
+- `formatRatingStarsText` e il rendering stelle usano `ratingScore`, non `classeRating`.
+- Nessun contratto API modificato.
+
+### Piano test e risultati
+- Eseguito: `cd app/frontend && pnpm exec tsc --noEmit`.
+- Risultato: KO per errori TypeScript preesistenti in Framer Motion/Recharts/ImportMeta, hook feedback e `data/funds copy.ts`; nessun errore specifico emerso sulle nuove route/copy/rating.
+- Eseguito: `cd app/frontend && pnpm build`.
+- Risultato: build ok; resta warning Vite preesistente su chunk > 500 kB.
+
+### Rischi aperti e rollback
+- Rischio: alcuni copy educativi secondari restano volutamente descrittivi e non tutti sono stati riscritti in profondita' consulenziale.
+- Rischio: QA visuale consigliata su mobile per il nuovo pannello "Analisi fondo cliente" in coda al comparatore.
+- Rollback: ripristinare la precedente sezione autonoma di analisi in routing/nav/rendering, ripristinare helper stelle per classe rating e riportare `docs/rating-fondi.md` alla precedente precisione del rating.
+
+---
+
+## Feature Note - Deprecazione Codice Invito Auth (2026-05-13)
+
+### Scope e motivazione
+- Consolidato il prodotto su autenticazione Google OAuth come unico flusso reale.
+- Deprecato il login tramite codice invito per evitare token iniziali con piano `full-access` non coerenti con il profilo Firestore.
+
+### Impatti frontend/backend/config
+- Frontend:
+  - rimossa la form "codice invito" dalla modale di login;
+  - il client normalizza eventuale `mode=invite_code` legacy a Google.
+- Backend/config:
+  - `/auth/config` espone `invite.enabled=false`;
+  - `/auth/invite/login` restituisce `410 Gone` e non emette token;
+  - `APP_AUTH_MODE=invite_code` viene trattato come configurazione legacy e ricondotto a Google;
+  - `json_loader` usa `free` come fallback legacy per `invitation_default_plan` e compila correttamente dopo la rimozione di un blocco duplicato/corrotto;
+  - rimosse le variabili `APP_AUTH_INVITE_*` dai file ambiente JSON.
+
+### Contratti/tipi aggiornati
+- Contratto `/auth/config`: campo `invite` mantenuto solo per compatibilita', con `deprecated=true`.
+- Nessuna modifica ai claim Google OAuth; nuovi utenti non admin restano `plan=free`, `status=active`, `roles=[free]`.
+
+### Piano test e risultati
+- Eseguito: `cd app/frontend && pnpm build`.
+- Risultato: build ok; resta warning Vite preesistente su chunk > 500 kB.
+- Eseguito: `cd app/frontend && pnpm exec tsc --noEmit`.
+- Risultato: KO per errori TypeScript preesistenti in componenti animazione/recharts/import-meta/hook feedback e `data/funds copy.ts`; nessun errore emerso su `auth.tsx` o `LoginModal.tsx`.
+- Eseguito: `cd app/backend && python -m py_compile routes/auth.py config/auth.py config/json_loader.py services/auth_service.py`.
+- Risultato: ok.
+- Non eseguito: `cd app/backend && pytest tests/auth -q`, perche' `pytest`/dipendenze backend non sono installate nell'ambiente corrente.
+
+### Rischi aperti e rollback
+- Rischio: eventuali ambienti con `APP_AUTH_MODE=invite_code` verranno serviti come Google OAuth e richiedono credenziali OAuth valide.
+- Rollback: ripristinare endpoint `/auth/invite/login`, variabili `APP_AUTH_INVITE_*`, UI codice invito e default invite plan.

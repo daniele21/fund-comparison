@@ -3,23 +3,16 @@ import type { AuthUser } from './types';
 
 type AuthMode = 'google' | 'invite_code' | 'none';
 
-type InviteLoginOptions = {
-  code: string;
-  email?: string;
-  name?: string;
-};
-
 type AuthContextValue = {
   user: AuthUser | null;
   loading: boolean;
-  login: (options?: InviteLoginOptions) => Promise<void>;
+  login: () => Promise<void>;
   logout: () => Promise<void>;
   refresh: (tokenOverride?: string) => Promise<AuthUser | null>;
   setToken: (token?: string) => void;
   updateUser: (updater: (prev: AuthUser | null) => AuthUser | null) => void;
   token?: string;
   authMode: AuthMode;
-  inviteRequiresEmail: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -75,7 +68,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return readStoredToken();
   });
   const [authMode, setAuthMode] = useState<AuthMode>('google');
-  const [inviteRequiresEmail, setInviteRequiresEmail] = useState(true);
   const [authConfigLoaded, setAuthConfigLoaded] = useState(false);
   const userRef = React.useRef<AuthUser | null>(null);
 
@@ -111,13 +103,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       const data = await res.json();
       const mode = typeof data?.mode === 'string' ? (data.mode as AuthMode) : 'google';
-      setAuthMode(mode);
-      const requiresEmail = data?.invite?.requiresEmail;
-      if (typeof requiresEmail === 'boolean') {
-        setInviteRequiresEmail(requiresEmail);
-      } else {
-        setInviteRequiresEmail(true);
-      }
+      setAuthMode(mode === 'invite_code' ? 'google' : mode);
     } catch (err) {
       console.warn('[Auth] Unable to load auth config:', err);
     } finally {
@@ -210,8 +196,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     (async () => {
       if (!authConfigLoaded) return;
       
-      // For invite_code and none modes, check if we have a stored token
-      if (authMode === 'invite_code' || authMode === 'none') {
+      // For no-auth local mode, check if we have a stored token.
+      if (authMode === 'none') {
         // If we have a token, validate it
         if (sessionToken) {
           const u = await fetchMe(sessionToken);
@@ -239,87 +225,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, [sessionToken, authConfigLoaded, authMode]);
 
-  const loginWithInvite = async (options: InviteLoginOptions) => {
-    const payload = {
-      code: options.code?.trim(),
-      email: options.email?.trim() || undefined,
-      name: options.name?.trim() || undefined,
-    };
-
-    if (!payload.code) {
-      throw new Error('Inserisci un codice invito valido.');
-    }
-
-    try {
-      const res = await fetch(`${API_BASE}/auth/invite/login`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        let message = 'Codice invito non valido o già utilizzato.';
-        try {
-          const errorBody = await res.json();
-          const detail = errorBody?.detail;
-          if (detail) {
-            // Map known backend messages to localized, user-friendly Italian strings
-            const detailStr = String(detail).toLowerCase();
-            if (detailStr.includes('invalid') || detailStr.includes('invitation') || detailStr.includes('invalid invitation')) {
-              message = 'Codice invito non valido.';
-            } else if (detailStr.includes('already') || detailStr.includes('used')) {
-              message = 'Questo codice è già stato utilizzato.';
-            } else if (detailStr.includes('expired')) {
-              message = 'Il codice invito è scaduto.';
-            } else {
-              // Fallback: use provided detail but keep it short
-              message = String(detail);
-            }
-          }
-        } catch (parseErr) {
-          console.warn('[Auth] Unable to parse invite login error:', parseErr);
-        }
-        throw new Error(message);
-      }
-
-      const result = await res.json();
-      const tokenFromResponse = typeof result?.token === 'string' ? result.token : undefined;
-      if (tokenFromResponse) {
-        persistToken(tokenFromResponse);
-      }
-
-      const refreshed = await fetchMe(tokenFromResponse);
-      if (refreshed) {
-        setUser(refreshed);
-        userRef.current = refreshed;
-      } else if (result?.user) {
-        const plan = typeof result.user.plan === 'string' && result.user.plan.toLowerCase() === 'full-access' ? 'full-access' : 'free';
-        const fallbackUser = { ...result.user, plan } as AuthUser;
-        setUser(fallbackUser);
-        userRef.current = fallbackUser;
-      }
-    } catch (err) {
-      if (err instanceof Error) {
-        throw err;
-      }
-      throw new Error('Impossibile completare l\'accesso con invito.');
-    }
-  };
-
-  const login = async (options?: InviteLoginOptions) => {
+  const login = async () => {
     if (authMode === 'none') {
-      return;
-    }
-
-    if (authMode === 'invite_code') {
-      if (!options) {
-        throw new Error('Fornisci il codice invito per accedere.');
-      }
-      await loginWithInvite(options);
       return;
     }
 
@@ -451,7 +358,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       updateUser: (updater) => setUser((prev) => updater(prev)),
       token: sessionToken,
       authMode,
-      inviteRequiresEmail,
     }}>
       {children}
     </AuthContext.Provider>

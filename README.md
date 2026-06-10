@@ -11,7 +11,7 @@
 
 Pension Fund Comparator is a Progressive Web App, branded for Accademia Previdenza, for comparing Italian pension funds, understanding costs, ratings and returns, simulating retirement scenarios, and managing free, subscriber, and admin access through a FastAPI backend.
 
-The project combines a guided frontend experience with static pension fund data, protected APIs, Google OAuth or invite-code authentication, role management, operational notifications, and separate deployment flows for `test` and `prod` environments.
+The project combines a guided frontend experience with static pension fund data, protected APIs, Google OAuth authentication, role management, operational notifications, and separate deployment flows for `test` and `prod` environments.
 
 ## Mission
 
@@ -43,7 +43,7 @@ This repository builds a more operational experience: users can explore funds, s
 - Guides, FAQ, glossary, and educational content through dedicated APIs.
 - Contextual guided tours for the simulator, fund comparison, and fund analysis.
 - Free plan with limited visible results and full-access plan for subscribers.
-- Google OAuth, invite codes, and no-auth mode for controlled development.
+- Google OAuth for real user access, with no-auth mode reserved for local non-sensitive development.
 - Session handling through HttpOnly cookies/JWT and backend role/plan guards.
 - Admin dashboard for users, approvals, roles, status, and feedback.
 - Telegram notifications for admin events and user requests.
@@ -149,7 +149,7 @@ Prerequisites:
    cp .env.development .env
    ```
 
-3. Update `.env` with real or development values. For quick development, you can use `APP_AUTH_MODE=invite_code`.
+3. Update `.env` with real or development values. Use `APP_AUTH_MODE=google` for real auth flows. `APP_AUTH_MODE=none` is only for local non-sensitive UI/API iterations.
 
 4. Start the API from the repository root:
 
@@ -196,8 +196,9 @@ Supported modes:
 | Mode | Variable | Usage |
 |---|---|---|
 | Google OAuth | `APP_AUTH_MODE=google` | Real flow with Google, Firebase Auth, and Firestore |
-| Invite code | `APP_AUTH_MODE=invite_code` | Development or controlled access through codes |
 | No auth | `APP_AUTH_MODE=none` | Local-only UI/API iterations for non-sensitive work |
+
+Invitation-code authentication is deprecated. `/auth/invite/login` returns `410 Gone` and must not be used for user access.
 
 Main roles:
 

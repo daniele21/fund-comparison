@@ -213,7 +213,7 @@ class AuthMode(str, Enum):
     """Supported high-level authentication modes."""
 
     GOOGLE = "google"  # OAuth-only (current behavior)
-    INVITE_CODE = "invite_code"  # Manual login via invitation codes
+    INVITE_CODE = "invite_code"  # Deprecated. Accepted only for legacy config migration.
     NONE = "none"  # Open access, no authentication required
 
 
@@ -294,17 +294,17 @@ class AuthConfig(BaseConfig):
     # Invitation-code authentication configuration
     invitation_codes: List[str] = Field(
         default_factory=list,
-        description="Accepted invitation codes when auth_mode=invite_code"
+        description="Deprecated; invitation-code login is disabled"
     )
 
     invitation_default_plan: str = Field(
-        default="full-access",
-        description="Plan granted to invite-code users"
+        default="free",
+        description="Deprecated; invitation-code login is disabled"
     )
 
     invitation_requires_email: bool = Field(
         default=True,
-        description="Require an email address when redeeming an invitation code"
+        description="Deprecated; invitation-code login is disabled"
     )
 
     # Admin users configuration
@@ -376,24 +376,61 @@ def get_auth_config() -> AuthConfig:
     """Get authentication configuration from environment variables."""
     config = AuthConfig()
 
+    jwt_secret = os.getenv("APP_JWT_SECRET_KEY") or os.getenv("APP_JWT_SECRET")
+    if jwt_secret:
+        config.jwt.secret_key = jwt_secret
+
+    jwt_algorithm = os.getenv("APP_JWT_ALGORITHM")
+    if jwt_algorithm:
+        config.jwt.algorithm = jwt_algorithm
+
+    jwt_expire_minutes = os.getenv("APP_JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
+    if jwt_expire_minutes:
+        config.jwt.access_token_expire_minutes = int(jwt_expire_minutes)
+
+    jwt_refresh_days = os.getenv("APP_JWT_REFRESH_TOKEN_EXPIRE_DAYS")
+    if jwt_refresh_days:
+        config.jwt.refresh_token_expire_days = int(jwt_refresh_days)
+
+    jwt_issuer = os.getenv("APP_JWT_ISSUER")
+    if jwt_issuer:
+        config.jwt.issuer = jwt_issuer
+
+    jwt_audience = os.getenv("APP_JWT_AUDIENCE")
+    if jwt_audience:
+        config.jwt.audience = jwt_audience
+
     env_mode = os.getenv("APP_AUTH_MODE")
     if env_mode:
         try:
-            config.auth_mode = AuthMode(env_mode.strip().lower())
+            parsed_mode = AuthMode(env_mode.strip().lower())
+            config.auth_mode = AuthMode.GOOGLE if parsed_mode == AuthMode.INVITE_CODE else parsed_mode
         except ValueError:
             raise ValueError("APP_AUTH_MODE must be one of: google, invite_code, none")
 
-    invite_codes = _parse_csv(os.getenv("APP_AUTH_INVITE_CODES") or os.getenv("APP_INVITATION_CODES"))
-    if invite_codes:
-        config.invitation_codes = invite_codes
+    google_client_id = os.getenv("APP_GOOGLE_CLIENT_ID") or os.getenv("GOOGLE_CLIENT_ID")
+    google_client_secret = os.getenv("APP_GOOGLE_CLIENT_SECRET") or os.getenv("GOOGLE_CLIENT_SECRET")
+    if google_client_id and google_client_secret:
+        config.google_oauth = GoogleOAuthConfig(
+            client_id=google_client_id,
+            client_secret=google_client_secret,
+        )
 
-    invite_plan = os.getenv("APP_AUTH_INVITE_PLAN")
-    if invite_plan:
-        config.invitation_default_plan = invite_plan.strip()
+    oauth_redirect_uri = os.getenv("APP_OAUTH_REDIRECT_URI")
+    if oauth_redirect_uri:
+        config.oauth_redirect_uri = oauth_redirect_uri
 
-    invite_requires_email = _parse_bool(os.getenv("APP_AUTH_INVITE_REQUIRE_EMAIL"))
-    if invite_requires_email is not None:
-        config.invitation_requires_email = invite_requires_email
+    cookie_secure = _parse_bool(os.getenv("APP_COOKIE_SECURE"))
+    if cookie_secure is not None:
+        config.cookie_secure = cookie_secure
+
+    cookie_samesite = os.getenv("APP_COOKIE_SAMESITE")
+    if cookie_samesite:
+        config.cookie_samesite = cookie_samesite
+
+    cookie_domain = os.getenv("APP_COOKIE_DOMAIN")
+    if cookie_domain:
+        config.cookie_domain = cookie_domain
 
     admin_emails = _parse_csv(os.getenv("APP_AUTH_ADMIN_EMAILS"))
     if admin_emails:

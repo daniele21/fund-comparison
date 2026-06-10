@@ -33,9 +33,9 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-800 dark:bg-slate-900/95">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Controlla il tuo fondo pensione</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Controlla il fondo pensione del cliente</h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-300 max-w-xl">
-            Scrivi il nome del tuo fondo o della compagnia. Se non lo ricordi, lo trovi sull’estratto conto o sulla documentazione che ricevi ogni anno.
+            Scrivi il nome del fondo o della compagnia indicata nella documentazione del cliente.
           </p>
         </div>
       </div>
@@ -129,7 +129,7 @@ export const CheckMyFundFlow: React.FC<CheckMyFundFlowProps> = ({ funds }) => {
               <FundXrayCard fund={fund} profile={profile} />
             ) : (
               <div className="text-sm text-slate-500 dark:text-slate-400">
-                Seleziona un fondo dall’elenco per vedere costi, rendimenti e coerenza con il tuo orizzonte.
+                Seleziona un fondo dall’elenco per vedere costi, rendimenti e coerenza con l’orizzonte del cliente.
               </div>
             )}
           </div>
@@ -202,15 +202,15 @@ const FundXrayCard: React.FC<{ fund: PensionFund; profile: UserProfile }> = ({ f
         <XrayRow color="sky" title={matchLabel}>
           {profile.horizonYears || profile.ageRange ? (
             <>
-              Questo fondo {fund.categoria} ha un punteggio di coerenza di <strong>{coherenceScore}/100</strong> rispetto al tuo profilo.
-              {coherenceScore >= 60 ? ' Sembra in linea con il tuo orizzonte.' : ' Potresti valutare fondi più adatti al tuo orizzonte.'}
+              Questo fondo {fund.categoria} ha un punteggio di coerenza di <strong>{coherenceScore}/100</strong> rispetto al profilo cliente.
+              {coherenceScore >= 60 ? ' Sembra in linea con l’orizzonte indicato.' : ' Valuta fondi più adatti all’orizzonte indicato.'}
               <div className="mt-2 w-full">
                 <CoherenceGauge score={coherenceScore} showNumber colorClass={coherenceColors.dot} />
               </div>
             </>
           ) : (
             <>
-              La coerenza dipende da quanti anni ti separano dalla pensione e dalla tua tolleranza alle oscillazioni.
+              La coerenza dipende dagli anni al pensionamento e dalla tolleranza alle oscillazioni del cliente.
             </>
           )}
         </XrayRow>

@@ -41,7 +41,9 @@ def log_startup_info():
         client_id = getattr(settings, 'GOOGLE_CLIENT_ID', None)
         client_secret_present = bool(getattr(settings, 'GOOGLE_CLIENT_SECRET', None))
         try:
-            redirect_uri = __import__('api.services.auth_service', fromlist=['_get_redirect_uri'])._get_redirect_uri('google')
+            from backend.services.auth_service import _get_redirect_uri
+
+            redirect_uri = _get_redirect_uri("google")
         except Exception:
             redirect_uri = None
         logger.info("Auth startup: GOOGLE_CLIENT_ID=%s GOOGLE_CLIENT_SECRET_PRESENT=%s OAUTH_REDIRECT_URI=%s", client_id, client_secret_present, redirect_uri)

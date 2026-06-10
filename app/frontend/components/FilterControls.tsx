@@ -55,6 +55,17 @@ const FilterControls: React.FC<FilterControlsProps> = ({
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 p-4 min-w-0 overflow-visible">
+      <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Cerca fondi</h2>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            Filtra il database per preparare il confronto del cliente.
+          </p>
+        </div>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+          {totalFunds} fondi disponibili
+        </p>
+      </div>
       {/* Desktop - All in one row */}
       <div className="hidden sm:flex items-center gap-3 flex-wrap">
         <div className="flex-1 min-w-0 min-w-[200px]">

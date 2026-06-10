@@ -378,17 +378,30 @@ class Settings(BaseSettings):
         issues = []
         
         if self.is_production():
-            # Validate production configuration
-            if self._environment_config:
-                prod_issues = validate_production_config(self._environment_config)
-                issues.extend(prod_issues)
-            
-            # Additional validation
-            if self.JWT_SECRET_KEY == "test-secret-key-for-development-only":
+            if self.JWT_SECRET_KEY in {
+                "test-secret-key-for-development-only",
+                "your-secret-key-here-change-in-production",
+                "CHANGE-THIS-IN-PRODUCTION-VIA-ENV-VARS",
+            }:
                 issues.append("JWT secret key must be changed for production")
+
+            if len(self.JWT_SECRET_KEY or "") < 64:
+                issues.append("JWT secret key should be at least 64 characters for production")
+
+            if not self.GOOGLE_CLIENT_ID:
+                issues.append("Google OAuth client ID must be configured")
+
+            if not self.GOOGLE_CLIENT_SECRET:
+                issues.append("Google OAuth client secret must be configured")
             
             if not self.BASE_URL.startswith("https://"):
                 issues.append("Base URL must use HTTPS in production")
+
+            if not self.FRONTEND_BASE_URL.startswith("https://"):
+                issues.append("Frontend base URL must use HTTPS in production")
+
+            if "yourdomain.com" in self.BASE_URL or "yourdomain.com" in self.FRONTEND_BASE_URL:
+                issues.append("Default domain names must be changed for production")
         
         return issues
     

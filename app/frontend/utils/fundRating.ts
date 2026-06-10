@@ -22,6 +22,7 @@ const emptyScores = {
 };
 
 const round2 = (value: number): number => Math.round(value * 100) / 100;
+const round1 = (value: number): number => Math.round(value * 10) / 10;
 
 export const tipoAdesioneFromFundType = (type: FundType): TipoAdesione => (
   type === 'FPN' ? 'collettiva' : 'individuale'
@@ -50,31 +51,20 @@ export const ratingDescriptionFromClass = (ratingClass: FundRatingClass): string
   }
 };
 
-export const ratingStarsFromClass = (ratingClass: FundRatingClass | null): number | null => {
-  switch (ratingClass) {
-    case 'A':
-      return 5;
-    case 'B':
-      return 4;
-    case 'C':
-      return 3;
-    case 'D':
-      return 2;
-    case 'E':
-      return 0;
-    default:
-      return null;
-  }
+export const ratingStarsFromScore = (score: number | null): number | null => {
+  if (score == null) return null;
+  const clampedScore = Math.max(0, Math.min(10, score));
+  return Math.round((clampedScore / 2) * 2) / 2;
 };
 
 export const formatRatingScoreOutOfTen = (score: number | null): string | null => {
   if (score == null) return null;
-  const clampedScore = Math.max(1, Math.min(10, score));
-  return `${clampedScore.toFixed(2)}/10`;
+  const clampedScore = Math.max(0, Math.min(10, score));
+  return `${clampedScore.toFixed(1)}/10`;
 };
 
-export const formatRatingStarsText = (ratingClass: FundRatingClass | null): string => {
-  const stars = ratingStarsFromClass(ratingClass);
+export const formatRatingStarsText = (score: number | null): string => {
+  const stars = ratingStarsFromScore(score);
   return stars == null ? 'N/D' : `${stars} stelle`;
 };
 
@@ -120,7 +110,7 @@ export const calculateFundRating = (fund: RatingInput): FundRating => {
   };
   const periods = (Object.keys(availableScores) as RatingPeriod[]).filter((period) => availableScores[period] != null);
   const weightSum = periods.reduce((sum, period) => sum + BASE_WEIGHTS[period], 0);
-  const ratingScore = round2(
+  const ratingScore = round1(
     periods.reduce((sum, period) => {
       const score = availableScores[period];
       return score == null ? sum : sum + score * (BASE_WEIGHTS[period] / weightSum);

@@ -154,7 +154,7 @@ const SimulationComparisonPanel: React.FC<SimulationComparisonPanelProps> = ({
             Confronto Simulazione — {funds.length} fondi
           </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed max-w-xl">
-            Stessi parametri, fondi diversi: scopri quale ti farebbe accumulare di più.
+            Stessi parametri, fondi diversi: confronto immediato del montante stimato.
           </p>
         </div>
       </div>

@@ -29,9 +29,9 @@ const STEPS: {
   shortLabel: string;
   description: string;
 }[] = [
-  { id: 'montante', label: 'Crescita del Capitale', shortLabel: 'Capitale', description: 'Quanto accumuli nel fondo pensione nel tempo' },
-  { id: 'fiscale', label: 'Risparmio sulle Tasse', shortLabel: 'Tasse', description: 'Quanto risparmi ogni anno sull\'IRPEF' },
-  { id: 'imposta', label: 'Netto alla Pensione', shortLabel: 'Netto', description: 'Quanto riceverai davvero al pensionamento' },
+  { id: 'montante', label: 'Crescita del Capitale', shortLabel: 'Capitale', description: 'Stima del montante nel fondo pensione nel tempo' },
+  { id: 'fiscale', label: 'Risparmio sulle Tasse', shortLabel: 'Tasse', description: 'Stima del risparmio IRPEF annuo del cliente' },
+  { id: 'imposta', label: 'Netto alla Pensione', shortLabel: 'Netto', description: 'Stima del netto al pensionamento' },
 ];
 
 /* ── Fund search / selector ─────────────────────────────────────── */
@@ -60,7 +60,7 @@ const FundSelector: React.FC<{
   return (
     <div className="space-y-1.5">
       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-        Seleziona il tuo fondo pensione
+        Seleziona fondo cliente
       </label>
 
       {isFreePlan ? (
@@ -97,7 +97,7 @@ const FundSelector: React.FC<{
       ) : (
       <>
       <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-        Cercalo per nome: useremo il suo rendimento storico per rendere la simulazione più accurata.
+        Cercalo per nome: useremo il rendimento storico del fondo per rendere la simulazione più accurata.
         Se non lo selezioni, verrà usato un tasso di rendimento predefinito del 5%.
       </p>
 
@@ -136,7 +136,7 @@ const FundSelector: React.FC<{
             </svg>
             <input
               type="text"
-              placeholder="Cerca il tuo fondo pensione…"
+              placeholder="Cerca fondo pensione cliente..."
               value={query}
               onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
               onFocus={() => setOpen(true)}
@@ -488,7 +488,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
       <SectionHeader
         eyebrow="Simulazione"
         title="Simulatore Previdenziale"
-        description="Calcola la crescita del tuo investimento, il risparmio fiscale e scopri quanto potresti accumulare per la tua pensione."
+        description="Simula montante, risparmio fiscale e netto stimato per uno scenario cliente."
         badge={{ text: "🌟 Nuovo", variant: "new" }}
         tourAction={{
           label: "Tour Guidato",
@@ -503,9 +503,8 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
             Come funziona?
           </h2>
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
-            Questo simulatore ti guida in <strong className="text-blue-600 dark:text-blue-400">3 passaggi</strong> per
-            capire quanto accumulerai nel tuo fondo pensione, quanto risparmierai di tasse ogni anno, e quanto riceverai
-            effettivamente al momento della pensione.
+            Questo simulatore organizza in <strong className="text-blue-600 dark:text-blue-400">3 passaggi</strong> la stima
+            di montante, beneficio fiscale e netto al pensionamento per il cliente.
           </p>
         </div>
 
@@ -526,8 +525,7 @@ const SimulatorPage: React.FC<SimulatorPageProps> = ({ theme }) => {
             <div>
               <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1">Cosa otterrai</p>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Una stima chiara di: quanto cresce il tuo capitale investito, quanto recuperi in dichiarazione dei redditi
-                ogni anno, e l'importo netto che riceverai al pensionamento.
+                Una stima chiara di capitale investito, recupero fiscale annuo e importo netto atteso al pensionamento.
               </p>
             </div>
           </div>

@@ -13,7 +13,7 @@
 - ✅ **Home**: Ben strutturata, ma potrebbe migliorare
 - ⚠️ **Simulatore**: Buona ma manca onboarding
 - ⚠️ **Confronta Fondi**: Complessa, servono guide
-- ⚠️ **Analizza Fondo**: Simile a Confronta, può creare confusione
+- ✅ **Analisi Fondo Cliente**: integrata in Confronta Fondi per evitare duplicazione
 - ✅ **Guida**: Ben organizzata
 - ✅ **FAQ TFR**: Chiara
 
@@ -69,27 +69,22 @@ Tutte le sezioni seguiranno questa struttura:
 
 **A. Simulatore**
 ```
-Step 1: "Benvenuto! Calcoliamo quanto potresti accumulare" ⏱️ 30s
-Step 2: "Inserisci i tuoi dati: età, contributi, orizzonte temporale" ⏱️ 45s
-Step 3: "Opzionale: Seleziona il tuo fondo per dati accurati" ⏱️ 30s
+Step 1: "Benvenuto! Simuliamo uno scenario cliente" ⏱️ 30s
+Step 2: "Inserisci dati cliente: età, contributi, orizzonte temporale" ⏱️ 45s
+Step 3: "Opzionale: seleziona il fondo cliente per dati accurati" ⏱️ 30s
 Step 4: "Ecco i risultati! Scopri il risparmio fiscale" ⏱️ 60s
 ```
 
 **B. Confronta Fondi**
 ```
-Step 1: "Trova i migliori fondi per la tua azienda" ⏱️ 30s
+Step 1: "Costruisci una shortlist fondi per il cliente" ⏱️ 30s
 Step 2: "Filtra per categoria di rischio e tipologia" ⏱️ 45s
 Step 3: "Seleziona fino a 5 fondi da confrontare" ⏱️ 30s
 Step 4: "Visualizza rendimenti e costi nel grafico" ⏱️ 60s
 ```
 
-**C. Analizza Fondo**
-```
-Step 1: "Hai già un fondo? Vediamo come sta andando" ⏱️ 30s
-Step 2: "Cerca e seleziona il tuo fondo attuale" ⏱️ 30s
-Step 3: "Confronta con alternative migliori" ⏱️ 45s
-Step 4: "Scopri quanto potresti guadagnare in più" ⏱️ 60s
-```
+**C. Analisi Fondo Cliente**
+Integrata nella sezione Confronta Fondi: ricerca fondo attuale cliente, card riepilogo e alternative della stessa categoria.
 
 #### Libreria Consigliata
 Useremo **React Joyride** per i tour:
@@ -205,7 +200,7 @@ Risparmio fiscale: €15,000
 - [ ] **Home**: Migliorare CTA e hero
 - [ ] **Simulatore**: Aggiungere tour + empty state
 - [ ] **Confronta Fondi**: Semplificare UI + tour
-- [ ] **Analizza Fondo**: Differenziare da Confronta + tour
+- [x] **Analisi Fondo Cliente**: Integrata in Confronta Fondi
 
 ### Phase 3: Polish & Testing (Week 4)
 - [ ] Aggiungere micro-interazioni
@@ -221,10 +216,10 @@ Risparmio fiscale: €15,000
 ### Home - Hero Section
 ```
 ╔══════════════════════════════════════════════╗
-║  🚀 Il futuro della tua pensione inizia qui ║
+║  Toolkit per la consulenza previdenziale    ║
 ║                                              ║
-║  Costruisci il tuo                           ║
-║  Futuro Pensionistico                        ║
+║  Analisi fondi per                           ║
+║  decisioni documentate                       ║
 ║                                              ║
 ║  Strumenti professionali per confrontare... ║
 ║                                              ║
@@ -263,7 +258,7 @@ Risparmio fiscale: €15,000
 ╔══════════════════════════════════════════════╗
 ║ 🔍 CONFRONTA                                 ║
 ║ Confronta Fondi Pensione                     ║
-║ Trova il fondo ideale per te                 ║
+║ Costruisci shortlist e confronto cliente     ║
 ║ [🎯 Guida Veloce]  [ℹ️ Tour Completo]      ║
 ╠══════════════════════════════════════════════╣
 ║                                              ║

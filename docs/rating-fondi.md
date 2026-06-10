@@ -11,7 +11,7 @@ La metodologia deriva da `docs/calcolo-rating.md`.
 - Per ogni periodo disponibile si calcola `score = rendimento - ISC usato`.
 - I pesi base sono: 3 anni `15%`, 5 anni `20%`, 10 anni `25%`, 15 anni `15%`, 20 anni `15%`, 25 anni `10%`.
 - I pesi sono normalizzati solo sui periodi disponibili.
-- Il rating score e arrotondato a 2 decimali.
+- Il rating score e arrotondato a 1 decimale.
 
 Classi:
 
@@ -39,6 +39,7 @@ Il rating e mostrato:
 - accanto al nome fondo nella tabella desktop;
 - come badge e metrica nelle card mobile;
 - nella modale di dettaglio, con score, classe, ISC usato, tipo adesione e breakdown degli score disponibili.
+- con stelle proporzionali allo score numerico su scala 0-10: ogni punto vale mezza stella, quindi 1/10 corrisponde a 0,5 stelle e 6/10 a 3 stelle.
 
 ## Test e Rollback
 Verifiche minime:

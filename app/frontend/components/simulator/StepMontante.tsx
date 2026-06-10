@@ -101,7 +101,7 @@ const StepMontante: React.FC<StepMontanteProps> = ({
       <div className="flex items-start gap-4">
         <span className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm sm:text-base font-bold">1</span>
         <div>
-          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">Crescita del tuo capitale nel tempo</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">Crescita del capitale cliente nel tempo</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed max-w-xl">
             Ogni anno versi una quota nel fondo pensione. Il simulatore separa il tuo contributo volontario dal TFR annuale del datore di lavoro, così il calcolo fiscale resta coerente.
           </p>
@@ -161,7 +161,7 @@ const StepMontante: React.FC<StepMontanteProps> = ({
 
           <SimulatorSlider
             label="RAL"
-            tooltip="Il tuo stipendio lordo annuo (Retribuzione Annua Lorda)."
+            tooltip="Stipendio lordo annuo del cliente (Retribuzione Annua Lorda)."
             value={ral}
             onChange={(v) => onRalChange?.(v)}
             min={15000}
@@ -266,7 +266,7 @@ const StepMontante: React.FC<StepMontanteProps> = ({
       ) : (
       <div className="space-y-5 sm:space-y-6">
         <div>
-          <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ecco quanto accumulerai</h4>
+          <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Montante stimato</h4>
           <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1">I risultati si aggiornano automaticamente quando modifichi i parametri sopra</p>
         </div>
 

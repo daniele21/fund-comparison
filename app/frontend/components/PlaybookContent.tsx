@@ -2,7 +2,7 @@ import React from 'react';
 import { AnimatedButton } from './animations/AnimatedButton';
 
 type PlaybookContentProps = {
-  onNavigate?: (section: 'have-fund' | 'choose-fund' | 'learn') => void;
+  onNavigate?: (section: 'choose-fund' | 'learn') => void;
 };
 
 const InfoCard: React.FC<{
@@ -64,13 +64,13 @@ const PlaybookContent: React.FC<PlaybookContentProps> = ({ onNavigate }) => {
               Deduci fino a 5.300€ all&apos;anno dal tuo reddito imponibile. Questo significa pagare meno tasse oggi, un risparmio tangibile che aumenta il beneficio netto del tuo investimento.
             </InfoCard>
             <InfoCard title="Contributo del Datore di Lavoro" accent="emerald" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}>
-              Aderendo a un fondo negoziale (FPN) e versando un tuo contributo, hai diritto a un versamento aggiuntivo da parte del tuo datore di lavoro. Sono soldi &quot;gratis&quot; che accelerano la crescita del tuo capitale.
+              Aderendo a un fondo negoziale (FPN) e versando un contributo individuale, il lavoratore può ricevere un versamento aggiuntivo dal datore di lavoro. È un elemento chiave da valutare in consulenza.
             </InfoCard>
             <InfoCard title="Tassazione Agevolata sui Rendimenti" accent="emerald" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01" /></svg>}>
-              I rendimenti sono tassati al 20% (con ulteriori agevolazioni per i Titoli di Stato), anziché al 26% standard della maggior parte degli altri strumenti finanziari. Più guadagno netto per te.
+              I rendimenti sono tassati al 20% (con ulteriori agevolazioni per i Titoli di Stato), anziché al 26% standard della maggior parte degli altri strumenti finanziari. Questo migliora il rendimento netto potenziale.
             </InfoCard>
             <InfoCard title="Il Potere dell'Interesse Composto" accent="emerald" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>}>
-              I rendimenti guadagnati ogni anno vengono reinvestiti, generando a loro volta nuovi rendimenti. Su un orizzonte lungo, questo effetto valanga può far crescere il tuo capitale in modo esponenziale.
+              I rendimenti guadagnati ogni anno vengono reinvestiti, generando a loro volta nuovi rendimenti. Su un orizzonte lungo, questo effetto può incidere sensibilmente sul capitale del cliente.
             </InfoCard>
           </div>
         </section>
@@ -130,7 +130,7 @@ const PlaybookContent: React.FC<PlaybookContentProps> = ({ onNavigate }) => {
 
         <section className="bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-slate-800/50 dark:via-slate-800/30 dark:to-slate-800/50 py-12 sm:py-16 md:py-20 rounded-xl sm:rounded-2xl px-4 border border-blue-100 dark:border-slate-700 shadow-lg">
           <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-blue-700 dark:text-blue-400 md:text-4xl">Come questo strumento ti aiuta</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-blue-700 dark:text-blue-400 md:text-4xl">Come questo workspace supporta la consulenza</h2>
           </div>
           <div className="mt-8 sm:mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-center">
             <div className="p-4 sm:p-5 bg-white/80 dark:bg-slate-900/50 rounded-xl backdrop-blur-sm border border-blue-100 dark:border-slate-700 shadow-sm">
@@ -155,13 +155,13 @@ const PlaybookContent: React.FC<PlaybookContentProps> = ({ onNavigate }) => {
           <div className="text-center max-w-2xl mx-auto px-4 mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">Pronto a iniziare?</h2>
             <p className="mt-3 sm:mt-4 text-base sm:text-lg leading-7 sm:leading-8 text-slate-600 dark:text-slate-300">
-              Scegli il percorso più adatto alla tua situazione.
+              Scegli il percorso più adatto all&apos;analisi da preparare.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 px-4">
             {/* Check - Ho già un fondo */}
             <button
-              onClick={() => onNavigate?.('have-fund')}
+              onClick={() => onNavigate?.('choose-fund')}
               className="group relative overflow-hidden rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-6 sm:p-8 text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-blue-400 dark:border-blue-800 dark:from-blue-950/50 dark:to-blue-900/50 dark:hover:border-blue-600"
             >
               <div className="relative z-10">
@@ -172,7 +172,7 @@ const PlaybookContent: React.FC<PlaybookContentProps> = ({ onNavigate }) => {
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">Check</h3>
                 <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 mb-4">
-                  Scopri se il tuo fondo pensione attuale sta performando bene rispetto al mercato.
+                  Parti dal fondo attuale del cliente e confrontalo con alternative di mercato.
                 </p>
                 <div className="inline-flex items-center text-blue-600 dark:text-blue-400 font-semibold group-hover:gap-2 transition-all duration-300">
                   Verifica ora
@@ -222,7 +222,7 @@ const PlaybookContent: React.FC<PlaybookContentProps> = ({ onNavigate }) => {
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">Decisione</h3>
                 <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 mb-4">
-                  Trova il fondo perfetto per il tuo profilo e orizzonte temporale con una shortlist personalizzata.
+                  Costruisci una shortlist coerente con profilo, orizzonte e vincoli del cliente.
                 </p>
                 <div className="inline-flex items-center text-emerald-600 dark:text-emerald-400 font-semibold group-hover:gap-2 transition-all duration-300">
                   Inizia ora

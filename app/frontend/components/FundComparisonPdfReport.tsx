@@ -19,7 +19,7 @@ import { getColorForFund } from '../utils/colorMapping';
 import { formatShortFundLabel } from '../utils/fundLabel';
 import CostChart from './CostChart';
 import PerformanceChart from './PerformanceChart';
-import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingStarsFromClass } from '../utils/fundRating';
+import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingStarsFromScore } from '../utils/fundRating';
 
 interface FundComparisonPdfReportProps {
   funds: PensionFund[];
@@ -36,16 +36,22 @@ const formatPercent = (value: number | null): string => (
 const formatRating = (fund: PensionFund): string => {
   if (!fund.rating.ammissibile || !fund.rating.classeRating) return 'N/D';
   const score = formatRatingScoreOutOfTen(fund.rating.ratingScore);
-  return `${formatRatingStarsText(fund.rating.classeRating)}${score ? ` (${score})` : ''}`;
+  return `${formatRatingStarsText(fund.rating.ratingScore)}${score ? ` (${score})` : ''}`;
 };
 
 const RatingStars: React.FC<{ fund: PensionFund }> = ({ fund }) => {
-  const stars = ratingStarsFromClass(fund.rating.classeRating);
+  const stars = ratingStarsFromScore(fund.rating.ratingScore);
   return (
     <span aria-label={formatRating(fund)}>
-      {Array.from({ length: 5 }, (_, index) => (
-        <span key={index} style={{ opacity: stars != null && index < stars ? 1 : 0.3 }}>★</span>
-      ))}
+      {Array.from({ length: 5 }, (_, index) => {
+        const fillPercent = stars == null ? 0 : Math.max(0, Math.min(1, stars - index)) * 100;
+        return (
+          <span key={index} style={{ position: 'relative', display: 'inline-block', color: '#cbd5e1' }}>
+            <span>★</span>
+            <span style={{ position: 'absolute', inset: 0, width: `${fillPercent}%`, overflow: 'hidden', color: '#f59e0b' }}>★</span>
+          </span>
+        );
+      })}
       {fund.rating.ratingScore != null && ` ${formatRatingScoreOutOfTen(fund.rating.ratingScore)}`}
     </span>
   );

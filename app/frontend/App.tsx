@@ -3,6 +3,7 @@ import { pensionFundsData } from './data/funds';
 import { PensionFund, FundCategory, SortConfig } from './types';
 import Header from './components/Header';
 import FilterControls from './components/FilterControls';
+import FundAnalysisPanel from './components/FundAnalysisPanel';
 import ActiveFiltersChips from './components/ActiveFiltersChips';
 import { CATEGORY_MAP } from './constants';
 import { useAuth } from './auth';
@@ -16,12 +17,11 @@ import { ScrollReveal, ScrollProgress } from './components/animations/ScrollReve
 import { AnimatedButton } from './components/animations/AnimatedButton';
 import { FloatingCompareButton } from './components/animations/FloatingCompareButton';
 import SectionHeader from './components/common/SectionHeader';
-import EmptyState from './components/common/EmptyState';
 import GuidedTour, { useGuidedTour, FirstVisitBanner } from './components/common/GuidedTour';
 import PwaUpdateBanner from './components/common/PwaUpdateBanner';
 import AccessStatusBanner from './components/common/AccessStatusBanner';
 import DiscountBanner from './components/common/DiscountBanner';
-import { compareFundsTourSteps, analyzeFundTourSteps } from './config/tourSteps';
+import { compareFundsTourSteps } from './config/tourSteps';
 import { SECTION_COPY, buildNavItems } from './features/dashboard/config';
 import { getSortValue } from './features/dashboard/sorting';
 import { DashboardSection, View } from './features/dashboard/types';
@@ -91,7 +91,6 @@ const AppContent: React.FC = () => {
 
   // Tour guidati per le varie sezioni
   const compareFundsTour = useGuidedTour('choose-fund');
-  const analyzeFundTour = useGuidedTour('have-fund');
 
   // Debug log for admin status
   useEffect(() => {
@@ -117,7 +116,7 @@ const AppContent: React.FC = () => {
 
   // Auto-expand parent nav items when activeSection changes
   useEffect(() => {
-    const toolSections: DashboardSection[] = ['simulator', 'choose-fund', 'have-fund'];
+    const toolSections: DashboardSection[] = ['simulator', 'choose-fund'];
     const resourceSections: DashboardSection[] = ['playbook', 'tfr-faq'];
     
     if (toolSections.includes(activeSection)) {
@@ -410,12 +409,8 @@ const AppContent: React.FC = () => {
 
   // Keep guided flows aligned with sidebar section
   useEffect(() => {
-    if (activeSection === 'have-fund') {
-      setEntryMode('check-fund');
-    } else if (activeSection === 'choose-fund') {
+    if (activeSection === 'choose-fund') {
       setEntryMode('choose-fund');
-    } else if (activeSection === 'learn') {
-      setEntryMode('learn');
     } else {
       setEntryMode(null);
     }
@@ -630,7 +625,14 @@ const AppContent: React.FC = () => {
                   />
                   <section className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-5 sm:py-6 md:px-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
                     <Suspense fallback={<LazyFallback />}>
-                      <PlaybookContent onNavigate={(section) => setActiveSection(section)} />
+                      <PlaybookContent onNavigate={(section) => {
+                        if (section === 'learn') {
+                          setActiveSection('choose-fund');
+                          setEntryMode('learn');
+                          return;
+                        }
+                        setActiveSection(section);
+                      }} />
                     </Suspense>
                   </section>
                 </div>
@@ -673,12 +675,6 @@ const AppContent: React.FC = () => {
                     onDismiss={compareFundsTour.dismissBanner}
                   />
                 )}
-                {activeSection === 'have-fund' && analyzeFundTour.shouldShowBanner && (
-                  <FirstVisitBanner
-                    onStartTour={analyzeFundTour.startTour}
-                    onDismiss={analyzeFundTour.dismissBanner}
-                  />
-                )}
 
                 {/* Header Unificato */}
                 <SectionHeader
@@ -688,9 +684,7 @@ const AppContent: React.FC = () => {
                   tourAction={
                     activeSection === 'choose-fund'
                       ? { label: 'Tour Guidato', onClick: compareFundsTour.startTour }
-                      : activeSection === 'have-fund'
-                        ? { label: 'Tour Guidato', onClick: analyzeFundTour.startTour }
-                        : undefined
+                      : undefined
                   }
                 />
 
@@ -740,7 +734,7 @@ const AppContent: React.FC = () => {
                                 </h3>
                               </div>
                               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                                Scopri quale fondo ti farebbe accumulare di più: stessi parametri, fondi diversi, risultati chiari.
+                                Confronta scenari cliente a parità di parametri: stessi input, fondi diversi, risultati leggibili.
                               </p>
                               <div className="flex flex-wrap gap-1.5 mt-2">
                                 {selectedFunds.slice(0, 3).map((f) => (
@@ -809,8 +803,7 @@ const AppContent: React.FC = () => {
 
                       <ScrollReveal variant="slideUp" duration={0.6} delay={0.2} threshold={0.1}>
                         <section data-tour="fund-table" className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-4 sm:py-5 md:px-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 min-w-0 overflow-hidden">
-                        <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4">
-                          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">Fondi</h2>
+                        <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-end mb-3 sm:mb-4">
                           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
                             {filteredAndSortedFunds.length} {filteredAndSortedFunds.length === 1 ? 'fondo trovato' : 'fondi trovati'} — {selectedFundIds.length} {selectedFundIds.length === 1 ? 'selezionato' : 'selezionati'}
                           </p>
@@ -897,6 +890,12 @@ const AppContent: React.FC = () => {
                       </section>
                       </ScrollReveal>
                     </div>
+
+                    <FundAnalysisPanel
+                      funds={pensionFundsData}
+                      selectedFund={analyzeFund}
+                      setSelectedFund={setAnalyzeFund}
+                    />
                   </div>
                 </GuidedFundComparator>
 
@@ -911,235 +910,6 @@ const AppContent: React.FC = () => {
               </>
             )}
 
-            {/* Sezione Analizza Fondo */}
-            {activeSection === 'have-fund' && (
-              <>
-                <div className="space-y-6 sm:space-y-8 md:space-y-10">
-                  {/* Sezione Ricerca Fondo */}
-                  <ScrollReveal variant="slideUp" duration={0.6} threshold={0.2}>
-                    <section 
-                      data-tour="your-fund-search" 
-                      className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-4 sm:py-5 md:px-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80"
-                    >
-                      <div className="mb-4 sm:mb-5">
-                        <h3 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
-                          🎯 Il Tuo Fondo Attuale
-                        </h3>
-                        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                          Cerca il fondo che hai sottoscritto per analizzarne la performance
-                        </p>
-                      </div>
-
-                      {/* Search Bar */}
-                      <div className="mb-4">
-                        <div className="relative">
-                          <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Cerca per nome fondo (es. 'Fondo Cometa', 'Fonchim'...)"
-                            className="w-full px-4 py-3 pl-11 text-sm rounded-xl border border-slate-300 bg-white dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                          />
-                          <svg 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            className="h-5 w-5 absolute left-3 top-3.5 text-slate-400"
-                            fill="none" 
-                            viewBox="0 0 24 24" 
-                            stroke="currentColor"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                          </svg>
-                        </div>
-                      </div>
-
-                      {/* Results */}
-                      {searchTerm.length >= 2 ? (
-                        <div className="space-y-2 max-h-96 overflow-y-auto">
-                          {filteredAndSortedFunds.slice(0, 5).length > 0 ? (
-                            filteredAndSortedFunds.slice(0, 5).map((fund) => (
-                              <div
-                                key={fund.id}
-                                onClick={() => {
-                                  setAnalyzeFund(fund);
-                                  setSearchTerm('');
-                                }}
-                                className="p-3 sm:p-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800/50 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 cursor-pointer transition-all"
-                              >
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                  <div className="flex-1 min-w-0">
-                                    <h4 className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate">
-                                      {fund.pip}
-                                    </h4>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                      {fund.societa} • {fund.categoria}
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center gap-3 text-xs">
-                                    <div className="text-right">
-                                      <div className="font-semibold text-green-600 dark:text-green-400">
-                                        {fund.rendimenti.ultimoAnno?.toFixed(2)}%
-                                      </div>
-                                      <div className="text-slate-500">1 anno</div>
-                                    </div>
-                                    <AnimatedButton variant="ghost" size="sm">
-                                      Seleziona
-                                    </AnimatedButton>
-                                  </div>
-                                </div>
-                              </div>
-                            ))
-                          ) : (
-                            <EmptyState
-                              variant="search"
-                              title="Nessun fondo trovato"
-                              description="Prova a modificare il termine di ricerca"
-                            />
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 text-slate-500 dark:text-slate-400 text-sm">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                          </svg>
-                          Inizia a digitare per cercare il tuo fondo
-                        </div>
-                      )}
-                    </section>
-                  </ScrollReveal>
-
-                  {/* Sezione Fondi Selezionati e Alternative */}
-                  {analyzeFund !== null && (
-                    <ScrollReveal variant="slideUp" duration={0.6} delay={0.1} threshold={0.2}>
-                      <section 
-                        data-tour="alternatives" 
-                        className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 px-3 py-4 sm:px-4 sm:py-5 md:px-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80"
-                      >
-                        <div className="mb-4 sm:mb-5">
-                          <h3 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
-                            💡 Il Tuo Fondo vs Alternative Migliori
-                          </h3>
-                          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                            Confronto automatico con fondi nella stessa categoria
-                          </p>
-                        </div>
-
-                        {/* Selected Fund Card */}
-                        <div className="mb-6 p-4 rounded-xl bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-700">
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <span className="inline-block text-xs font-semibold px-2 py-1 rounded-full bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 mb-2">
-                                Il Tuo Fondo
-                              </span>
-                              <h4 className="font-bold text-base text-slate-900 dark:text-slate-100">
-                                {analyzeFund.pip}
-                              </h4>
-                              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                                {analyzeFund.societa} • {analyzeFund.categoria}
-                              </p>
-                            </div>
-                            <AnimatedButton
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setAnalyzeFund(null)}
-                            >
-                              ✕
-                            </AnimatedButton>
-                          </div>
-                          
-                          <div className="grid grid-cols-3 gap-3 mt-4">
-                            <div className="text-center p-2 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                              <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Rend. 1Y</div>
-                              <div className="font-bold text-sm text-green-600 dark:text-green-400">
-                                {analyzeFund.rendimenti.ultimoAnno?.toFixed(2)}%
-                              </div>
-                            </div>
-                            <div className="text-center p-2 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                              <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Rend. 5Y</div>
-                              <div className="font-bold text-sm text-green-600 dark:text-green-400">
-                                {analyzeFund.rendimenti.ultimi5Anni?.toFixed(2)}%
-                              </div>
-                            </div>
-                            <div className="text-center p-2 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                              <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">ISC</div>
-                              <div className="font-bold text-sm text-orange-600 dark:text-orange-400">
-                                {analyzeFund.isc.isc10a?.toFixed(2)}%
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Alternative Funds */}
-                        <div>
-                          <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
-                            🚀 Fondi simili con performance migliori
-                          </h4>
-                          
-                          {(() => {
-                            const currentCategory = analyzeFund.categoria;
-                            const alternatives = pensionFundsData
-                              .filter(f => 
-                                f.categoria === currentCategory && 
-                                f.id !== analyzeFund.id &&
-                                (f.rendimenti.ultimi5Anni || 0) > (analyzeFund.rendimenti.ultimi5Anni || 0)
-                              )
-                              .sort((a, b) => (b.rendimenti.ultimi5Anni || 0) - (a.rendimenti.ultimi5Anni || 0))
-                              .slice(0, 3);
-
-                            return alternatives.length > 0 ? (
-                              <div className="space-y-3">
-                                {alternatives.map((fund, idx) => (
-                                  <div
-                                    key={fund.id}
-                                    className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:border-green-300 dark:hover:border-green-600 transition-all"
-                                  >
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex-1 min-w-0 mr-3">
-                                        <div className="flex items-center gap-2 mb-1">
-                                          <span className="text-lg">
-                                            {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
-                                          </span>
-                                          <h5 className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate">
-                                            {fund.pip}
-                                          </h5>
-                                        </div>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                                          {fund.societa}
-                                        </p>
-                                      </div>
-                                      <div className="text-right">
-                                        <div className="text-sm font-bold text-green-600 dark:text-green-400">
-                                          +{((fund.rendimenti.ultimi5Anni || 0) - (analyzeFund.rendimenti.ultimi5Anni || 0)).toFixed(2)}%
-                                        </div>
-                                        <div className="text-xs text-slate-500">vs tuo fondo</div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <EmptyState
-                                variant="success"
-                                title="Ottimo lavoro!"
-                                description="Il tuo fondo è già tra i migliori della categoria"
-                              />
-                            );
-                          })()}
-                        </div>
-                      </section>
-                    </ScrollReveal>
-                  )}
-                </div>
-
-                {/* Tour Guidato Analizza Fondo */}
-                <GuidedTour
-                  steps={analyzeFundTourSteps}
-                  isOpen={analyzeFundTour.isOpen}
-                  onClose={analyzeFundTour.closeTour}
-                  onComplete={analyzeFundTour.completeTour}
-                  storageKey="have-fund"
-                />
-              </>
-            )}
           </div>
           )}
             </PageTransition>
@@ -1155,7 +925,7 @@ const AppContent: React.FC = () => {
             
             // If we're in playbook section, switch to comparison view first
             if (activeSection === 'playbook') {
-              setActiveSection('have-fund');
+              setActiveSection('choose-fund');
               // Wait for the view to render, then scroll to Visual Comparison
               setTimeout(() => {
                 const visualSection = document.getElementById('visual-comparison');

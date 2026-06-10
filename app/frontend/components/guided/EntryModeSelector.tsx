@@ -6,21 +6,21 @@ export const EntryModeSelector: React.FC = () => {
 
   return (
     <section className="rounded-3xl bg-white/80 px-4 py-5 shadow-lg shadow-slate-200/50 ring-1 ring-slate-100 sm:px-6 sm:py-6 dark:bg-slate-900/70 dark:shadow-slate-900/30 dark:ring-slate-800">
-      <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl dark:text-slate-100">Come posso aiutarti oggi?</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl dark:text-slate-100">Che analisi vuoi preparare?</h1>
       <p className="mt-2 text-base text-slate-600 sm:text-sm dark:text-slate-300">
-        Scegli il punto di partenza: ti guiderò passo passo, senza venderti nessun prodotto.
+        Scegli il punto di partenza per costruire un confronto leggibile per il cliente.
       </p>
 
       <div className="mt-6 flex flex-col gap-3 sm:gap-4 md:grid md:grid-cols-3">
         <EntryCard
-          title="Ho già un fondo pensione"
-          description="Scopri in pochi secondi se stai pagando troppo e se il tuo fondo è coerente con i tuoi obiettivi."
+          title="Fondo attuale cliente"
+          description="Verifica costi, rendimento e coerenza del fondo già sottoscritto dal cliente."
           active={entryMode === 'check-fund'}
           onClick={() => setEntryMode(entryMode === 'check-fund' ? null : 'check-fund')}
         />
         <EntryCard
-          title="Devo scegliere un fondo"
-          description="Partiamo dal tuo profilo per arrivare a una shortlist di fondi adatti al tuo orizzonte."
+          title="Shortlist nuovo fondo"
+          description="Parti dal profilo cliente per arrivare a una shortlist coerente con orizzonte e rischio."
           active={entryMode === 'choose-fund'}
           onClick={() => setEntryMode(entryMode === 'choose-fund' ? null : 'choose-fund')}
         />

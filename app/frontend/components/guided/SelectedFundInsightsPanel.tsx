@@ -34,7 +34,7 @@ export const SelectedFundInsightsPanel: React.FC<SelectedFundInsightsPanelProps>
         <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Come leggere i risultati</h3>
         <p className="mt-3">
           Clicca su un fondo nella tabella o selezionalo dai flussi guidati per vedere una spiegazione in
-          linguaggio semplice di cosa significano costi, rendimenti e categoria per il tuo profilo.
+          linguaggio semplice di cosa significano costi, rendimenti e categoria per il profilo cliente.
         </p>
       </section>
     );
@@ -42,7 +42,7 @@ export const SelectedFundInsightsPanel: React.FC<SelectedFundInsightsPanelProps>
 
   const horizon = profile.horizonYears;
   let horizonText =
-    'senza indicazioni sul tuo orizzonte temporale è difficile valutare la coerenza rispetto al rischio.';
+    'senza indicazioni sull’orizzonte temporale del cliente è difficile valutare la coerenza rispetto al rischio.';
 
   if (typeof horizon === 'number') {
     if (horizon <= 10) {
@@ -127,7 +127,7 @@ export const SelectedFundInsightsPanel: React.FC<SelectedFundInsightsPanelProps>
         </p>
 
         <p>
-          <strong>È coerente con il tuo orizzonte?</strong> In base alle informazioni inserite, {horizonText}
+          <strong>È coerente con l’orizzonte cliente?</strong> In base alle informazioni inserite, {horizonText}
         </p>
       </div>
 

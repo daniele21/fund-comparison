@@ -2,40 +2,35 @@
 
 ## Metodi di Autenticazione Disponibili
 
-Il sistema supporta **3 modalità** di autenticazione:
+Il sistema supporta Google OAuth come unica modalità reale di autenticazione.
 
 ### 1. Solo Google OAuth (`google`)
 Autenticazione tramite account Google con gestione ruoli e approvazioni admin.
 
-### 2. Solo Codice Invito (`invite_code`)
-Accesso rapido tramite codici predefiniti (7712, 8012, 8322).
+### 2. No Auth (`none`)
+Modalità solo locale per sviluppo UI/API non sensibile.
 
-### 3. Google OAuth + Codice Invito (`google` + invite codes)
-**Modalità raccomandata**: Supporta entrambi i metodi contemporaneamente.
+### Deprecato: Codice Invito (`invite_code`)
+Il login tramite codice invito non è più disponibile. L'endpoint `/auth/invite/login` restituisce `410 Gone` e non emette token.
 
 ## Configurazioni VS Code Launch
 
-### 🚀 Backend: FastAPI (Google + Invite Code) - **RACCOMANDATO**
+### 🚀 Backend: FastAPI (Google OAuth) - **RACCOMANDATO**
 
 Questa è la configurazione **più completa** che abilita:
 - ✅ Login con Google OAuth
-- ✅ Login con codici invito (7712, 8012, 8322)
 - ✅ Firebase Authentication
 - ✅ Firestore per dati utenti
 - ✅ Notifiche Telegram per admin
 
 **Per usarla:**
 1. Vai su Debug Panel (⇧⌘D)
-2. Seleziona "Backend: FastAPI (Google + Invite Code)"
+2. Seleziona "Backend: FastAPI (Google OAuth)"
 3. Premi F5
-
-### 📝 Backend: FastAPI (Invite Code)
-
-Solo autenticazione tramite codici invito. Utile per test rapidi senza OAuth.
 
 ### 🌐 Backend: FastAPI (Google OAuth)
 
-Solo autenticazione Google. Ideale per testare il flusso OAuth isolatamente.
+Autenticazione Google. Ideale per testare il flusso OAuth.
 
 ### 🔓 Backend: FastAPI (No Auth)
 
@@ -145,15 +140,11 @@ TELEGRAM_CHAT_ID=-1001234567890
 
 ```bash
 # Modalità auth
-APP_AUTH_MODE=google  # o "invite_code" o "none"
+APP_AUTH_MODE=google  # "none" solo per sviluppo locale non sensibile
 
 # Google OAuth
 APP_GOOGLE_CLIENT_ID=your-client-id
 APP_GOOGLE_CLIENT_SECRET=your-client-secret
-
-# Invite Codes (opzionale, funziona anche con google)
-APP_AUTH_INVITE_CODES=7712,8012,8322
-APP_AUTH_INVITE_PLAN=full-access
 
 # JWT
 APP_JWT_SECRET_KEY=your-secret-key-min-32-chars

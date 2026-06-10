@@ -18,8 +18,7 @@
 🏠 Home
 🔧 Strumenti
    ├─ Simulatore
-   ├─ Confronta Fondi
-   └─ Analizza Fondo
+   └─ Confronta Fondi
 📚 Risorse
    ├─ Guida Completa
    └─ FAQ TFR
@@ -41,7 +40,7 @@ Sistema completo di tour guidati
 Configurazioni tour per:
 - Simulatore (6 steps, ~2 min)
 - Confronta Fondi (5 steps, ~90 sec)  
-- Analizza Fondo (4 steps, ~60 sec)
+- Analisi fondo cliente integrata in Confronta Fondi
 
 ---
 

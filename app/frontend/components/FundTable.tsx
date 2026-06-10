@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { PensionFund, SortConfig, SortableKey } from '../types';
 import { CATEGORY_MAP, CATEGORY_COLORS } from '../constants';
 import { motion, useInView } from 'framer-motion';
-import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingBadgeClasses, ratingStarsFromClass } from '../utils/fundRating';
+import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingBadgeClasses, ratingStarsFromScore } from '../utils/fundRating';
 
 interface FundTableProps {
   funds: PensionFund[];
@@ -136,8 +136,8 @@ const RendimentoCell: React.FC<{ value: number | null; label?: string; isMobile?
 };
 
 const RatingBadge: React.FC<{ fund: PensionFund; compact?: boolean }> = ({ fund, compact = false }) => {
-    const stars = ratingStarsFromClass(fund.rating.classeRating);
-    const starsText = formatRatingStarsText(fund.rating.classeRating);
+    const stars = ratingStarsFromScore(fund.rating.ratingScore);
+    const starsText = formatRatingStarsText(fund.rating.ratingScore);
     const score = formatRatingScoreOutOfTen(fund.rating.ratingScore);
     const title = fund.rating.ammissibile
         ? `Rating ${starsText}: ${fund.rating.descrizioneRating ?? ''}. Score ${score ?? 'N/D'}. ISC ${fund.rating.iscOrizzonte ?? 'N/D'} usato.`
@@ -151,9 +151,15 @@ const RatingBadge: React.FC<{ fund: PensionFund; compact?: boolean }> = ({ fund,
             aria-label={title}
         >
             <span className={`tracking-normal ${starSizeClass}`} aria-hidden="true">
-                {Array.from({ length: 5 }, (_, index) => (
-                    <span key={index} className={stars != null && index < stars ? 'opacity-100' : 'opacity-35'}>★</span>
-                ))}
+                {Array.from({ length: 5 }, (_, index) => {
+                    const fillPercent = stars == null ? 0 : Math.max(0, Math.min(1, stars - index)) * 100;
+                    return (
+                        <span key={index} className="relative inline-block text-slate-300 dark:text-slate-600">
+                            <span aria-hidden="true">★</span>
+                            <span className="absolute inset-0 overflow-hidden text-amber-500" style={{ width: `${fillPercent}%` }} aria-hidden="true">★</span>
+                        </span>
+                    );
+                })}
             </span>
             <span className="sr-only">{starsText}</span>
             {score && <span className="font-semibold opacity-80">{score}</span>}
@@ -434,13 +440,17 @@ const FundTable: React.FC<FundTableProps> = ({
                             <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200 tabular-nums">
                                 <span aria-hidden="true">
                                     {Array.from({ length: 5 }, (_, starIndex) => {
-                                        const stars = ratingStarsFromClass(fund.rating.classeRating);
+                                        const stars = ratingStarsFromScore(fund.rating.ratingScore);
+                                        const fillPercent = stars == null ? 0 : Math.max(0, Math.min(1, stars - starIndex)) * 100;
                                         return (
-                                            <span key={starIndex} className={stars != null && starIndex < stars ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600'}>★</span>
+                                            <span key={starIndex} className="relative inline-block text-slate-300 dark:text-slate-600">
+                                                <span aria-hidden="true">★</span>
+                                                <span className="absolute inset-0 overflow-hidden text-amber-500" style={{ width: `${fillPercent}%` }} aria-hidden="true">★</span>
+                                            </span>
                                         );
                                     })}
                                 </span>
-                                <span className="sr-only">{formatRatingStarsText(fund.rating.classeRating)}</span>
+                                <span className="sr-only">{formatRatingStarsText(fund.rating.ratingScore)}</span>
                                 {fund.rating.ratingScore != null && (
                                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                                         {formatRatingScoreOutOfTen(fund.rating.ratingScore)}

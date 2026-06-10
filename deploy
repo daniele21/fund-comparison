@@ -1,0 +1,25 @@
+deploy
+
+PROD:
+
+scripts/deploy/deploy_backend.sh \
+  --env accademia-prod \
+  --config infra/deploy/environments/accademia-prod.env \
+  --build
+
+scripts/deploy/deploy_frontend.sh \
+  --env accademia-prod \
+  --config infra/deploy/environments/accademia-prod.env \
+  --firebase-project accademia
+
+TEST:
+
+scripts/deploy/deploy_backend.sh \
+  --env accademia-test \
+  --config infra/deploy/environments/accademia-test.env \
+  --build
+
+scripts/deploy/deploy_frontend.sh \
+  --env accademia-test \
+  --config infra/deploy/environments/accademia-test.env \
+  --firebase-project accademia

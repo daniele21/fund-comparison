@@ -99,14 +99,14 @@ const StepFiscale: React.FC<StepFiscaleProps> = ({
 
       <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 p-3 sm:p-5 md:p-6 lg:p-8 space-y-5 sm:space-y-6 md:space-y-8">
         <div>
-          <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Il tuo reddito</h4>
+          <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Reddito cliente</h4>
           <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1">Inserisci la RAL per calcolare aliquota e risparmio fiscale annuale</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-10">
           <SimulatorSlider
-            label="Il tuo stipendio lordo annuo (RAL)"
-            tooltip="La tua Retribuzione Annua Lorda, usata per calcolare la fascia IRPEF e il risparmio fiscale."
+            label="Stipendio lordo annuo cliente (RAL)"
+            tooltip="Retribuzione Annua Lorda del cliente, usata per calcolare fascia IRPEF e risparmio fiscale."
             value={ral}
             onChange={(v) => onValuesChange?.({ ral: v })}
             min={15000}

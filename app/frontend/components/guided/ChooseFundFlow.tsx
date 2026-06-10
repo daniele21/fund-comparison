@@ -41,9 +41,9 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundCli
 
   return (
     <section className="rounded-2xl sm:rounded-3xl border-2 border-slate-300 bg-white p-4 sm:p-5 md:p-6 shadow-lg dark:border-slate-700 dark:bg-slate-900">
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white">Scegli un fondo dal tuo profilo</h2>
+      <h2 className="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white">Costruisci una shortlist dal profilo cliente</h2>
       <p className="mt-2 text-sm sm:text-base text-slate-700 dark:text-slate-200 max-w-2xl">
-        Ti faccio poche domande e ti mostro fondi coerenti col tuo orizzonte in una shortlist ordinata per costi e rendimento.
+        Inserisci pochi parametri e ottieni fondi coerenti con orizzonte, rischio e vincoli contrattuali.
       </p>
 
 
@@ -165,7 +165,7 @@ export const ChooseFundFlow: React.FC<ChooseFundFlowProps> = ({ funds, onFundCli
           ) : (
             <div className="space-y-3 sm:space-y-4">
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-950 dark:text-white">Una prima shortlist per te</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-950 dark:text-white">Prima shortlist cliente</h3>
                 <p className="text-xs sm:text-sm md:text-base text-slate-700 dark:text-slate-200">
                   Non sono consigli personalizzati, ma una selezione filtrata per tipologia e costi, da cui puoi
                   partire per confrontare. (Mostro ISC a 10 anni e rendimento a 10 anni per confronto rapido)

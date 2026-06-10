@@ -186,7 +186,7 @@ const StepComparisonResults: React.FC<StepComparisonResultsProps> = ({
   /* ── Step-specific headers ─────────────────────────────────── */
   const stepConfig = {
     montante: {
-      title: 'Ecco quanto accumulerai — confronto fondi',
+      title: 'Montante stimato — confronto fondi',
       subtitle: 'I risultati si aggiornano automaticamente quando modifichi i parametri sopra',
       chartTitle: 'Crescita del capitale a confronto',
       chartSubtitle: 'Linea tratteggiata = TFR lasciato in azienda',
@@ -198,7 +198,7 @@ const StepComparisonResults: React.FC<StepComparisonResultsProps> = ({
       chartSubtitle: 'Include reinvestimento del risparmio IRPEF. Linea tratteggiata = TFR in azienda.',
     },
     imposta: {
-      title: 'Quanto riceverai alla pensione — confronto fondi',
+      title: 'Netto stimato al pensionamento — confronto fondi',
       subtitle: 'Netto dopo imposta sostitutiva, per ogni fondo',
       chartTitle: 'Capitale netto stimato a confronto',
       chartSubtitle: 'Include rendimenti, risparmio IRPEF e imposta sostitutiva.',
@@ -354,7 +354,7 @@ const StepComparisonResults: React.FC<StepComparisonResultsProps> = ({
                       variant="rose"
                     />
                     <MetricCard
-                      label="Quello che riceverai davvero"
+                      label="Netto stimato cliente"
                       value={formatCurrency(r.montanteNetto)}
                       detail={`+${formatPercentage(r.rendimentoNettoPercentuale, 1)} netto vs versato`}
                       variant="emerald"

@@ -119,12 +119,9 @@ PRODUCTION_ENV_TEMPLATE = """
 # Environment
 APP_ENV=production
 
-# Authentication Mode (google, invite_code, none)
+# Authentication Mode (google, none)
 APP_AUTH_MODE=google
-# Invitation-code auth settings (used when APP_AUTH_MODE=invite_code)
-APP_AUTH_INVITE_CODES=
-APP_AUTH_INVITE_PLAN=full-access
-APP_AUTH_INVITE_REQUIRE_EMAIL=true
+# Invitation-code auth is deprecated. Do not configure APP_AUTH_INVITE_* in production.
 
 # API Settings
 APP_DEBUG=false
