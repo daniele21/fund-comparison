@@ -7,8 +7,11 @@ import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingBadgeClasses, r
 
 interface FundDetailModalProps {
   fund: PensionFund | null;
+  isOpen?: boolean;
   onClose: () => void;
   theme: string;
+  onFundSelect?: (fund: PensionFund) => void;
+  isSelected?: boolean;
 }
 
 const ValueRow: React.FC<{ label: string; value: number | null; isPercentage?: boolean }> = ({ label, value, isPercentage = true }) => {
@@ -27,6 +30,15 @@ const RatingValueRow: React.FC<{ label: string; value: number | string | null }>
     <p className="text-gray-600 dark:text-gray-300 text-left flex-1 min-w-0 truncate" title={label}>{label}</p>
     <p className="font-semibold text-slate-800 dark:text-slate-100 tabular-nums shrink-0">
       {value ?? 'N/A'}
+    </p>
+  </div>
+);
+
+const TextValueRow: React.FC<{ label: string; value: string | null }> = ({ label, value }) => (
+  <div className="py-2 sm:py-3">
+    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
+    <p className="mt-1 text-xs sm:text-sm leading-relaxed text-slate-800 dark:text-slate-100">
+      {value || 'N/A'}
     </p>
   </div>
 );
@@ -168,6 +180,22 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
                       <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">N° Albo</p>
                       <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200">{fund.nAlbo}</p>
                   </div>
+                  <div>
+                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Garanzia</p>
+                      <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200">{fund.garanzia === true ? 'Presente' : fund.garanzia === false ? 'Non indicata' : 'N/A'}</p>
+                  </div>
+                  <div>
+                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Rating fonte</p>
+                      <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200">{fund.sourceRating ?? 'N/A'}</p>
+                  </div>
+                  <div>
+                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Decorrenza</p>
+                      <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200">{fund.dataInizioQuotazione ?? 'N/A'}</p>
+                  </div>
+                  <div>
+                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Sostenibilità</p>
+                      <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 truncate px-1" title={fund.sostenibilita ?? ''}>{fund.sostenibilita ?? 'N/A'}</p>
+                  </div>
                 </div>
             </div>
 
@@ -261,6 +289,50 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
                         <ValueRow label="Costo a 5 anni" value={fund.isc.isc5a} />
                         <ValueRow label="Costo a 10 anni" value={fund.isc.isc10a} />
                         <ValueRow label="Costo a 35 anni" value={fund.isc.isc35a} />
+                    </div>
+                </div>
+                <div>
+                    <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 dark:text-slate-200 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-sky-600 dark:text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                      </svg>
+                      Portafoglio
+                    </h3>
+                    <div className="divide-y divide-gray-200 dark:divide-slate-700 bg-gray-50 dark:bg-slate-700/50 rounded-lg px-2.5 sm:px-3 md:px-4 text-xs sm:text-sm">
+                        <TextValueRow label="Azionario" value={fund.assetAllocation.azionario} />
+                        <TextValueRow label="Obbligazionario" value={fund.assetAllocation.obbligazionario} />
+                        <TextValueRow label="Benchmark" value={fund.benchmark} />
+                    </div>
+                </div>
+                <div className="sm:col-span-2">
+                    <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 dark:text-slate-200 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14h6m-6 4h6M5 5h14M5 9h14M5 13h.01M5 17h.01" />
+                      </svg>
+                      Costi operativi
+                    </h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 divide-y divide-gray-200 rounded-lg bg-gray-50 px-2.5 text-xs sm:text-sm dark:divide-slate-700 dark:bg-slate-700/50 sm:px-3 md:px-4 lg:divide-y-0">
+                        <TextValueRow label="Adesione" value={fund.costiDettaglio.adesione} />
+                        <TextValueRow label="Gestione annua" value={fund.costiDettaglio.annuiGestione} />
+                        <TextValueRow label="Gestione finanziaria" value={fund.costiDettaglio.gestioneFinanziaria} />
+                        <TextValueRow label="Anticipazione" value={fund.costiDettaglio.anticipazione} />
+                        <TextValueRow label="Trasferimento" value={fund.costiDettaglio.trasferimento} />
+                        <TextValueRow label="Riscatto" value={fund.costiDettaglio.riscatto} />
+                        <TextValueRow label="Riallocazione posizione" value={fund.costiDettaglio.riallocazionePosizione} />
+                        <TextValueRow label="Riallocazione flusso" value={fund.costiDettaglio.riallocazioneFlussoContributivo} />
+                        <TextValueRow label="Erogazione" value={fund.costiDettaglio.erogazione} />
+                    </div>
+                </div>
+                <div className="sm:col-span-2">
+                    <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 dark:text-slate-200 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Sostenibilità
+                    </h3>
+                    <div className="divide-y divide-gray-200 dark:divide-slate-700 bg-gray-50 dark:bg-slate-700/50 rounded-lg px-2.5 sm:px-3 md:px-4 text-xs sm:text-sm">
+                        <TextValueRow label="Informazione dichiarata" value={fund.sostenibilita} />
                     </div>
                 </div>
             </div>

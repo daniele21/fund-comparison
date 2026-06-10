@@ -104,6 +104,112 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 
 ---
 
+## Feature Note - Dataset comparti 2026 e progressive disclosure
+
+## 1. Overview
+- Feature name: Migrazione dataset comparti 2026
+- Owner: Codex
+- Date: 2026-06-10
+- Status: `done`
+- Related issue/PR: n/a
+
+## 2. Problem Statement
+- Current behavior: il frontend usava `app/frontend/data/funds.ts` generato da piu' CSV storici, mentre il backend `/funds` resta mock.
+- Pain points: il nuovo CSV contiene molte informazioni aggiuntive non modellate, con rischio di sovraccaricare tabella e confronto; la versione aggiornata include anche rendimenti storici 10Y/20Y non ancora mappati.
+- Impatto su utenti/business: maggiore qualita' informativa su costi, rendimenti di lungo periodo, garanzia, benchmark, portafoglio e sostenibilita'.
+
+## 3. Goals and Non-Goals
+### Goals
+- Usare `data/database_comparti_2026-06-10.csv` come dataset canonico.
+- Estendere il contratto `PensionFund` senza perdere compatibilita' con rating e comparatore esistenti.
+- Mappare `Performance 10Y` e `Performance 20Y` verso `rendimenti.ultimi10Anni` e `rendimenti.ultimi20Anni`.
+- Mostrare le nuove informazioni con progressive disclosure.
+- Documentare validazione, test, rischi e rollback.
+
+### Non-Goals
+- Nessuna migrazione backend in questa iterazione.
+- Nessuna normalizzazione numerica dei costi testuali operativi.
+- Nessuna sostituzione del rating interno con il rating sorgente.
+
+## 4. Scope
+- Frontend scope (`app/frontend/...`): tipi fondo, dataset generato, lista fondi, modale dettaglio.
+- Backend scope (`app/backend/...`): nessuno.
+- Data/config scope (`data/`, `scripts/`): CSV canonico e generatore TypeScript.
+- Out of scope: API fondi production, Firestore, auth, billing, ruoli.
+
+## 5. User and UX Definition
+- User persona principale: utente che confronta fondi pensione e deve capire rapidamente se un comparto e' adatto.
+- User journey principale: lista fondi -> segnali sintetici -> dettaglio fondo -> lettura costi/benchmark/portafoglio.
+- Entry points: `FundTable`, `FundDetailModal`.
+- Stati UX richiesti:
+  - Loading: invariato.
+  - Empty: invariato.
+  - Error: validazione dataset gestita in fase di generazione.
+  - Success: chip sintetici in lista e sezioni dettagliate nella modale.
+
+## 6. Technical Design
+- API endpoints toccati/nuovi: nessuno.
+- Request/response contracts: nessuno.
+- Validation strategy: `scripts/generate_fp_to_ts.js` valida colonne, 489 righe, chiavi uniche e mapping COVIP.
+- Service/domain logic changes: `PensionFund` esteso con costi dettagliati, rendimenti 10/20 anni, garanzia, benchmark, asset allocation, data quotazione, sostenibilita' e `sourceRating`.
+- External integrations coinvolte: nessuna.
+- Error handling strategy: generazione fallisce in modo esplicito se il CSV non rispetta il contratto.
+- Backward compatibility considerations: `rating` resta calcolato internamente; `sourceRating` e' separato.
+
+## 7. Security and Permissions
+- Auth model coinvolto: nessun impatto.
+- Role/plan checks richiesti: nessun impatto.
+- Dati sensibili trattati: nessuno.
+- Rischi sicurezza e mitigazioni: nessun secret o input utente introdotto.
+
+## 8. Responsiveness and Accessibility
+- Breakpoint verificati: build completata; QA visuale manuale browser non eseguita in questa iterazione.
+- Keyboard/focus behavior: controlli esistenti mantenuti.
+- Label/semantics requirements: chip informativi non sostituiscono i dettagli accessibili nella modale.
+- Note mobile-specific: card mobile mostra solo indicatori compatti e rimanda ai dettagli.
+
+## 9. Performance Considerations
+- Rendering strategy: dataset ancora statico nel bundle frontend.
+- Query/API performance notes: n/a.
+- Caching/debouncing/throttling notes: n/a.
+- Observability/logging notes: n/a.
+- Nota bundle: Vite segnala chunk oltre 500 kB; prossima iterazione consigliata su API/lazy loading dataset.
+
+## 10. Testing Strategy
+- Unit tests: n/a.
+- Route/API tests: n/a.
+- Integration tests: n/a.
+- UI/manual QA scenarios: lista fondi e modale dettaglio da verificare su mobile/desktop.
+- Edge cases: campi testuali vuoti, URL mancanti, rating sorgente mancante, categoria COVIP non mappata, performance 10Y/20Y non disponibili per tutti i comparti.
+- Failure path cases: CSV con colonne mancanti, righe duplicate o numero righe inatteso.
+- Commands run:
+  - Data: `node scripts/generate_fp_to_ts.js`
+  - Data QA: verifica copertura generata `382` valori `ultimi10Anni` e `141` valori `ultimi20Anni`
+  - Frontend: `cd app/frontend && pnpm build`
+
+## 11. Documentation Deliverables
+- Files aggiornati in `docs/`: `docs/DATASET_COMPARTI_2026_MIGRATION.md`.
+- `README.md` update richiesto: `no`.
+- Runbook/operational notes: incluse nella nota di migrazione.
+
+## 12. Rollout and Risk Management
+- Rollout plan: deploy frontend dopo QA mobile/desktop.
+- Deploy targets: `local | test | production`.
+- Env/secrets changes: nessuno.
+- Monitoring after deploy: caricamento lista, apertura dettaglio, dimensione bundle, errori runtime.
+- Rollback plan: ripristinare precedente generatore/dataset e rimuovere campi UI aggiunti.
+
+## 13. Acceptance Criteria
+- [x] CSV canonico copiato in `data/`.
+- [x] Generatore aggiornato e validante.
+- [x] `PensionFund` esteso con i nuovi campi.
+- [x] Lista fondi arricchita con chip progressivi.
+- [x] Dettaglio fondo arricchito con costi, portafoglio e sostenibilita'.
+- [x] Documentazione aggiornata.
+- [x] Build frontend completata.
+
+---
+
 ## Feature Note - Firebase Multi-Project Deploy
 
 ## 1. Overview

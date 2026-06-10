@@ -1,23 +1,20 @@
 # Configurazione Autenticazione e Notifiche
 
-## Metodi di Autenticazione Disponibili
+## Metodo di autenticazione del launcher
 
-Il sistema supporta Google OAuth come unica modalità reale di autenticazione.
+Il launcher VS Code supporta solo Google OAuth.
 
-### 1. Solo Google OAuth (`google`)
+### Solo Google OAuth (`google`)
 Autenticazione tramite account Google con gestione ruoli e approvazioni admin.
-
-### 2. No Auth (`none`)
-Modalità solo locale per sviluppo UI/API non sensibile.
 
 ### Deprecato: Codice Invito (`invite_code`)
 Il login tramite codice invito non è più disponibile. L'endpoint `/auth/invite/login` restituisce `410 Gone` e non emette token.
 
 ## Configurazioni VS Code Launch
 
-### 🚀 Backend: FastAPI (Google OAuth) - **RACCOMANDATO**
+### 🚀 Backend: FastAPI (Google OAuth)
 
-Questa è la configurazione **più completa** che abilita:
+Questa è l'unica configurazione di debug backend e forza `APP_AUTH_MODE=google`. Abilita:
 - ✅ Login con Google OAuth
 - ✅ Firebase Authentication
 - ✅ Firestore per dati utenti
@@ -28,13 +25,7 @@ Questa è la configurazione **più completa** che abilita:
 2. Seleziona "Backend: FastAPI (Google OAuth)"
 3. Premi F5
 
-### 🌐 Backend: FastAPI (Google OAuth)
-
-Autenticazione Google. Ideale per testare il flusso OAuth.
-
-### 🔓 Backend: FastAPI (No Auth)
-
-Nessuna autenticazione. Per sviluppo UI o test API senza login.
+Le configurazioni VS Code legacy per `invite_code`, `google+invite`, `no auth` e debug generico non sono più disponibili nel launcher.
 
 ## Notifiche Telegram
 
@@ -91,7 +82,7 @@ TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
 TELEGRAM_CHAT_ID=-1001234567890
 ```
 
-**Oppure** aggiorna il launch.json (già fatto!):
+**Oppure** aggiungi temporaneamente le variabili al `launch.json` locale:
 
 ```json
 "env": {
@@ -218,11 +209,12 @@ Utente → Refresh page → JWT aggiornato con nuovi ruoli
 ### 1. Avvia Backend
 
 ```bash
-# Seleziona "Backend: FastAPI (Google + Invite Code)" in VS Code
+# Seleziona "Backend: FastAPI (Google OAuth)" in VS Code
 # Oppure da terminale:
 cd /Users/moltisantid/Personal/fund-comparison
 source .venv/bin/activate
 cd app
+APP_AUTH_MODE=google \
 uvicorn backend.main:app --reload --host 127.0.0.1 --port 8001
 ```
 
@@ -253,14 +245,12 @@ pnpm dev
 5. Utente refresha → ha accesso completo
 ```
 
-### 5. Test Invite Code
+### 5. Verifica codice invito disabilitato
 
 ```
-1. Vai su http://localhost:3000
-2. Click "Login con codice"
-3. Inserisci: 7712 (o 8012, 8322)
-4. Accesso immediato con plan: "full-access"
-5. NO notifica Telegram (accesso diretto)
+1. Chiama POST http://127.0.0.1:8001/auth/invite/login
+2. Verifica risposta 410 Gone
+3. Usa solo "Login con Google" per autenticare utenti reali
 ```
 
 ## Troubleshooting
@@ -450,7 +440,7 @@ Response:
 
 ## Prossimi Passi
 
-1. ✅ Autenticazione Google OAuth + Invite Code
+1. ✅ Autenticazione Google OAuth come unico flusso reale
 2. ✅ Sistema ruoli (free, subscriber, admin)
 3. ✅ Notifiche Telegram per admin
 4. 🔄 Dashboard admin frontend

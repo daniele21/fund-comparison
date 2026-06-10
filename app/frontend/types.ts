@@ -7,6 +7,9 @@ export interface PensionFund {
   linea: string; // "comparto" from CSV
   ramo: string | null; // This is missing from new data, will be null
   categoria: FundCategory;
+  categoriaEstesa: string | null;
+  classificazioneCovip: string | null;
+  garanzia: boolean | null;
   isc: {
     isc2a: number | null;
     isc5a: number | null;
@@ -23,14 +26,38 @@ export interface PensionFund {
   };
   categoriaContratto: string | null; // Category/Contract reference (FPN funds only)
   sitoWeb: string | null; // Website (FPN funds only)
+  costiDettaglio: FundCostDetails;
+  benchmark: string | null;
+  assetAllocation: FundAssetAllocation;
+  dataInizioQuotazione: string | null;
+  sostenibilita: string | null;
+  sourceRating: SourceRating | null;
   rating: FundRating;
 }
 
 export type FundType = 'FPN' | 'FPA' | 'PIP';
 export type FundCategory = 'GAR' | 'BIL' | 'AZN' | 'OBB MISTO' | 'OBB PURO' | 'OBB';
+export type SourceRating = 1 | 2 | 3 | 4 | 5;
 export type TipoAdesione = 'individuale' | 'collettiva';
 export type RatingIscOrizzonte = '10y' | '5y';
 export type FundRatingClass = 'A' | 'B' | 'C' | 'D' | 'E';
+
+export interface FundCostDetails {
+  adesione: string | null;
+  annuiGestione: string | null;
+  gestioneFinanziaria: string | null;
+  anticipazione: string | null;
+  trasferimento: string | null;
+  riscatto: string | null;
+  riallocazionePosizione: string | null;
+  riallocazioneFlussoContributivo: string | null;
+  erogazione: string | null;
+}
+
+export interface FundAssetAllocation {
+  azionario: string | null;
+  obbligazionario: string | null;
+}
 
 export interface FundRatingScores {
   score3y: number | null;

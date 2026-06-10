@@ -1,42 +1,63 @@
 #!/usr/bin/env node
 /*
-  Script: generate_fp_to_ts.js
-  Reads FP_data_rendimenti (1).csv and FP_costi (1).csv from data/ folder,
-  merges them with website data from fondi_info.csv and category data from 
-  Fondi di Categoria.csv, then generates app/frontend/data/funds.ts.
-
-  Data sources:
-  - fondi_info.csv: Website URLs for all fund types (FPN, FPA, PIP) indexed by TYPE and N.ALBO
-  - Fondi di Categoria.csv: Category contract info for FPN funds only
-  
-  Usage:
-    node scripts/generate_fp_to_ts.js
+  Generates app/frontend/data/funds.ts from the canonical compartments dataset:
+  data/database_comparti_2026-06-10.csv
 */
 
 const fs = require('fs');
 const path = require('path');
 
-// Detect delimiter by counting occurrences in the first line
+const DATASET_FILE = 'database_comparti_2026-06-10.csv';
+const EXPECTED_ROWS = 489;
+
+const CATEGORY_MAP = {
+  Garantito: 'GAR',
+  Bilanciato: 'BIL',
+  Azionario: 'AZN',
+  'Obbligazionario Misto': 'OBB MISTO',
+  'Obbligazionario Puro': 'OBB PURO',
+  Obbligazionario: 'OBB',
+};
+
+const REQUIRED_COLUMNS = [
+  'tipo',
+  'N. Albo',
+  'Categoria',
+  'Fondo Pensione',
+  'Società',
+  'Linea/Comparto',
+  'Classificazione Covip',
+  'Performance 1Y',
+  'Performance 3Y',
+  'Performance 5Y',
+  'Performance 10Y',
+  'Performance 20Y',
+  'ISC 2 Anni',
+  'ISC 5 Anni',
+  'ISC 10 Anni',
+  'ISC 35 Anni',
+  'rating',
+];
+
 function detectDelimiter(firstLine) {
   const semicolonCount = (firstLine.match(/;/g) || []).length;
   const commaCount = (firstLine.match(/,/g) || []).length;
   return semicolonCount > commaCount ? ';' : ',';
 }
 
-// Parse a CSV line with proper handling of quoted fields and escaped quotes
 function parseCsvLine(line, delimiter) {
   const result = [];
   let current = '';
   let inQuotes = false;
 
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    const nextChar = line[i + 1];
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const nextChar = line[index + 1];
 
     if (char === '"') {
       if (inQuotes && nextChar === '"') {
         current += '"';
-        i++;
+        index += 1;
       } else {
         inQuotes = !inQuotes;
       }
@@ -47,235 +68,136 @@ function parseCsvLine(line, delimiter) {
       current += char;
     }
   }
+
   result.push(current);
   return result;
 }
 
-// Parse CSV file into array of string arrays
-function parseCsvRows(content) {
-  const lines = content.split(/\r?\n/).filter(l => l.trim());
-  if (lines.length === 0) return [];
+function parseCsv(content) {
+  const cleanContent = content.charCodeAt(0) === 0xfeff ? content.slice(1) : content;
+  const lines = cleanContent.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  if (lines.length === 0) {
+    throw new Error('CSV vuoto');
+  }
 
   const delimiter = detectDelimiter(lines[0]);
-  const headers = parseCsvLine(lines[0], delimiter);
-
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const row = parseCsvLine(lines[i], delimiter);
-    if (row.length === headers.length) {
-      rows.push(row);
+  const headers = parseCsvLine(lines[0], delimiter).map((header) => header.trim());
+  const rows = lines.slice(1).map((line, lineIndex) => {
+    const values = parseCsvLine(line, delimiter);
+    if (values.length !== headers.length) {
+      throw new Error(`Riga ${lineIndex + 2}: colonne attese ${headers.length}, trovate ${values.length}`);
     }
-  }
-  return rows;
+    return Object.fromEntries(headers.map((header, index) => [header, (values[index] || '').trim()]));
+  });
+
+  return { headers, rows };
 }
 
-// Normalize decimal separator: comma to dot
-function normalizeDecimal(value) {
-  if (!value || value.trim() === '') return '';
-  return value.replace(',', '.');
+function decimalOrEmpty(value) {
+  if (!value) return '';
+  return value.replace(',', '.').trim();
 }
 
-// Read and parse fondi_info.csv for website data indexed by TYPE and N.ALBO
-function readFondiInfo() {
-  const dataDir = path.join(__dirname, '..', 'data');
-  const fondiInfoPath = path.join(dataDir, 'fondi_info.csv');
-  
-  if (!fs.existsSync(fondiInfoPath)) {
-    console.warn('Warning: fondi_info.csv not found, skipping website data');
-    return new Map();
+function normalizeWebsite(value) {
+  if (!value) return '';
+  return value.trim();
+}
+
+function normalizeDate(value) {
+  if (!value) return '';
+  const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return value;
+  const [, day, month, year] = match;
+  return `${year}-${month}-${day}`;
+}
+
+function yesNoToBooleanString(value) {
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return '';
+  if (['si', 'sì', 'yes', 'true'].includes(normalized)) return 'true';
+  if (['no', 'false'].includes(normalized)) return 'false';
+  return '';
+}
+
+function json(value) {
+  return JSON.stringify(value);
+}
+
+function validateRows(headers, rows) {
+  const missingColumns = REQUIRED_COLUMNS.filter((column) => !headers.includes(column));
+  if (missingColumns.length > 0) {
+    throw new Error(`Colonne mancanti: ${missingColumns.join(', ')}`);
   }
 
-  let content = fs.readFileSync(fondiInfoPath, 'utf8');
-  // Remove BOM if present
-  if (content.charCodeAt(0) === 0xFEFF) {
-    content = content.slice(1);
+  if (rows.length !== EXPECTED_ROWS) {
+    throw new Error(`Righe dataset attese ${EXPECTED_ROWS}, trovate ${rows.length}`);
   }
-  
-  const rows = parseCsvRows(content);
-  
-  const fondiInfoMap = new Map();
-  // rows already has header removed by parseCsvRows
-  // Parse rows with TYPE;N. ALBO;FONDO;Sito
+
+  const seenKeys = new Set();
   rows.forEach((row, index) => {
-    if (row.length >= 4) {
-      const type = row[0].trim();
-      const nAlbo = row[1].trim();
-      const website = row[3].trim();
-      
-      // Create key as TYPE|N.ALBO for exact matching
-      const key = `${type}|${nAlbo}`;
-      fondiInfoMap.set(key, website);
+    const rowNumber = index + 2;
+    const category = row['Classificazione Covip'];
+    if (!CATEGORY_MAP[category]) {
+      throw new Error(`Riga ${rowNumber}: classificazione COVIP non mappata "${category}"`);
     }
-  });
-  
-  console.log(`Loaded ${fondiInfoMap.size} website entries from fondi_info.csv`);
-  
-  return fondiInfoMap;
-}
 
-// Read and parse Fondi di Categoria CSV for FPN fund metadata
-function readCategoryData() {
-  const dataDir = path.join(__dirname, '..', 'data');
-  const categoryPath = path.join(dataDir, 'Fondi di Categoria.csv');
-  
-  if (!fs.existsSync(categoryPath)) {
-    console.warn('Warning: Fondi di Categoria.csv not found, skipping category data');
-    return new Map();
-  }
-
-  const content = fs.readFileSync(categoryPath, 'utf8');
-  const rows = parseCsvRows(content);
-  
-  const categoryMap = new Map();
-  // Skip header row
-  rows.slice(1).forEach(row => {
-    if (row.length >= 3) {
-      const fondoName = row[0].trim();
-      const categoria = row[1].trim();
-      
-      // Create multiple keys for matching variations
-      const keys = [
-        fondoName.toUpperCase(),
-        fondoName.replace(/\s+/g, '').toUpperCase(),
-        // Also try without "FONDO PENSIONE" prefix
-        fondoName.replace(/^FONDO\s+PENSIONE\s+/i, '').toUpperCase()
-      ];
-      
-      keys.forEach(key => {
-        categoryMap.set(key, categoria);
-      });
+    const key = `${row.tipo}|${row['N. Albo']}|${row['Linea/Comparto']}`;
+    if (seenKeys.has(key)) {
+      throw new Error(`Riga ${rowNumber}: chiave duplicata ${key}`);
     }
-  });
-  
-  return categoryMap;
-}
+    seenKeys.add(key);
 
-// Match fund name to category data (fuzzy matching)
-function matchCategoryData(fundName, categoryMap) {
-  if (!fundName) return null;
-  
-  const cleanName = fundName.toUpperCase().trim();
-  
-  // Try exact match
-  if (categoryMap.has(cleanName)) {
-    return categoryMap.get(cleanName);
-  }
-  
-  // Try without spaces
-  const noSpaces = cleanName.replace(/\s+/g, '');
-  if (categoryMap.has(noSpaces)) {
-    return categoryMap.get(noSpaces);
-  }
-  
-  // Try without "FONDO PENSIONE" prefix
-  const withoutPrefix = cleanName.replace(/^FONDO\s+PENSIONE\s+/, '');
-  if (categoryMap.has(withoutPrefix)) {
-    return categoryMap.get(withoutPrefix);
-  }
-  
-  // Try partial match - check if any key is contained in the fund name
-  for (const [key, value] of categoryMap.entries()) {
-    if (cleanName.includes(key) || key.includes(withoutPrefix)) {
-      return value;
-    }
-  }
-  
-  return null;
-}
-
-// Read and map files
-function readAndMap() {
-  const dataDir = path.join(__dirname, '..', 'data');
-  const rendimentiPath = path.join(dataDir, 'FP_data_rendimenti (1).csv');
-  const costiPath = path.join(dataDir, 'FP_costi (1).csv');
-  
-  // Read website data from fondi_info.csv for all fund types
-  const fondiInfoMap = readFondiInfo();
-  // Read category data for FPN funds
-  const categoryMap = readCategoryData();
-
-  const rendimentiContent = fs.readFileSync(rendimentiPath, 'utf8');
-  const costiContent = fs.readFileSync(costiPath, 'utf8');
-
-  const rendimentiRows = parseCsvRows(rendimentiContent);
-  const costiRows = parseCsvRows(costiContent);
-
-  // Create a map keyed by first 5 columns (TYPE;N. ALBO;FONDO;SOCIETA;COMPARTO)
-  // Note: CATEGORIA can differ between rendimenti and costi files
-  const rendimentiMap = new Map();
-  rendimentiRows.forEach(row => {
-    const key = row.slice(0, 5).join('|');
-    rendimentiMap.set(key, row);
-  });
-
-  const costiMap = new Map();
-  costiRows.forEach(row => {
-    const key = row.slice(0, 5).join('|');
-    costiMap.set(key, row);
-  });
-
-  // Merge: for each key that exists in both maps
-  const allKeys = new Set([...rendimentiMap.keys()]);
-  const allRows = [];
-
-  allKeys.forEach(key => {
-    const rendRow = rendimentiMap.get(key);
-    const costiRow = costiMap.get(key);
-
-    if (rendRow && costiRow) {
-      // Use CATEGORIA from rendimenti file (column 5), merge rest
-      // Expected structure: TYPE, N.ALBO, FONDO, SOCIETA, COMPARTO, CATEGORIA,
-      //                     ultimo_anno, ultimi_3_anni, ultimi_5_anni, ultimi_10_anni, ultimi_20_anni,
-      //                     isc_2a, isc_5a, isc_10a, isc_35a, categoria_contratto, sito_web
-      const merged = [
-        ...rendRow.slice(0, 6).map(v => v.trim()),     // Use CATEGORIA from rendimenti
-        ...rendRow.slice(6, 11).map(normalizeDecimal),  // rendimenti columns
-        ...costiRow.slice(6, 10).map(normalizeDecimal)  // costi columns (ISC 2a, 5a, 10a, 35a)
-      ];
-      
-      const type = rendRow[0];
-      const nAlbo = rendRow[1];
-      
-      // Get website from fondi_info.csv using TYPE|N.ALBO key
-      const fondiInfoKey = `${type.trim()}|${nAlbo.trim()}`;
-      const website = fondiInfoMap.get(fondiInfoKey) || '';
-      
-      // Add category contratto for FPN funds only (from Fondi di Categoria.csv)
-      if (type === 'FPN') {
-        const fundName = rendRow[2]; // FONDO column
-        const categoria = matchCategoryData(fundName, categoryMap);
-        merged.push(categoria || '');
-      } else {
-        // For FPA and PIP, add empty string for categoria_contratto
-        merged.push('');
+    ['tipo', 'N. Albo', 'Fondo Pensione', 'Linea/Comparto'].forEach((column) => {
+      if (!row[column]) {
+        throw new Error(`Riga ${rowNumber}: campo obbligatorio vuoto "${column}"`);
       }
-      
-      // Add website for all fund types
-      merged.push(website);
-      
-      allRows.push(merged);
-    }
+    });
   });
-
-  // Sort by TYPE (FPN, FPA, PIP), then by N.ALBO (numeric)
-  // Within same fund, preserve order from CSV (don't sort by COMPARTO)
-  const typeOrder = { 'FPN': 1, 'FPA': 2, 'PIP': 3 };
-  allRows.sort((a, b) => {
-    const typeA = typeOrder[a[0]] || 999;
-    const typeB = typeOrder[b[0]] || 999;
-    if (typeA !== typeB) return typeA - typeB;        // TYPE order
-    const alboA = parseInt(a[1], 10);
-    const alboB = parseInt(b[1], 10);
-    return alboA - alboB;                              // N.ALBO only
-  });
-
-  return allRows;
 }
 
-// Build the TypeScript file content matching backup format
-function buildBackupTsContent(allRows) {
+function toGeneratedRow(row) {
+  return [
+    row.tipo,
+    row['N. Albo'],
+    row['Fondo Pensione'],
+    row['Società'],
+    row['Linea/Comparto'],
+    CATEGORY_MAP[row['Classificazione Covip']],
+    decimalOrEmpty(row['Performance 1Y']),
+    decimalOrEmpty(row['Performance 3Y']),
+    decimalOrEmpty(row['Performance 5Y']),
+    decimalOrEmpty(row['Performance 10Y']),
+    decimalOrEmpty(row['Performance 20Y']),
+    decimalOrEmpty(row['ISC 2 Anni']),
+    decimalOrEmpty(row['ISC 5 Anni']),
+    decimalOrEmpty(row['ISC 10 Anni']),
+    decimalOrEmpty(row['ISC 35 Anni']),
+    row['Categoria/Contratto di Riferimento'],
+    normalizeWebsite(row['Sito Web']),
+    row.Categoria,
+    row['Classificazione Covip'],
+    yesNoToBooleanString(row.Garanzia),
+    row['Costi di Adesione'],
+    row['Costi annui di Gestione'],
+    row['Costi di Gestione Finanziaria'],
+    row['Costi di Anticipazione'],
+    row['Costi di Trasferimento'],
+    row['Costi di Riscatto'],
+    row['Costi di Riallocazione della Posizione'],
+    row['Costi di Riallocazione del Flusso Contributivo'],
+    row['Costi di Erogazione'],
+    row.Benchmark,
+    row['Composizione Patrimonio: Azionario'],
+    row['Composizione Patrimonio: Obbligazionario'],
+    normalizeDate(row['Data inizio quotazione']),
+    row.Sostenibilità,
+    row.rating,
+  ];
+}
+
+function buildTsContent(rows) {
   const tsLines = [
-    `import { PensionFund, FundCategory } from '../types';`,
+    `import { PensionFund, FundCategory, FundType, SourceRating } from '../types';`,
     `import { calculateFundRating } from '../utils/fundRating';`,
     ``,
     `const parseFloatOrNull = (val: string): number | null => {`,
@@ -284,76 +206,113 @@ function buildBackupTsContent(allRows) {
     `  return isNaN(num) ? null : num;`,
     `};`,
     ``,
-    `const generateId = (albo: string, comparto: string, suffix?: number): string => {`,
+    `const parseBooleanOrNull = (val: string): boolean | null => {`,
+    `  if (val === 'true') return true;`,
+    `  if (val === 'false') return false;`,
+    `  return null;`,
+    `};`,
+    ``,
+    `const parseSourceRating = (val: string): SourceRating | null => {`,
+    `  const num = Number.parseInt(val, 10);`,
+    `  return num >= 1 && num <= 5 ? (num as SourceRating) : null;`,
+    `};`,
+    ``,
+    `const emptyToNull = (val: string): string | null => val.trim() ? val : null;`,
+    ``,
+    `const generateId = (type: string, albo: string, comparto: string): string => {`,
     `  const sanitizedComparto = String(comparto || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');`,
-    `  return suffix ? \`\${albo}-\${sanitizedComparto}-\${suffix}\` : \`\${albo}-\${sanitizedComparto}\`;`,
-    `}`,
+    `  return \`\${type.toLowerCase()}-\${albo}-\${sanitizedComparto}\`;`,
+    `};`,
     ``,
     `const allRows: string[][] = [`,
   ];
 
-  // Add each row
-  allRows.forEach(row => {
-    const jsonRow = JSON.stringify(row);
-    tsLines.push(`${jsonRow},`);
+  rows.forEach((row) => {
+    tsLines.push(`${json(row)},`);
   });
 
   tsLines.push(`];`);
   tsLines.push(``);
-  tsLines.push(`export const pensionFundsData: PensionFund[] = (() => {`);
-  tsLines.push(`  // Ensure generated IDs are unique by tracking base id occurrences`);
-  tsLines.push(`  const seen: Record<string, number> = {};`);
-  tsLines.push(`  return allRows.map((row): PensionFund => {`);
+  tsLines.push(`export const pensionFundsData: PensionFund[] = allRows.map((row): PensionFund => {`);
   tsLines.push(`  const [`);
-  tsLines.push(`    type, n_albo, fondo, societa, comparto, categoria,`);
-  tsLines.push(`    ultimo_anno, ultimi_3_anni, ultimi_5_anni, ultimi_10_anni, ultimi_20_anni,`);
-  tsLines.push(`    isc_2a, isc_5a, isc_10a, isc_35a, categoria_contratto, sito_web`);
+  tsLines.push(`    type, nAlbo, fondo, societa, comparto, categoria,`);
+  tsLines.push(`    ultimoAnno, ultimi3Anni, ultimi5Anni, ultimi10Anni, ultimi20Anni,`);
+  tsLines.push(`    isc2a, isc5a, isc10a, isc35a, categoriaContratto, sitoWeb,`);
+  tsLines.push(`    categoriaEstesa, classificazioneCovip, garanzia, costoAdesione, costoAnnuoGestione,`);
+  tsLines.push(`    costoGestioneFinanziaria, costoAnticipazione, costoTrasferimento, costoRiscatto,`);
+  tsLines.push(`    costoRiallocazionePosizione, costoRiallocazioneFlusso, costoErogazione, benchmark,`);
+  tsLines.push(`    azionario, obbligazionario, dataInizioQuotazione, sostenibilita, sourceRating`);
   tsLines.push(`  ] = row;`);
   tsLines.push(``);
-  tsLines.push(`    const isc5aValue = parseFloatOrNull(isc_5a);`);
-  tsLines.push(``);
-  tsLines.push(`    const baseId = generateId(n_albo, comparto);`);
-  tsLines.push(`    const count = (seen[baseId] || 0) + 1;`);
-  tsLines.push(`    seen[baseId] = count;`);
-  tsLines.push(`    const id = count === 1 ? baseId : generateId(n_albo, comparto, count);`);
-  tsLines.push(``);
-  tsLines.push(`    const fundWithoutRating: Omit<PensionFund, 'rating'> = {`);
-  tsLines.push(`      id,`);
-  tsLines.push(`    type: type as 'FPN' | 'FPA' | 'PIP',`);
-  tsLines.push(`    nAlbo: parseInt(n_albo, 10),`);
+  tsLines.push(`  const isc5aValue = parseFloatOrNull(isc5a);`);
+  tsLines.push(`  const fundWithoutRating: Omit<PensionFund, 'rating'> = {`);
+  tsLines.push(`    id: generateId(type, nAlbo, comparto),`);
+  tsLines.push(`    type: type as FundType,`);
+  tsLines.push(`    societa: emptyToNull(societa),`);
   tsLines.push(`    pip: fondo,`);
-  tsLines.push(`    societa: societa || null,`);
+  tsLines.push(`    nAlbo: Number.parseInt(nAlbo, 10),`);
   tsLines.push(`    linea: comparto,`);
+  tsLines.push(`    ramo: null,`);
   tsLines.push(`    categoria: categoria as FundCategory,`);
-  tsLines.push(`    ramo: null, // Not available in new data`);
-  tsLines.push(`    rendimenti: {`);
-  tsLines.push(`      ultimoAnno: parseFloatOrNull(ultimo_anno),`);
-  tsLines.push(`      ultimi3Anni: parseFloatOrNull(ultimi_3_anni),`);
-  tsLines.push(`      ultimi5Anni: parseFloatOrNull(ultimi_5_anni),`);
-  tsLines.push(`      ultimi10Anni: parseFloatOrNull(ultimi_10_anni),`);
-  tsLines.push(`      ultimi20Anni: parseFloatOrNull(ultimi_20_anni),`);
-  tsLines.push(`    },`);
+  tsLines.push(`    categoriaEstesa: emptyToNull(categoriaEstesa),`);
+  tsLines.push(`    classificazioneCovip: emptyToNull(classificazioneCovip),`);
+  tsLines.push(`    garanzia: parseBooleanOrNull(garanzia),`);
   tsLines.push(`    isc: {`);
-  tsLines.push(`      isc2a: parseFloatOrNull(isc_2a),`);
+  tsLines.push(`      isc2a: parseFloatOrNull(isc2a),`);
   tsLines.push(`      isc5a: isc5aValue,`);
-  tsLines.push(`      isc10a: parseFloatOrNull(isc_10a),`);
-  tsLines.push(`      isc35a: parseFloatOrNull(isc_35a),`);
+  tsLines.push(`      isc10a: parseFloatOrNull(isc10a),`);
+  tsLines.push(`      isc35a: parseFloatOrNull(isc35a),`);
   tsLines.push(`    },`);
   tsLines.push(`    costoAnnuo: isc5aValue,`);
-  tsLines.push(`    categoriaContratto: categoria_contratto || null,`);
-  tsLines.push(`    sitoWeb: sito_web || null,`);
-  tsLines.push(`    };`);
-  tsLines.push(`    return { ...fundWithoutRating, rating: calculateFundRating(fundWithoutRating) };`);
-  tsLines.push(`  }).filter(fund => fund.linea); // Filter out any potentially invalid rows`);
-  tsLines.push(`})();`);
+  tsLines.push(`    rendimenti: {`);
+  tsLines.push(`      ultimoAnno: parseFloatOrNull(ultimoAnno),`);
+  tsLines.push(`      ultimi3Anni: parseFloatOrNull(ultimi3Anni),`);
+  tsLines.push(`      ultimi5Anni: parseFloatOrNull(ultimi5Anni),`);
+  tsLines.push(`      ultimi10Anni: parseFloatOrNull(ultimi10Anni),`);
+  tsLines.push(`      ultimi20Anni: parseFloatOrNull(ultimi20Anni),`);
+  tsLines.push(`    },`);
+  tsLines.push(`    categoriaContratto: emptyToNull(categoriaContratto),`);
+  tsLines.push(`    sitoWeb: emptyToNull(sitoWeb),`);
+  tsLines.push(`    costiDettaglio: {`);
+  tsLines.push(`      adesione: emptyToNull(costoAdesione),`);
+  tsLines.push(`      annuiGestione: emptyToNull(costoAnnuoGestione),`);
+  tsLines.push(`      gestioneFinanziaria: emptyToNull(costoGestioneFinanziaria),`);
+  tsLines.push(`      anticipazione: emptyToNull(costoAnticipazione),`);
+  tsLines.push(`      trasferimento: emptyToNull(costoTrasferimento),`);
+  tsLines.push(`      riscatto: emptyToNull(costoRiscatto),`);
+  tsLines.push(`      riallocazionePosizione: emptyToNull(costoRiallocazionePosizione),`);
+  tsLines.push(`      riallocazioneFlussoContributivo: emptyToNull(costoRiallocazioneFlusso),`);
+  tsLines.push(`      erogazione: emptyToNull(costoErogazione),`);
+  tsLines.push(`    },`);
+  tsLines.push(`    benchmark: emptyToNull(benchmark),`);
+  tsLines.push(`    assetAllocation: {`);
+  tsLines.push(`      azionario: emptyToNull(azionario),`);
+  tsLines.push(`      obbligazionario: emptyToNull(obbligazionario),`);
+  tsLines.push(`    },`);
+  tsLines.push(`    dataInizioQuotazione: emptyToNull(dataInizioQuotazione),`);
+  tsLines.push(`    sostenibilita: emptyToNull(sostenibilita),`);
+  tsLines.push(`    sourceRating: parseSourceRating(sourceRating),`);
+  tsLines.push(`  };`);
+  tsLines.push(``);
+  tsLines.push(`  return { ...fundWithoutRating, rating: calculateFundRating(fundWithoutRating) };`);
+  tsLines.push(`});`);
 
-  return tsLines.join('\n');
+  return `${tsLines.join('\n')}\n`;
 }
 
-// Main execution
-const allRows = readAndMap();
-const tsContent = buildBackupTsContent(allRows);
-const outputPath = path.join(__dirname, '..', 'app', 'frontend', 'data', 'funds.ts');
+function main() {
+  const datasetPath = path.join(__dirname, '..', 'data', DATASET_FILE);
+  const outputPath = path.join(__dirname, '..', 'app', 'frontend', 'data', 'funds.ts');
+  const content = fs.readFileSync(datasetPath, 'utf8');
+  const { headers, rows } = parseCsv(content);
 
-fs.writeFileSync(outputPath, tsContent, 'utf8');
-console.log(`Generated ${outputPath} with ${allRows.length} rows.`);
+  validateRows(headers, rows);
+
+  const generatedRows = rows.map(toGeneratedRow);
+  const tsContent = buildTsContent(generatedRows);
+
+  fs.writeFileSync(outputPath, tsContent, 'utf8');
+  console.log(`Generated ${outputPath} with ${generatedRows.length} rows from ${DATASET_FILE}.`);
+}
+
+main();

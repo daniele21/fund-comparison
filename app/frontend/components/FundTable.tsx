@@ -167,6 +167,21 @@ const RatingBadge: React.FC<{ fund: PensionFund; compact?: boolean }> = ({ fund,
     );
 };
 
+const DetailChip: React.FC<{ label: string; tone?: 'green' | 'blue' | 'amber' | 'slate' }> = ({ label, tone = 'slate' }) => {
+    const toneClasses = {
+        green: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/25 dark:text-emerald-200 dark:border-emerald-800',
+        blue: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-900/25 dark:text-sky-200 dark:border-sky-800',
+        amber: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/25 dark:text-amber-200 dark:border-amber-800',
+        slate: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    };
+
+    return (
+        <span className={`inline-flex h-[22px] items-center rounded-full border px-2 text-[11px] font-semibold leading-none ${toneClasses[tone]}`}>
+            {label}
+        </span>
+    );
+};
+
 
 const FundTable: React.FC<FundTableProps> = ({
   funds,
@@ -234,6 +249,11 @@ const FundTable: React.FC<FundTableProps> = ({
                                             <div className="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300 truncate transition-colors" title={fund.linea}>{fund.linea}</div>
                                             <div className="text-xs text-slate-500 dark:text-slate-400 truncate" title={fund.pip}>{fund.pip}</div>
                                             <div className="text-xs font-medium text-slate-600 dark:text-slate-400 truncate" title={fund.societa ?? ''}>{fund.societa}</div>
+                                            <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                                {fund.garanzia === true && <DetailChip label="Garanzia" tone="green" />}
+                                                {fund.sostenibilita && <DetailChip label="Sostenibilita" tone={fund.sostenibilita.toLowerCase().includes('no') ? 'slate' : 'blue'} />}
+                                                {fund.benchmark && <DetailChip label="Benchmark" tone="amber" />}
+                                            </div>
                                         </div>
                                         {fund.sitoWeb && (
                                             <a
@@ -414,6 +434,10 @@ const FundTable: React.FC<FundTableProps> = ({
                         </div>
 
                         <RatingBadge fund={fund} compact />
+
+                        {fund.garanzia === true && <DetailChip label="Garanzia" tone="green" />}
+                        {fund.sostenibilita && <DetailChip label="Sostenibilita" tone={fund.sostenibilita.toLowerCase().includes('no') ? 'slate' : 'blue'} />}
+                        {fund.benchmark && <DetailChip label="Benchmark" tone="amber" />}
                         
                         {/* Website Link Badge */}
                         {fund.sitoWeb && (
