@@ -1,4 +1,5 @@
 import { PensionFund, FundCategory, FundType, SourceRating } from '../types';
+import { getFundInformativeNote } from './fundInformativeNotes';
 import { calculateFundRating } from '../utils/fundRating';
 
 const parseFloatOrNull = (val: string): number | null => {
@@ -557,6 +558,7 @@ export const pensionFundsData: PensionFund[] = allRows.map((row): PensionFund =>
     },
     categoriaContratto: emptyToNull(categoriaContratto),
     sitoWeb: emptyToNull(sitoWeb),
+    notaInformativa: getFundInformativeNote(type as FundType, Number.parseInt(nAlbo, 10)),
     costiDettaglio: {
       adesione: emptyToNull(costoAdesione),
       annuiGestione: emptyToNull(costoAnnuoGestione),

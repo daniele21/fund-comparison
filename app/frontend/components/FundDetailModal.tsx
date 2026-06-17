@@ -3,6 +3,7 @@ import { PensionFund } from '../types';
 import { CATEGORY_MAP } from '../constants';
 import PerformanceChart from './PerformanceChart';
 import CostChart from './CostChart';
+import { getFundInformativeNote } from '../data/fundInformativeNotes';
 import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingBadgeClasses, ratingStarsFromScore } from '../utils/fundRating';
 
 interface FundDetailModalProps {
@@ -43,6 +44,11 @@ const TextValueRow: React.FC<{ label: string; value: string | null }> = ({ label
   </div>
 );
 
+const normalizeExternalUrl = (url: string | null): string | null => {
+  if (!url) return null;
+  return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
+};
+
 const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose, theme, onFundSelect, isSelected }) => {
   const [isMobile, setIsMobile] = React.useState(false);
   
@@ -71,11 +77,10 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
     return null;
   }
 
-  // Normalize website for display and linking (ensure protocol)
-  const normalizedSite = fund.sitoWeb
-    ? (fund.sitoWeb.startsWith('http://') || fund.sitoWeb.startsWith('https://') ? fund.sitoWeb : `https://${fund.sitoWeb}`)
-    : null;
-  const displaySite = normalizedSite ? normalizedSite.replace(/^https?:\/\//, '').replace(/\/$/, '') : '';
+  const normalizedSite = normalizeExternalUrl(fund.sitoWeb);
+  const informativeNote = fund.notaInformativa ?? getFundInformativeNote(fund.type, fund.nAlbo);
+  const normalizedInformativeNote = normalizeExternalUrl(informativeNote?.url ?? null);
+  const informativeNoteTitle = informativeNote?.fileName ?? 'Nota informativa';
 
   return (
     <div
@@ -104,8 +109,8 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
             </h2>
             <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400 mt-1">{fund.pip}</p>
             
-            {/* Fund info in header - categories for FPN, website for all */}
-            {(fund.categoriaContratto || normalizedSite) && (
+            {/* Fund info in header - categories for FPN, website/document links for all */}
+            {(fund.categoriaContratto || normalizedSite || normalizedInformativeNote) && (
               <div className="mt-2 sm:mt-3">
                 {fund.categoriaContratto && (
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Categorie Contrattuali:</p>
@@ -134,6 +139,24 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                       </svg>
                       Visita sito
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  )}
+                  {normalizedInformativeNote && (
+                    <a
+                      href={normalizedInformativeNote}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Apri nota informativa ${informativeNoteTitle}`}
+                      title={informativeNoteTitle}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition text-xs font-medium"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6M7 3h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                      </svg>
+                      Nota informativa
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>

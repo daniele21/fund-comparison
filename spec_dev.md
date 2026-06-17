@@ -123,6 +123,7 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - Usare `data/database_comparti_2026-06-10.csv` come dataset canonico.
 - Estendere il contratto `PensionFund` senza perdere compatibilita' con rating e comparatore esistenti.
 - Mappare `Performance 10Y` e `Performance 20Y` verso `rendimenti.ultimi10Anni` e `rendimenti.ultimi20Anni`.
+- Mappare i link alla nota informativa disponibili in `Link_fondi.xlsx` verso i fondi corrispondenti.
 - Mostrare le nuove informazioni con progressive disclosure.
 - Documentare validazione, test, rischi e rollback.
 
@@ -135,11 +136,12 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - Frontend scope (`app/frontend/...`): tipi fondo, dataset generato, lista fondi, modale dettaglio.
 - Backend scope (`app/backend/...`): nessuno.
 - Data/config scope (`data/`, `scripts/`): CSV canonico e generatore TypeScript.
+- Mapping statico note informative: `app/frontend/data/fundInformativeNotes.ts`, chiave `tipo + N. Albo`.
 - Out of scope: API fondi production, Firestore, auth, billing, ruoli.
 
 ## 5. User and UX Definition
 - User persona principale: utente che confronta fondi pensione e deve capire rapidamente se un comparto e' adatto.
-- User journey principale: lista fondi -> segnali sintetici -> dettaglio fondo -> lettura costi/benchmark/portafoglio.
+- User journey principale: lista fondi -> segnali sintetici -> dettaglio fondo -> lettura costi/benchmark/portafoglio -> apertura nota informativa quando disponibile.
 - Entry points: `FundTable`, `FundDetailModal`.
 - Stati UX richiesti:
   - Loading: invariato.
@@ -151,8 +153,8 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - API endpoints toccati/nuovi: nessuno.
 - Request/response contracts: nessuno.
 - Validation strategy: `scripts/generate_fp_to_ts.js` valida colonne, 489 righe, chiavi uniche e mapping COVIP.
-- Service/domain logic changes: `PensionFund` esteso con costi dettagliati, rendimenti 10/20 anni, garanzia, benchmark, asset allocation, data quotazione, sostenibilita' e `sourceRating`.
-- External integrations coinvolte: nessuna.
+- Service/domain logic changes: `PensionFund` esteso con costi dettagliati, rendimenti 10/20 anni, garanzia, benchmark, asset allocation, data quotazione, sostenibilita', `sourceRating` e `notaInformativa`.
+- External integrations coinvolte: link esterni SharePoint alle note informative, solo come URL aperti dall'utente.
 - Error handling strategy: generazione fallisce in modo esplicito se il CSV non rispetta il contratto.
 - Backward compatibility considerations: `rating` resta calcolato internamente; `sourceRating` e' separato.
 
@@ -160,12 +162,12 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - Auth model coinvolto: nessun impatto.
 - Role/plan checks richiesti: nessun impatto.
 - Dati sensibili trattati: nessuno.
-- Rischi sicurezza e mitigazioni: nessun secret o input utente introdotto.
+- Rischi sicurezza e mitigazioni: nessun secret o input utente introdotto; link esterni aperti con `target="_blank"` e `rel="noopener noreferrer"`.
 
 ## 8. Responsiveness and Accessibility
 - Breakpoint verificati: build completata; QA visuale manuale browser non eseguita in questa iterazione.
 - Keyboard/focus behavior: controlli esistenti mantenuti.
-- Label/semantics requirements: chip informativi non sostituiscono i dettagli accessibili nella modale.
+- Label/semantics requirements: chip informativi non sostituiscono i dettagli accessibili nella modale; il link alla nota informativa ha `aria-label` e title descrittivo.
 - Note mobile-specific: card mobile mostra solo indicatori compatti e rimanda ai dettagli.
 
 ## 9. Performance Considerations
@@ -180,12 +182,15 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - Route/API tests: n/a.
 - Integration tests: n/a.
 - UI/manual QA scenarios: lista fondi e modale dettaglio da verificare su mobile/desktop.
-- Edge cases: campi testuali vuoti, URL mancanti, rating sorgente mancante, categoria COVIP non mappata, performance 10Y/20Y non disponibili per tutti i comparti.
+- Edge cases: campi testuali vuoti, URL mancanti, nota informativa assente, rating sorgente mancante, categoria COVIP non mappata, performance 10Y/20Y non disponibili per tutti i comparti.
 - Failure path cases: CSV con colonne mancanti, righe duplicate o numero righe inatteso.
 - Commands run:
   - Data: `node scripts/generate_fp_to_ts.js`
-  - Data QA: verifica copertura generata `382` valori `ultimi10Anni` e `141` valori `ultimi20Anni`
+  - Data QA: confronto `Link_fondi.xlsx` vs `app/frontend/data/fundInformativeNotes.ts` senza mismatch
+  - Data QA: verifica copertura generata `382` valori `ultimi10Anni`, `141` valori `ultimi20Anni` e `49` comparti con `notaInformativa`
   - Frontend: `cd app/frontend && pnpm build`
+  - Frontend typecheck: `cd app/frontend && pnpm exec tsc --noEmit` non verde per errori preesistenti su Framer Motion/Recharts e file locale non tracciato `app/frontend/data/funds copy.ts`
+  - UI browser QA: non eseguita, dev server locale bloccato da sandbox e permesso elevato non concesso
 
 ## 11. Documentation Deliverables
 - Files aggiornati in `docs/`: `docs/DATASET_COMPARTI_2026_MIGRATION.md`.
@@ -197,14 +202,15 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - Deploy targets: `local | test | production`.
 - Env/secrets changes: nessuno.
 - Monitoring after deploy: caricamento lista, apertura dettaglio, dimensione bundle, errori runtime.
-- Rollback plan: ripristinare precedente generatore/dataset e rimuovere campi UI aggiunti.
+- Rollback plan: ripristinare precedente generatore/dataset, rimuovere `app/frontend/data/fundInformativeNotes.ts` e rimuovere campi UI aggiunti.
 
 ## 13. Acceptance Criteria
 - [x] CSV canonico copiato in `data/`.
 - [x] Generatore aggiornato e validante.
 - [x] `PensionFund` esteso con i nuovi campi.
+- [x] Mapping note informative integrato per i fondi disponibili.
 - [x] Lista fondi arricchita con chip progressivi.
-- [x] Dettaglio fondo arricchito con costi, portafoglio e sostenibilita'.
+- [x] Dettaglio fondo arricchito con costi, portafoglio, sostenibilita' e nota informativa.
 - [x] Documentazione aggiornata.
 - [x] Build frontend completata.
 

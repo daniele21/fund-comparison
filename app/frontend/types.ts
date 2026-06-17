@@ -26,6 +26,7 @@ export interface PensionFund {
   };
   categoriaContratto: string | null; // Category/Contract reference (FPN funds only)
   sitoWeb: string | null; // Website (FPN funds only)
+  notaInformativa: FundInformativeNote | null;
   costiDettaglio: FundCostDetails;
   benchmark: string | null;
   assetAllocation: FundAssetAllocation;
@@ -52,6 +53,11 @@ export interface FundCostDetails {
   riallocazionePosizione: string | null;
   riallocazioneFlussoContributivo: string | null;
   erogazione: string | null;
+}
+
+export interface FundInformativeNote {
+  url: string;
+  fileName: string | null;
 }
 
 export interface FundAssetAllocation {

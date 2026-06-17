@@ -1,6 +1,34 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Set CLOUDSDK_PYTHON if not already set, to avoid gcloud crash on Python < 3.10
+if [[ -z "${CLOUDSDK_PYTHON:-}" ]]; then
+  for py_bin in \
+    /opt/homebrew/bin/python3.12 \
+    /opt/homebrew/bin/python3.11 \
+    /opt/homebrew/bin/python3.10 \
+    /usr/local/bin/python3.12 \
+    /usr/local/bin/python3.11 \
+    /usr/local/bin/python3.10 \
+    python3.12 \
+    python3.11 \
+    python3.10 \
+    python3
+   do
+    if command -v "$py_bin" >/dev/null 2>&1; then
+      py_ver="$("$py_bin" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null || true)"
+      if [[ -n "$py_ver" ]]; then
+        major="${py_ver%%.*}"
+        minor="${py_ver#*.}"
+        if [[ "$major" -eq 3 && "$minor" -ge 10 ]]; then
+          export CLOUDSDK_PYTHON="$(command -v "$py_bin")"
+          break
+        fi
+      fi
+    fi
+  done
+fi
+
 usage() {
   cat <<'EOF'
 Usage:

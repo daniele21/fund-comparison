@@ -198,6 +198,7 @@ function toGeneratedRow(row) {
 function buildTsContent(rows) {
   const tsLines = [
     `import { PensionFund, FundCategory, FundType, SourceRating } from '../types';`,
+    `import { getFundInformativeNote } from './fundInformativeNotes';`,
     `import { calculateFundRating } from '../utils/fundRating';`,
     ``,
     `const parseFloatOrNull = (val: string): number | null => {`,
@@ -273,6 +274,7 @@ function buildTsContent(rows) {
   tsLines.push(`    },`);
   tsLines.push(`    categoriaContratto: emptyToNull(categoriaContratto),`);
   tsLines.push(`    sitoWeb: emptyToNull(sitoWeb),`);
+  tsLines.push(`    notaInformativa: getFundInformativeNote(type as FundType, Number.parseInt(nAlbo, 10)),`);
   tsLines.push(`    costiDettaglio: {`);
   tsLines.push(`      adesione: emptyToNull(costoAdesione),`);
   tsLines.push(`      annuiGestione: emptyToNull(costoAnnuoGestione),`);
