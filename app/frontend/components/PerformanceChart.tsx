@@ -5,6 +5,7 @@ import type { TooltipPayload } from 'recharts';
 import { getColorForFund } from '../utils/colorMapping';
 import { formatFundLabel } from '../utils/fundLabel';
 import ChartTooltip from './ChartTooltip';
+import { DATASET_METADATA } from '../config/datasetMetadata';
 
 interface PerformanceChartProps {
   selectedFunds: PensionFund[];
@@ -23,11 +24,11 @@ const TFR_BENCHMARK = {
   ultimi5Anni: 4.54,    // 2019-2023 Average
   ultimi10Anni: 2.91,   // 2014-2023 Average
   ultimi20Anni: 3.10,   // 2004-2023 Average
-  label: 'Benchmark TFR',
+  label: 'Benchmark TFR (dati 2023)',
 };
 
 const PERFORMANCE_PERIODS = [
-  { label: 'Ultimo Anno', key: 'ultimoAnno' as const, benchmark: TFR_BENCHMARK.ultimoAnno },
+  { label: `Ultimo Anno (${DATASET_METADATA.performanceReferenceYear})`, key: 'ultimoAnno' as const, benchmark: TFR_BENCHMARK.ultimoAnno },
   { label: 'Ultimi 3 Anni', key: 'ultimi3Anni' as const, benchmark: TFR_BENCHMARK.ultimi3Anni },
   { label: 'Ultimi 5 Anni', key: 'ultimi5Anni' as const, benchmark: TFR_BENCHMARK.ultimi5Anni },
   { label: 'Ultimi 10 Anni', key: 'ultimi10Anni' as const, benchmark: TFR_BENCHMARK.ultimi10Anni },
@@ -114,7 +115,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
         <>
           <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-800 dark:text-slate-200 px-1">Confronto Performance (1/3/5/10/20 anni)</h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2 sm:mb-3 md:mb-4 bg-slate-50 dark:bg-slate-700/50 p-2 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 mt-2">
-            <span className="font-bold">Come leggere la linea TFR:</span> La linea rossa mostra il benchmark TFR per ciascun periodo (1/3/5/10/20 anni).
+            <span className="font-bold">Come leggere la linea TFR:</span> La linea benchmark mostra il TFR per ciascun periodo (1/3/5/10/20 anni), con dati aggiornati al 2023.
             {!isMobile && (
               <>
                 <br/>

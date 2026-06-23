@@ -44,6 +44,7 @@ import HomePage from './components/HomePage';
 const AdminPanel = lazy(() => import('./components/AdminPanel'));
 const GuidedFundTable = lazy(() => import('./components/guided/GuidedFundTable'));
 const VisualComparison = lazy(() => import('./components/VisualComparison'));
+const RankingPage = lazy(() => import('./features/ranking/RankingPage'));
 
 const FREE_PLAN_LIMIT = 10;
 const LazyFallback: React.FC = () => (
@@ -116,7 +117,7 @@ const AppContent: React.FC = () => {
 
   // Auto-expand parent nav items when activeSection changes
   useEffect(() => {
-    const toolSections: DashboardSection[] = ['simulator', 'choose-fund'];
+    const toolSections: DashboardSection[] = ['simulator', 'choose-fund', 'ranking'];
     const resourceSections: DashboardSection[] = ['playbook', 'tfr-faq'];
     
     if (toolSections.includes(activeSection)) {
@@ -666,6 +667,17 @@ const AppContent: React.FC = () => {
                 )
               ) : activeSection === 'home' ? (
                 <HomePage onNavigate={(section) => setActiveSection(section)} />
+              ) : activeSection === 'ranking' ? (
+                <div className="space-y-6 sm:space-y-8 md:space-y-10">
+                  <SectionHeader
+                    eyebrow={sectionCopy.ranking.eyebrow}
+                    title={sectionCopy.ranking.title}
+                    description={sectionCopy.ranking.description}
+                  />
+                  <Suspense fallback={<LazyFallback />}>
+                    <RankingPage funds={pensionFundsData} />
+                  </Suspense>
+                </div>
               ) : (
               <div className="space-y-6 sm:space-y-8 md:space-y-10">
                 {/* Banner primo accesso per Confronta/Analizza */}

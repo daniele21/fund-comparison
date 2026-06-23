@@ -5,6 +5,7 @@ import PerformanceChart from './PerformanceChart';
 import CostChart from './CostChart';
 import { getFundInformativeNote } from '../data/fundInformativeNotes';
 import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingBadgeClasses, ratingStarsFromScore } from '../utils/fundRating';
+import { DATASET_METADATA } from '../config/datasetMetadata';
 
 interface FundDetailModalProps {
   fund: PensionFund | null;
@@ -205,7 +206,7 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
                   </div>
                   <div>
                       <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Garanzia</p>
-                      <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200">{fund.garanzia === true ? 'Presente' : fund.garanzia === false ? 'Non indicata' : 'N/A'}</p>
+                      <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200">{fund.garanzia === true ? 'Presente' : fund.garanzia === false ? 'Non presente' : 'Non disponibile'}</p>
                   </div>
                   <div>
                       <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Rating fonte</p>
@@ -232,7 +233,7 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
                       </svg>
                       Rating del comparto
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                       {fund.rating.ammissibile
                         ? `Score netto ponderato sui periodi disponibili. ISC ${fund.rating.iscOrizzonte ?? 'N/D'} utilizzato.`
                         : fund.rating.motivoEsclusione}
@@ -257,7 +258,7 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
                 </div>
                 <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="divide-y divide-gray-200 dark:divide-slate-700 bg-white/70 dark:bg-slate-800/50 rounded-lg px-2.5 sm:px-3 md:px-4 text-xs sm:text-sm">
-                    <RatingValueRow label="Descrizione" value={fund.rating.descrizioneRating} />
+                        <RatingValueRow label="Valutazione rating" value={fund.rating.descrizioneRating} />
                     <RatingValueRow label="Tipo adesione" value={fund.rating.tipoAdesione} />
                     <RatingValueRow label="ISC usato" value={fund.rating.iscUtilizzato != null ? `${fund.rating.iscUtilizzato.toFixed(2)}%` : null} />
                     <RatingValueRow label="Orizzonte ISC" value={fund.rating.iscOrizzonte} />
@@ -293,7 +294,7 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
                       Performance Storica
                     </h3>
                     <div className="divide-y divide-gray-200 dark:divide-slate-700 bg-gray-50 dark:bg-slate-700/50 rounded-lg px-2.5 sm:px-3 md:px-4 text-xs sm:text-sm">
-                        <ValueRow label="Rendimento ultimo anno" value={fund.rendimenti.ultimoAnno} />
+                        <ValueRow label={`Rendimento ultimo anno (${DATASET_METADATA.performanceReferenceYear})`} value={fund.rendimenti.ultimoAnno} />
                         <ValueRow label="Rendimento medio 3 anni" value={fund.rendimenti.ultimi3Anni} />
                         <ValueRow label="Rendimento medio 5 anni" value={fund.rendimenti.ultimi5Anni} />
                         <ValueRow label="Rendimento medio 10 anni" value={fund.rendimenti.ultimi10Anni} />

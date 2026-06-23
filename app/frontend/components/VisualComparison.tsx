@@ -7,6 +7,7 @@ import SelectedFundsBar from './SelectedFundsBar';
 import PerformanceChart from './PerformanceChart';
 import CostChart from './CostChart';
 import FundComparisonPdfReport from './FundComparisonPdfReport';
+import FundComparisonTable from './FundComparisonTable';
 
 interface VisualComparisonProps {
   appSelectedFunds: PensionFund[];
@@ -102,6 +103,10 @@ const VisualComparison: React.FC<VisualComparisonProps> = ({ appSelectedFunds, f
         <div className="min-w-0 overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-white p-2 sm:p-3 md:p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/50">
           <CostChart selectedFunds={fundsToShow} theme={theme} />
         </div>
+      </div>
+
+      <div className="mt-4 sm:mt-5">
+        <FundComparisonTable funds={fundsToShow} />
       </div>
 
       <FundComparisonPdfReport

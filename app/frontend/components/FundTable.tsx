@@ -3,6 +3,7 @@ import { PensionFund, SortConfig, SortableKey } from '../types';
 import { CATEGORY_MAP, CATEGORY_COLORS } from '../constants';
 import { motion, useInView } from 'framer-motion';
 import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingBadgeClasses, ratingStarsFromScore } from '../utils/fundRating';
+import { getEsgStatus } from '../utils/fundAttributes';
 
 interface FundTableProps {
   funds: PensionFund[];
@@ -251,7 +252,7 @@ const FundTable: React.FC<FundTableProps> = ({
                                             <div className="text-xs font-medium text-slate-600 dark:text-slate-400 truncate" title={fund.societa ?? ''}>{fund.societa}</div>
                                             <div className="mt-1.5 flex flex-wrap gap-1.5">
                                                 {fund.garanzia === true && <DetailChip label="Garanzia" tone="green" />}
-                                                {fund.sostenibilita && <DetailChip label="Sostenibilita" tone={fund.sostenibilita.toLowerCase().includes('no') ? 'slate' : 'blue'} />}
+                                                {getEsgStatus(fund) === 'yes' && <DetailChip label="ESG" tone="blue" />}
                                                 {fund.benchmark && <DetailChip label="Benchmark" tone="amber" />}
                                             </div>
                                         </div>
@@ -436,7 +437,7 @@ const FundTable: React.FC<FundTableProps> = ({
                         <RatingBadge fund={fund} compact />
 
                         {fund.garanzia === true && <DetailChip label="Garanzia" tone="green" />}
-                        {fund.sostenibilita && <DetailChip label="Sostenibilita" tone={fund.sostenibilita.toLowerCase().includes('no') ? 'slate' : 'blue'} />}
+                        {getEsgStatus(fund) === 'yes' && <DetailChip label="ESG" tone="blue" />}
                         {fund.benchmark && <DetailChip label="Benchmark" tone="amber" />}
                         
                         {/* Website Link Badge */}

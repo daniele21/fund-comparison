@@ -41,6 +41,15 @@ const tabs: NavTab[] = [
     ),
   },
   {
+    id: 'ranking',
+    label: 'Ranking',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 21V10m4 11V3m4 18v-7M4 21h16" />
+      </svg>
+    ),
+  },
+  {
     id: 'playbook',
     label: 'Guida',
     icon: (

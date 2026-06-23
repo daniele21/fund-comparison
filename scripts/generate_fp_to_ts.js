@@ -10,6 +10,14 @@ const path = require('path');
 const DATASET_FILE = 'database_comparti_2026-06-10.csv';
 const EXPECTED_ROWS = 489;
 
+// Corrections verified against the provider documentation. They are kept here because
+// the source CSV is an ignored local import and would otherwise overwrite them.
+const CAPITAL_GUARANTEE_OVERRIDES = new Set([
+  '5047|BCC VITA EQUITY AMERICA PIP',
+  '5047|BCC VITA EQUITY EUROPA PIP',
+  '5047|BCC VITA EQUITY ASIA PIP',
+]);
+
 const CATEGORY_MAP = {
   Garantito: 'GAR',
   Bilanciato: 'BIL',
@@ -156,6 +164,11 @@ function validateRows(headers, rows) {
 }
 
 function toGeneratedRow(row) {
+  const fundKey = `${row['N. Albo']}|${row['Linea/Comparto']}`;
+  const guarantee = CAPITAL_GUARANTEE_OVERRIDES.has(fundKey)
+    ? 'false'
+    : yesNoToBooleanString(row.Garanzia);
+
   return [
     row.tipo,
     row['N. Albo'],
@@ -176,7 +189,7 @@ function toGeneratedRow(row) {
     normalizeWebsite(row['Sito Web']),
     row.Categoria,
     row['Classificazione Covip'],
-    yesNoToBooleanString(row.Garanzia),
+    guarantee,
     row['Costi di Adesione'],
     row['Costi annui di Gestione'],
     row['Costi di Gestione Finanziaria'],

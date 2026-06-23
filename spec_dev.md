@@ -923,3 +923,30 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 ### Rischi aperti e rollback
 - Rischio: eventuali ambienti con `APP_AUTH_MODE=invite_code` verranno serviti come Google OAuth e richiedono credenziali OAuth valide.
 - Rollback: ripristinare endpoint `/auth/invite/login`, variabili `APP_AUTH_INVITE_*`, UI codice invito e default invite plan.
+# Feature Note - Ranking, confronto dati e qualita attributi 2026
+
+## Scope e motivazione
+
+- Aggiunta la sezione Ranking con 16 classifiche su rendimenti, ISC e costi comparabili.
+- Inserita tabella di confronto per garanzia del capitale, ESG e costi operativi.
+- Corrette le linee BCC Vita Equity senza garanzia del capitale e rimossi i badge ESG per dichiarazioni negative.
+- Reso esplicito l'anno 2025 per il rendimento a un anno del dataset 2026.
+
+## Impatti frontend/backend/config
+
+- Frontend: nuova route `/ranking`, menu desktop/mobile, filtri ESG/garanzia combinabili, utility di normalizzazione attributi e costi, tabella responsive nel confronto e palette grafici a maggiore contrasto.
+- Backend/config: nessun impatto.
+
+## Piano test e risultati
+
+- `node scripts/generate_fp_to_ts.js`: ok, 489 righe.
+- `cd app/frontend && pnpm build`: ok; warning preesistente per chunk maggiore di 500 kB.
+- `cd app/frontend && pnpm exec tsc --noEmit`: KO per errori preesistenti nei componenti animazione, Recharts, feedback e `data/funds copy.ts`; nessun errore introdotto dai file della feature.
+- QA visuale desktop/mobile: non eseguibile nell'ambiente corrente per indisponibilita' del browser integrato.
+
+## Rischi aperti e rollback
+
+- I ranking costi escludono intenzionalmente testi non confrontabili; la normalizzazione completa richiede valori strutturati in sorgente.
+- Rollback: rimuovere i componenti Ranking/confronto, ripristinare il dataset canonico e rigenerare `funds.ts`.
+
+---
