@@ -1,0 +1,97 @@
+tipo,N. Albo,Linea/Comparto,Chiuso ai nuovi aderenti,Fonte
+FPA,6,OBBLIGAZIONARIO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 2
+FPA,6,BILANCIATO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 3
+FPA,6,AZIONARIO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 4
+FPA,160,TFR,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 5
+FPA,160,EQUILIBRIO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 6
+FPA,160,INVESTIMENTO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 7
+FPA,33,SICURA - OBBLIGAZIONARIA CON GARANZIA DI RENDIMENTO MINIMO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 8
+FPA,33,TRANQUILLA - OBBLIGAZIONARIA MISTA CON GARANZIA DI RESTITUZIONE DEL CAPITALE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 9
+FPA,33,SERENA - BILANCIATA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 10
+FPA,33,DINAMICA - AZIONARIA INTERNAZIONALE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 11
+PIP,5015,RI.ALTO PREVIDENZA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 12
+PIP,5015,LVA DINAMICO PREVIDENZA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 13
+PIP,5024,FONDO PROTETTO 2007,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 14
+PIP,5024,FONDO ARMONICO 2007,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 15
+PIP,5024,FONDO ATTIVO 2007,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 16
+PIP,5036,CONTROL,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 17
+PIP,5036,MEDIUM,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 18
+PIP,5036,POWER,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 19
+PIP,5069,GESTIRIV PREVIDENZA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 20
+PIP,5069,AXA PREVIDENZA ASSOLUTO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 21
+PIP,5069,AXA PREVIDENZA EUROPA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 22
+PIP,5069,AXA PREVIDENZA INTERNAZIONALE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 23
+PIP,5047,BCC VITA GARANTITA PIP,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 24
+PIP,5047,BCC VITA EQUITY AMERICA PIP,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 25
+PIP,5047,BCC VITA EQUITY EUROPA PIP,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 26
+PIP,5047,BCC VITA EQUITY ASIA PIP,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 27
+PIP,5047,BCC VITA WORLD GLOBAL BOND PIP,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 28
+PIP,5087,GEPI,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 29
+PIP,5087,CNP ASSICURAZIONE PREVIDENZA EQUITY,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 30
+PIP,5097,GEPI,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 31
+PIP,5097,CNP ASSICURAZIONE PREVIDENZA EQUITY,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 32
+PIP,5097,CNP PIP AZIONARIO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 33
+PIP,5097,CNP PIP OBBLIGAZIONARIO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 34
+PIP,5097,CNP PIP BILANCIATO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 35
+PIP,5097,CNP PIP FLESSIBILE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 36
+PIP,5053,ITALIANA LINEA PRUDENTE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 37
+PIP,5053,ITALIANA LINEA EQUILIBRIO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 38
+PIP,5053,ITALIANA LINEA FUTURO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 39
+PIP,5098,OBBLIGAZIONARIO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 40
+PIP,5098,FLESSIBILE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 41
+PIP,5098,BILANCIATO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 42
+PIP,5098,AZIONARIO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 43
+PIP,5012,FONDO VIP,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 44
+PIP,5012,EUROVIP,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 45
+PIP,5049,FONDO VIP,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 46
+PIP,5059,CATTOLICA PREVIDENZA BILANCIATO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 47
+PIP,5059,CATTOLICA PREVIDENZA AZIONARIO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 48
+PIP,5059,CATTOLICA PREVIDENZA SICURO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 49
+PIP,5060,CATTOLICA PREVIDENZA BILANCIATO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 50
+PIP,5060,CATTOLICA PREVIDENZA AZIONARIO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 51
+PIP,5060,CATTOLICA PREVIDENZA SICURO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 52
+PIP,5064,GESTIONE PREVIDENZA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 53
+PIP,5064,EV STRATEGIA INTERNAZIONALE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 54
+PIP,5080,GESTIONE PREVIDENZA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 55
+PIP,5080,EV STRATEGIA INTERNAZIONALE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 56
+PIP,5008,PREVIDENZA CONCRETA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 57
+PIP,5023,VALOREPIU' PREVIDENZA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 58
+PIP,5001,CBA APPRODO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 59
+PIP,5001,CBA ORIZZONTE 30,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 60
+PIP,5001,CBA ORIZZONTE 60,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 61
+PIP,5002,BAP GESTIONE PREVIDENZA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 62
+PIP,5037,STRATEGIA 15,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 63
+PIP,5037,STRATEGIA 30,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 64
+PIP,5037,STRATEGIA 40,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 65
+PIP,5037,STRATEGIA 55,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 66
+PIP,5037,STRATEGIA 70,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 67
+PIP,5037,EV PREVI,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 68
+PIP,5038,GLOBAL EQUITY PREVI,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 69
+PIP,5038,EV PREVI,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 70
+PIP,5051,AVIVA-UBI,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 71
+PIP,5051,AVIVA-UBI 1,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 72
+PIP,5051,AVIVA-UBI 2,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 73
+PIP,5051,AVIVA-UBI 3,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 74
+PIP,5051,AVIVA-UBI 4,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 75
+PIP,5056,PREVINEXT BALANCED,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 76
+PIP,5056,PREVINEXT DYNAMIC,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 77
+PIP,5056,PREVINEXT FUTURO SICURO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 78
+PIP,5057,PREVINEXT BALANCED,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 79
+PIP,5057,PREVINEXT DYNAMIC,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 80
+PIP,5057,PREVINEXT FUTURO SICURO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 81
+PIP,5084,BAP GESTIONE PREVIDENZA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 82
+PIP,5072,FUTURO&PREVIDENZA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 83
+PIP,5072,SARA PREVIFUTURO - COMPARTO OBBLIGAZIONARIO EUROPEO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 84
+PIP,5072,SARA PREVIFUTURO - COMPARTO AZIONARIO INTERNAZIONALE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 85
+PIP,5052,REALE LINEA PRUDENTE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 86
+PIP,5052,REALE LINEA EQUILIBRIO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 87
+PIP,5052,REALE LINEA FUTURO,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 88
+PIP,5073,PREVIDENZA REALE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 89
+PIP,5055,SENIORVITA PREVIDENZIALE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 90
+PIP,5055,PROGETTO SMART,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 91
+PIP,5055,PROGETTO MEDIUM,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 92
+PIP,5055,PROGETTO SPRINT,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 93
+PIP,5055,PROGETTO OPPORTUNITY,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 94
+PIP,5050,PREVIATTIVA UNIPOL,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 99
+PIP,5075,POPOLARE VITA PREVIDENZA,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 104
+PIP,5075,POPOLARE VITA VALUE,true,Fondi Chiusi ai nuovi aderenti.xlsx riga 105

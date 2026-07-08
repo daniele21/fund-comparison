@@ -33,11 +33,15 @@ export interface PensionFund {
   dataInizioQuotazione: string | null;
   sostenibilita: string | null;
   sourceRating: SourceRating | null;
+  chiusoNuoviAderenti: boolean;
+  collectiveAgreementInfo: FundCollectiveAgreementInfo | null;
   rating: FundRating;
 }
 
 export type FundType = 'FPN' | 'FPA' | 'PIP';
 export type FundCategory = 'GAR' | 'BIL' | 'AZN' | 'OBB MISTO' | 'OBB PURO' | 'OBB';
+export type CapitalGuaranteeFilter = 'all' | 'with-guarantee' | 'without-guarantee';
+export type CollectiveAgreementFilter = 'all' | 'with-agreements' | 'without-agreements';
 export type SourceRating = 1 | 2 | 3 | 4 | 5;
 export type TipoAdesione = 'individuale' | 'collettiva';
 export type RatingIscOrizzonte = '10y' | '5y';
@@ -53,6 +57,17 @@ export interface FundCostDetails {
   riallocazionePosizione: string | null;
   riallocazioneFlussoContributivo: string | null;
   erogazione: string | null;
+}
+
+export interface FundCollectiveAgreementInfo {
+  hasCollectiveAgreements: boolean;
+  collectiveAgreementLabel: string | null;
+  subscriptionCostIndividual: string | null;
+  subscriptionCostCollective: string | null;
+  collectiveManagementFee: string | null;
+  incentiveFee: string | null;
+  notes: string | null;
+  sourceFileName: string | null;
 }
 
 export interface FundInformativeNote {
@@ -156,72 +171,4 @@ export interface SimulatorResult {
   impostaSostitutiva: number;
   montanteNetto: number;
   rendimentoNettoPercentuale: number;
-}
-
-export interface SimulationReportInput {
-  funds: PensionFund[];
-  montanteIniziale: number;
-  contributoVolontarioAnnuo: number;
-  orizzonteAnni: number;
-  ral: number;
-  annoPrimaAdesione: number;
-  generatedAt: Date;
-  customerEmail?: string | null;
-}
-
-export interface SimulationReportChartPoint {
-  anno: number;
-  tfr: number;
-  [seriesKey: string]: number;
-}
-
-export interface SimulationReportFundMeta {
-  dataKey: string;
-  label: string;
-  color: string;
-}
-
-export interface SimulationFundResult {
-  fund: PensionFund;
-  color: string;
-  dataKey: string;
-  tassoRendimento: number;
-  rendimentoLabel: string;
-  rendimentoYears: number;
-  totaleVersato: number;
-  montanteFinale: number;
-  guadagnoRendimenti: number;
-  rendimentoPercentuale: number;
-  risparmioAnnuo: number;
-  risparmioFiscaleTotale: number;
-  montanteConFiscale: number;
-  differenzaMontante: number;
-  differenzaPercentuale: number;
-  aliquotaMarginale: number;
-  aliquotaSostitutiva: number;
-  anniPartecipazione: number;
-  montanteNetto: number;
-  impostaSostitutiva: number;
-  rendimentoNettoPercentuale: number;
-}
-
-export interface SimulationReportModel {
-  generatedAt: Date;
-  customerEmail?: string | null;
-  parameters: {
-    montanteIniziale: number;
-    contributoVolontarioAnnuo: number;
-    tfrAnnuoDatore: number;
-    contributoTotaleAnnuo: number;
-    ral: number;
-    orizzonteAnni: number;
-    annoPrimaAdesione: number;
-  };
-  funds: SimulationFundResult[];
-  fundsMeta: SimulationReportFundMeta[];
-  chartData: {
-    montante: SimulationReportChartPoint[];
-    fiscale: SimulationReportChartPoint[];
-    netto: SimulationReportChartPoint[];
-  };
 }

@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useState, useMemo, useEffect } from 'react';
 import { pensionFundsData } from './data/funds';
-import { PensionFund, FundCategory, SortConfig } from './types';
+import { CapitalGuaranteeFilter, CollectiveAgreementFilter, PensionFund, FundCategory, SortConfig } from './types';
 import Header from './components/Header';
 import FilterControls from './components/FilterControls';
 import FundAnalysisPanel from './components/FundAnalysisPanel';
@@ -24,6 +24,7 @@ import DiscountBanner from './components/common/DiscountBanner';
 import { compareFundsTourSteps } from './config/tourSteps';
 import { SECTION_COPY, buildNavItems } from './features/dashboard/config';
 import { getSortValue } from './features/dashboard/sorting';
+import { getCapitalGuaranteeStatus } from './utils/fundAttributes';
 import { DashboardSection, View } from './features/dashboard/types';
 import { resolveRouteFromPathname, sectionToPath } from './features/dashboard/routing';
 import {
@@ -76,6 +77,8 @@ const AppContent: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<FundCategory | 'all'>('all');
   const [selectedCompany, setSelectedCompany] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<'FPN' | 'FPA' | 'PIP' | 'all'>('all');
+  const [capitalGuaranteeFilter, setCapitalGuaranteeFilter] = useState<CapitalGuaranteeFilter>('all');
+  const [collectiveAgreementFilter, setCollectiveAgreementFilter] = useState<CollectiveAgreementFilter>('all');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'ultimoAnno', direction: 'descending' });
   const [modalFund, setModalFund] = useState<PensionFund | null>(null);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
@@ -157,6 +160,22 @@ const AppContent: React.FC = () => {
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
+
+  useEffect(() => {
+    const scrollToCurrentHash = () => {
+      const targetId = window.location.hash.slice(1);
+      if (!targetId) return;
+      const target = document.getElementById(decodeURIComponent(targetId));
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    if (view === 'dashboard' && activeSection === 'playbook' && window.location.hash) {
+      window.setTimeout(scrollToCurrentHash, 150);
+    }
+
+    window.addEventListener('hashchange', scrollToCurrentHash);
+    return () => window.removeEventListener('hashchange', scrollToCurrentHash);
+  }, [view, activeSection]);
 
   // Sync UI state to URL path
   useEffect(() => {
@@ -265,6 +284,18 @@ const AppContent: React.FC = () => {
       if (selectedCompany !== 'all' && fund.societa !== selectedCompany) {
         return false;
       }
+      if (capitalGuaranteeFilter === 'with-guarantee' && getCapitalGuaranteeStatus(fund) !== 'yes') {
+        return false;
+      }
+      if (capitalGuaranteeFilter === 'without-guarantee' && getCapitalGuaranteeStatus(fund) !== 'no') {
+        return false;
+      }
+      if (collectiveAgreementFilter === 'with-agreements' && !fund.collectiveAgreementInfo?.hasCollectiveAgreements) {
+        return false;
+      }
+      if (collectiveAgreementFilter === 'without-agreements' && fund.collectiveAgreementInfo?.hasCollectiveAgreements) {
+        return false;
+      }
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
         const fundText = `${fund.pip} ${fund.linea} ${fund.societa || ''}`.toLowerCase();
@@ -274,7 +305,7 @@ const AppContent: React.FC = () => {
       }
       return true;
     });
-  }, [searchTerm, selectedCategory, selectedCompany, selectedType]);
+  }, [searchTerm, selectedCategory, selectedCompany, selectedType, capitalGuaranteeFilter, collectiveAgreementFilter]);
 
   const filteredAndSortedFunds = useMemo(() => {
   const { key, direction } = sortConfig;
@@ -371,6 +402,8 @@ const AppContent: React.FC = () => {
     setSelectedCategory('all');
     setSelectedCompany('all');
     setSelectedType('all');
+    setCapitalGuaranteeFilter('all');
+    setCollectiveAgreementFilter('all');
   };
 
   const handlePresetSelected = (presetId: string) => {
@@ -381,19 +414,27 @@ const AppContent: React.FC = () => {
         setSelectedCategory('all');
         setSelectedCompany('all');
         setSelectedType('all');
+        setCapitalGuaranteeFilter('all');
+        setCollectiveAgreementFilter('all');
         setSortConfig({ key: 'costoAnnuo', direction: 'ascending' });
         break;
       case 'best-10y-returns':
+        setCapitalGuaranteeFilter('all');
+        setCollectiveAgreementFilter('all');
         setSortConfig({ key: 'ultimi10Anni', direction: 'descending' });
         break;
       case 'near-retirement':
         setSelectedCategory('GAR');
         setSelectedType('FPN');
+        setCapitalGuaranteeFilter('all');
+        setCollectiveAgreementFilter('all');
         setSortConfig({ key: 'costoAnnuo', direction: 'ascending' });
         break;
       case 'just-starting':
         setSelectedCategory('AZN');
         setSelectedType('PIP');
+        setCapitalGuaranteeFilter('all');
+        setCollectiveAgreementFilter('all');
         setSortConfig({ key: 'ultimi10Anni', direction: 'descending' });
         break;
       default:
@@ -406,7 +447,7 @@ const AppContent: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
 
   // Reset page when filters or sort change
-  useEffect(() => setPage(1), [searchTerm, selectedCategory, selectedCompany, selectedType, sortConfig]);
+  useEffect(() => setPage(1), [searchTerm, selectedCategory, selectedCompany, selectedType, capitalGuaranteeFilter, collectiveAgreementFilter, sortConfig]);
 
   // Keep guided flows aligned with sidebar section
   useEffect(() => {
@@ -471,7 +512,9 @@ const AppContent: React.FC = () => {
             aria-label="Navigazione dashboard"
           >
             {/* Sidebar Header */}
-            <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200/50 dark:border-slate-800/50 bg-gradient-to-r from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-800/50">
+            <div className={`flex min-h-14 items-center border-b border-slate-200/50 bg-gradient-to-r from-slate-50 to-white dark:border-slate-800/50 dark:from-slate-900/50 dark:to-slate-800/50 ${
+              sidebarCollapsed ? 'justify-center px-3 py-2' : 'justify-between px-4 py-2'
+            }`}>
               {!sidebarCollapsed && (
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
@@ -483,7 +526,7 @@ const AppContent: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSidebarCollapsed(prev => !prev)}
-                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all duration-200 hover:scale-110 active:scale-95"
+                className="flex h-11 w-11 min-h-11 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-all duration-200 hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                 aria-label={sidebarCollapsed ? 'Espandi menu' : 'Comprimi menu'}
                 title={sidebarCollapsed ? 'Espandi menu' : 'Comprimi menu'}
               >
@@ -675,7 +718,7 @@ const AppContent: React.FC = () => {
                     description={sectionCopy.ranking.description}
                   />
                   <Suspense fallback={<LazyFallback />}>
-                    <RankingPage funds={pensionFundsData} />
+                    <RankingPage funds={pensionFundsData} onFundClick={handleFundClick} />
                   </Suspense>
                 </div>
               ) : (
@@ -793,6 +836,10 @@ const AppContent: React.FC = () => {
                           companies={companies}
                           selectedType={selectedType}
                           setSelectedType={setSelectedType}
+                          capitalGuaranteeFilter={capitalGuaranteeFilter}
+                          setCapitalGuaranteeFilter={setCapitalGuaranteeFilter}
+                          collectiveAgreementFilter={collectiveAgreementFilter}
+                          setCollectiveAgreementFilter={setCollectiveAgreementFilter}
                           onReset={resetFilters}
                           totalFunds={pensionFundsData.length}
                         />
@@ -809,6 +856,10 @@ const AppContent: React.FC = () => {
                           setSelectedCompany={setSelectedCompany}
                           selectedType={selectedType}
                           setSelectedType={setSelectedType}
+                          capitalGuaranteeFilter={capitalGuaranteeFilter}
+                          setCapitalGuaranteeFilter={setCapitalGuaranteeFilter}
+                          collectiveAgreementFilter={collectiveAgreementFilter}
+                          setCollectiveAgreementFilter={setCollectiveAgreementFilter}
                           onResetAll={resetFilters}
                         />
                       </ScrollReveal>
@@ -875,7 +926,7 @@ const AppContent: React.FC = () => {
                           </div>
                           <div className="order-1 sm:order-2 flex flex-wrap items-center gap-2 justify-center sm:justify-end">
                             <label className="text-xs sm:text-sm text-slate-600 dark:text-slate-300">Per pagina</label>
-                            <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }} className="text-xs sm:text-sm px-2 py-1 border rounded bg-white dark:bg-slate-800 dark:border-slate-700">
+                            <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }} className="min-h-9 min-w-[4.25rem] rounded-lg border border-slate-200 bg-white py-1.5 pl-3 pr-8 text-xs text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 sm:text-sm">
                               <option value={5}>5</option>
                               <option value={10}>10</option>
                               <option value={20}>20</option>

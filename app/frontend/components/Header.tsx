@@ -192,7 +192,7 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, onGoToPlaybook, onL
     }`}>
       <div className="w-full px-4 md:px-8 py-3 md:py-4 flex items-center justify-between gap-2 transition-all duration-300">
         {/* Left side: Logo and Title */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        <div className="flex items-center gap-3 sm:gap-5 md:gap-6 min-w-0 flex-1">
           <img src={BRAND_TOKENS.logo.horizontal} alt={BRAND_TOKENS.name} className="h-8 w-auto max-w-[132px] sm:h-12 sm:max-w-[220px] object-contain flex-shrink-0" />
           <div className="leading-tight min-w-0">
             <span className="text-sm sm:text-xl md:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight block whitespace-nowrap overflow-hidden text-ellipsis">

@@ -1,9 +1,11 @@
 import React, { useRef } from 'react';
 import { PensionFund, SortConfig, SortableKey } from '../types';
 import { CATEGORY_MAP, CATEGORY_COLORS } from '../constants';
-import { motion, useInView } from 'framer-motion';
-import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingBadgeClasses, ratingStarsFromScore } from '../utils/fundRating';
+import { motion, type MotionProps, useInView } from 'framer-motion';
 import { getEsgStatus } from '../utils/fundAttributes';
+import FundIdentity from './common/FundIdentity';
+import FundRatingBadge from './common/FundRatingBadge';
+import InfoPopover from './common/InfoPopover';
 
 interface FundTableProps {
   funds: PensionFund[];
@@ -26,6 +28,12 @@ const SortIcon: React.FC<{ direction?: 'ascending' | 'descending' }> = ({ direct
   return <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>;
 };
 
+const MotionTableRow = motion.tr as React.ComponentType<
+  React.HTMLAttributes<HTMLTableRowElement> &
+  MotionProps &
+  React.RefAttributes<HTMLTableRowElement>
+>;
+
 // Animated table row component
 const AnimatedTableRow: React.FC<{
   children: React.ReactNode;
@@ -33,11 +41,11 @@ const AnimatedTableRow: React.FC<{
   className?: string;
   onClick?: () => void;
 }> = ({ children, index, className, onClick }) => {
-  const ref = useRef(null);
+  const ref = useRef<HTMLTableRowElement | null>(null);
   const isInView = useInView(ref, { once: true, amount: 0.1 });
 
   return (
-    <motion.tr
+    <MotionTableRow
       ref={ref}
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -50,7 +58,7 @@ const AnimatedTableRow: React.FC<{
       onClick={onClick}
     >
       {children}
-    </motion.tr>
+    </MotionTableRow>
   );
 };
 
@@ -85,7 +93,9 @@ const SortableHeader: React.FC<{
     setSortConfig: (config: SortConfig | ((prevConfig: SortConfig) => SortConfig)) => void;
     className?: string;
     align?: 'left' | 'center' | 'right';
-}> = ({ label, sortKey, sortConfig, setSortConfig, className, align = 'left' }) => {
+    ariaLabel?: string;
+    info?: React.ReactNode;
+}> = ({ label, sortKey, sortConfig, setSortConfig, className, align = 'left', ariaLabel, info }) => {
   const isSorted = sortConfig.key === sortKey;
   const direction = isSorted ? sortConfig.direction : undefined;
 
@@ -102,18 +112,21 @@ const SortableHeader: React.FC<{
   
     return (
         <th className={`py-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider ${textAlign} ${className}`}>
+          <div className={`flex items-center gap-1.5 ${alignmentClass}`}>
             <button
                 type="button"
                 onClick={handleClick}
-                className={`w-full ${textAlign} cursor-pointer select-none flex items-center ${alignmentClass} focus:outline-none group`}
+                className={`${textAlign} cursor-pointer select-none flex items-center ${alignmentClass} focus:outline-none group`}
                 aria-pressed={isSorted}
-                aria-label={`Ordina per ${label}`}
+                aria-label={`Ordina per ${ariaLabel ?? label}`}
             >
                 {label}
                 <span className={`ml-2 transition-opacity ${isSorted ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`}>
                     <SortIcon direction={direction} />
                 </span>
             </button>
+            {info}
+          </div>
         </th>
     );
 };
@@ -134,38 +147,6 @@ const RendimentoCell: React.FC<{ value: number | null; label?: string; isMobile?
     }
 
     return <td className="px-2 py-4 whitespace-nowrap text-sm text-right">{content}</td>;
-};
-
-const RatingBadge: React.FC<{ fund: PensionFund; compact?: boolean }> = ({ fund, compact = false }) => {
-    const stars = ratingStarsFromScore(fund.rating.ratingScore);
-    const starsText = formatRatingStarsText(fund.rating.ratingScore);
-    const score = formatRatingScoreOutOfTen(fund.rating.ratingScore);
-    const title = fund.rating.ammissibile
-        ? `Rating ${starsText}: ${fund.rating.descrizioneRating ?? ''}. Score ${score ?? 'N/D'}. ISC ${fund.rating.iscOrizzonte ?? 'N/D'} usato.`
-        : fund.rating.motivoEsclusione ?? 'Rating non calcolabile';
-    const starSizeClass = compact ? 'text-[12px]' : 'text-sm';
-
-    return (
-        <span
-            className={`inline-flex items-center justify-center gap-1.5 rounded-full border font-bold tabular-nums ${ratingBadgeClasses(fund.rating.classeRating)} ${compact ? 'px-2 py-1 text-[11px]' : 'px-3 py-1 text-xs'}`}
-            title={title}
-            aria-label={title}
-        >
-            <span className={`tracking-normal ${starSizeClass}`} aria-hidden="true">
-                {Array.from({ length: 5 }, (_, index) => {
-                    const fillPercent = stars == null ? 0 : Math.max(0, Math.min(1, stars - index)) * 100;
-                    return (
-                        <span key={index} className="relative inline-block text-slate-300 dark:text-slate-600">
-                            <span aria-hidden="true">★</span>
-                            <span className="absolute inset-0 overflow-hidden text-amber-500" style={{ width: `${fillPercent}%` }} aria-hidden="true">★</span>
-                        </span>
-                    );
-                })}
-            </span>
-            <span className="sr-only">{starsText}</span>
-            {score && <span className="font-semibold opacity-80">{score}</span>}
-        </span>
-    );
 };
 
 const DetailChip: React.FC<{ label: string; tone?: 'green' | 'blue' | 'amber' | 'slate' }> = ({ label, tone = 'slate' }) => {
@@ -194,6 +175,7 @@ const FundTable: React.FC<FundTableProps> = ({
   maxSelectableFunds = 3,
   canSelectFund,
 }) => {
+  const hasClosedFunds = funds.some((fund) => fund.chiusoNuoviAderenti);
   const isFundSelectable = (fund: PensionFund) => {
     if (selectedFundIds.has(fund.id)) {
       return true;
@@ -206,6 +188,11 @@ const FundTable: React.FC<FundTableProps> = ({
 
   return (
     <div className="w-full min-w-0 space-y-4">
+        {hasClosedFunds && (
+            <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-800 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-200">
+                <span className="font-black">*</span> Chiuso ai nuovi aderenti
+            </p>
+        )}
         {/* Desktop Table */}
         <div className="hidden lg:block bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="overflow-x-auto">
@@ -214,7 +201,25 @@ const FundTable: React.FC<FundTableProps> = ({
                         <tr>
                             <SortableHeader label="Selezione" sortKey="selected" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="center" />
                             <SortableHeader label="Fondo" sortKey="linea" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
-                            <SortableHeader label="Rating" sortKey="ratingScore" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" align="center" />
+                            <SortableHeader
+                                label="Rating"
+                                ariaLabel="Rating"
+                                sortKey="ratingScore"
+                                sortConfig={sortConfig}
+                                setSortConfig={setSortConfig}
+                                className="px-2"
+                                align="center"
+                                info={(
+                                    <InfoPopover
+                                        label="Come viene calcolato il rating"
+                                        title="Rating Accademia Previdenza"
+                                        linkHref="/guide#rating-accademia-previdenza"
+                                        linkLabel="Vai alla metodologia"
+                                    >
+                                        Score netto ponderato sui rendimenti disponibili, al netto dell'ISC selezionato. Il punteggio va da 0 a 10.
+                                    </InfoPopover>
+                                )}
+                            />
                             <SortableHeader label="Categoria" sortKey="categoria" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
                             <SortableHeader label="Tipo" sortKey="type" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-3" align="left" />
                             <SortableHeader label="Costo Annuo" sortKey="costoAnnuo" sortConfig={sortConfig} setSortConfig={setSortConfig} className="px-2" align="right" />
@@ -247,9 +252,11 @@ const FundTable: React.FC<FundTableProps> = ({
                                 <td className="px-3 py-4 whitespace-nowrap max-w-sm" onClick={(e) => { e.stopPropagation(); onFundClick(fund); }}>
                                     <div className="flex items-center gap-2">
                                         <div className="flex-1 min-w-0">
-                                            <div className="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300 truncate transition-colors" title={fund.linea}>{fund.linea}</div>
-                                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate" title={fund.pip}>{fund.pip}</div>
-                                            <div className="text-xs font-medium text-slate-600 dark:text-slate-400 truncate" title={fund.societa ?? ''}>{fund.societa}</div>
+                                            <FundIdentity
+                                                fund={fund}
+                                                compact
+                                                titleClassName="text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                                            />
                                             <div className="mt-1.5 flex flex-wrap gap-1.5">
                                                 {fund.garanzia === true && <DetailChip label="Garanzia" tone="green" />}
                                                 {getEsgStatus(fund) === 'yes' && <DetailChip label="ESG" tone="blue" />}
@@ -273,7 +280,7 @@ const FundTable: React.FC<FundTableProps> = ({
                                     </div>
                                 </td>
                                 <td className="px-2 py-4 whitespace-nowrap text-center">
-                                    <RatingBadge fund={fund} />
+                                    <FundRatingBadge fund={fund} />
                                 </td>
                                 <td className="px-3 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium">
                                     <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
@@ -401,17 +408,7 @@ const FundTable: React.FC<FundTableProps> = ({
                         
                         <div className="flex-grow min-w-0">
                             <div onClick={() => onFundClick(fund)} className="active:opacity-70 transition-opacity">
-                                <h3 className="text-[15px] sm:text-base font-bold text-slate-900 dark:text-slate-50 leading-snug mb-1 truncate">
-                                    {fund.linea}
-                                </h3>
-                                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate mb-1 font-medium">
-                                    {fund.pip}
-                                </p>
-                                {fund.societa && (
-                                    <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 font-semibold truncate">
-                                        {fund.societa}
-                                    </p>
-                                )}
+                                <FundIdentity fund={fund} />
                             </div>
                         </div>
                     </div>
@@ -434,7 +431,7 @@ const FundTable: React.FC<FundTableProps> = ({
                             <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">{CATEGORY_MAP[fund.categoria]}</span>
                         </div>
 
-                        <RatingBadge fund={fund} compact />
+                        <FundRatingBadge fund={fund} compact />
 
                         {fund.garanzia === true && <DetailChip label="Garanzia" tone="green" />}
                         {getEsgStatus(fund) === 'yes' && <DetailChip label="ESG" tone="blue" />}
@@ -462,26 +459,7 @@ const FundTable: React.FC<FundTableProps> = ({
                         {/* Rating Metric */}
                         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2 sm:p-2.5">
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-0.5">Rating</p>
-                            <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200 tabular-nums">
-                                <span aria-hidden="true">
-                                    {Array.from({ length: 5 }, (_, starIndex) => {
-                                        const stars = ratingStarsFromScore(fund.rating.ratingScore);
-                                        const fillPercent = stars == null ? 0 : Math.max(0, Math.min(1, stars - starIndex)) * 100;
-                                        return (
-                                            <span key={starIndex} className="relative inline-block text-slate-300 dark:text-slate-600">
-                                                <span aria-hidden="true">★</span>
-                                                <span className="absolute inset-0 overflow-hidden text-amber-500" style={{ width: `${fillPercent}%` }} aria-hidden="true">★</span>
-                                            </span>
-                                        );
-                                    })}
-                                </span>
-                                <span className="sr-only">{formatRatingStarsText(fund.rating.ratingScore)}</span>
-                                {fund.rating.ratingScore != null && (
-                                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                                        {formatRatingScoreOutOfTen(fund.rating.ratingScore)}
-                                    </span>
-                                )}
-                            </p>
+                            <FundRatingBadge fund={fund} compact />
                         </div>
                         {/* Cost Metric */}
                         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2 sm:p-2.5">

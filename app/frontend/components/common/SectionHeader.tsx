@@ -1,5 +1,6 @@
 import React from 'react';
 import { AnimatedButton } from '../animations/AnimatedButton';
+import StatusBadge from './StatusBadge';
 
 interface SectionHeaderProps {
   eyebrow: string;
@@ -40,13 +41,6 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
   tourAction,
   stats,
 }) => {
-  const badgeColors = {
-    new: 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white',
-    beta: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white',
-    updated: 'bg-gradient-to-r from-green-500 to-emerald-500 text-white',
-    info: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white',
-  };
-
   return (
     <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white/90 dark:border-slate-800 dark:bg-slate-900/80 shadow-sm backdrop-blur-sm">
       <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8">
@@ -62,9 +56,9 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
 
               {/* Optional Badge */}
               {badge && (
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold shadow-lg ${badgeColors[badge.variant || 'info']}`}>
+                <StatusBadge variant={badge.variant || 'info'}>
                   {badge.text}
-                </span>
+                </StatusBadge>
               )}
             </div>
 

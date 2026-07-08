@@ -1,6 +1,7 @@
 import React from 'react';
 import { AnimatedButton } from './animations/AnimatedButton';
 import { ScrollReveal } from './animations/ScrollReveal';
+import StatusBadge from './common/StatusBadge';
 
 interface HomePageProps {
   onNavigate: (section: 'simulator' | 'choose-fund' | 'playbook') => void;
@@ -90,9 +91,9 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 className="group relative bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-800/50 border-2 border-blue-200 dark:border-blue-900/50 rounded-2xl p-8 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 text-left w-full"
               >
                 {/* Highlight Badge */}
-                <div className="absolute -top-3 -right-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg rotate-3">
+                <StatusBadge variant="new" className="absolute -top-3 -right-3 rotate-3">
                   🌟 Novità
-                </div>
+                </StatusBadge>
 
                 <div className="flex items-center justify-center w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

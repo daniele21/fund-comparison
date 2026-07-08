@@ -111,12 +111,18 @@ const PlaybookContent: React.FC<PlaybookContentProps> = ({ onNavigate }) => {
           </div>
           <div className="mt-10 sm:mt-12 md:mt-16">
             <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 text-slate-900 dark:text-slate-100 px-4">Le linee di investimento (livelli di rischio)</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
               <InfoCard title="Garantita (GAR)" accent="slate" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 20.944A12.02 12.02 0 0012 22a12.02 12.02 0 009-1.056A11.955 11.955 0 0121.944 12a11.955 11.955 0 01-2.326-8.984z" /></svg>}>
                 <b>Basso Rischio.</b> Mira a proteggere il capitale, spesso garantendo un rendimento minimo o il capitale a scadenza. Ideale per chi è vicino alla pensione.
               </InfoCard>
               <InfoCard title="Obbligazionaria (OBB)" accent="slate" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}>
                 <b>Basso-Medio Rischio.</b> Investe principalmente in titoli di stato e obbligazioni aziendali. Offre rendimenti stabili ma modesti.
+              </InfoCard>
+              <InfoCard title="Obbligazionaria Mista (OBB MISTO)" accent="slate" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 19V5m0 14h16M8 16V9m4 7V7m4 9v-4" /></svg>}>
+                <b>Rischio contenuto.</b> Mantiene una prevalenza obbligazionaria ma può includere una quota limitata di azioni o altri strumenti di crescita.
+              </InfoCard>
+              <InfoCard title="Obbligazionaria Pura (OBB PURO)" accent="slate" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h8M8 11h8M8 15h5M6 3h12a2 2 0 012 2v14l-4-2-4 2-4-2-4 2V5a2 2 0 012-2z" /></svg>}>
+                <b>Basso Rischio finanziario.</b> Concentra l&apos;investimento su obbligazioni e strumenti monetari, con esposizione azionaria assente o marginale.
               </InfoCard>
               <InfoCard title="Bilanciata (BIL)" accent="slate" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>}>
                 <b>Medio Rischio.</b> Un mix di azioni (30-60%) e obbligazioni. Cerca un equilibrio tra crescita e stabilità. Una scelta comune per orizzonti temporali lunghi.
@@ -125,6 +131,35 @@ const PlaybookContent: React.FC<PlaybookContentProps> = ({ onNavigate }) => {
                 <b>Alto Rischio.</b> Investe principalmente in azioni (&gt;70%). Mira alla massima crescita a lungo termine, ma con maggiore volatilità. Adatta a chi ha molti anni davanti prima della pensione.
               </InfoCard>
             </div>
+          </div>
+        </section>
+
+        <section id="rating-accademia-previdenza" className="scroll-mt-24">
+          <div className="text-center max-w-2xl mx-auto px-4">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">Come viene calcolato il rating</h2>
+            <p className="mt-3 sm:mt-4 text-base sm:text-lg leading-7 sm:leading-8 text-slate-600 dark:text-slate-300">
+              Il rating Accademia Previdenza misura ogni comparto combinando rendimenti disponibili e costi sintetici.
+            </p>
+          </div>
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <InfoCard title="Ammissibilità" accent="sky" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>}>
+              Il comparto deve avere almeno un rendimento a 3 anni e un ISC utilizzabile a 10 o 5 anni. Se mancano questi dati, il rating non viene calcolato.
+            </InfoCard>
+            <InfoCard title="ISC utilizzato" accent="sky" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 12v-2" /></svg>}>
+              Il calcolo usa prima l&apos;ISC a 10 anni. Se non disponibile, usa l&apos;ISC a 5 anni. L&apos;orizzonte scelto resta visibile nella scheda fondo.
+            </InfoCard>
+            <InfoCard title="Score netto" accent="sky" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 17l6-6 4 4 8-8" /></svg>}>
+              Per ogni periodo disponibile lo score è rendimento storico meno ISC selezionato. I periodi senza rendimento non entrano nella media.
+            </InfoCard>
+            <InfoCard title="Pesi normalizzati" accent="sky" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h10M4 18h6" /></svg>}>
+              I pesi premiano gli orizzonti più lunghi, ma vengono normalizzati sui soli periodi disponibili per non penalizzare dati assenti.
+            </InfoCard>
+            <InfoCard title="Punteggio 0-10" accent="sky" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.52 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.52 4.674c.3.921-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.52-4.674a1 1 0 00-.363-1.118L3.082 10.1c-.783-.57-.38-1.81.588-1.81h4.915a1 1 0 00.95-.69l1.514-4.674z" /></svg>}>
+              Il risultato finale viene normalizzato in una scala da 0 a 10 e visualizzato con stelline e valore numerico.
+            </InfoCard>
+            <InfoCard title="Casi limite" accent="sky" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>}>
+              Rendimenti negativi e score negativi restano validi. Il rating viene escluso solo quando mancano i dati minimi richiesti.
+            </InfoCard>
           </div>
         </section>
 

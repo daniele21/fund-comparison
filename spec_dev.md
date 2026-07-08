@@ -811,47 +811,104 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 
 ---
 
-## Feature Note - Export PDF Simulazione e Confronto Fondi (2026-04-28, aggiornato 2026-05-05)
+## Feature Note - Rimozione Export PDF Simulazione e Confronto Fondi (2026-07-01)
 
 ### Scope e motivazione
-- Aggiunta esportazione PDF client-side del simulatore tramite `window.print()`.
-- Il report include fondi selezionati, parametri, KPI dei tre step, grafici, commenti narrativi e disclaimer.
-- I layout stampabili seguono template A4 fissi a tre pagine, coerenti con gli esempi di report singolo fondo e confronto piu' fondi.
-- Il pulsante e' visibile ma disabilitato finche' non viene selezionato almeno un fondo.
-- Aggiunta esportazione PDF anche alla sezione Confronta Fondi con riepilogo fondi, rating, performance e costi.
+- Rimosse le barre "Esporta simulazione in PDF" e "Esporta confronto in PDF" da Simulatore e Confronta Fondi.
+- Rimossi componenti report, utility narrative/modello dati e CSS print dedicato.
+- La richiesta post-development esplicita e' non generare piu' report da queste sezioni.
 
 ### Impatti frontend/backend/config
 - Frontend:
-  - `SimulatorPage` espone CTA export e decide i fondi esportabili da modalita' singola/confronto.
-  - `SimulationPdfReport` renderizza la vista stampabile.
-  - `VisualComparison` espone CTA export per il confronto.
-  - `FundComparisonPdfReport` renderizza il report confronto fondi.
-  - `PdfReportLayout` centralizza header, footer, sezioni, metriche e disclaimer.
-  - `pdfReportNarratives` genera executive summary e commenti deterministici da fondi/risultati.
-  - `buildSimulationReportModel` centralizza i dati del report con tipi espliciti.
-  - `index.css` contiene regole print dedicate per nascondere la UI interattiva e mostrare solo il report attivo in A4 con page break espliciti.
-- Backend/config: nessun endpoint, secret o configurazione nuova.
+  - `SimulatorPage` mantiene selezione fondo, modalita' confronto e step di calcolo senza CTA export.
+  - `VisualComparison` mostra solo selezione fondi, grafici e tabella comparativa.
+  - cancellati `SimulationPdfReport`, `FundComparisonPdfReport`, `PdfReportLayout`, `simulationReport` e `pdfReportNarratives`.
+  - rimossi i tipi `SimulationReport*` da `types.ts`.
+  - rimosse le regole `.pdf-*`, `.simulation-print-report`, `.fund-comparison-print-report` e `@media print` dedicate da `index.css`.
+- Backend/config: nessun endpoint, secret o configurazione modificata.
 
 ### Contratti/tipi aggiornati
-- Aggiunti tipi frontend:
-  - `SimulationReportInput`;
-  - `SimulationFundResult`;
-  - `SimulationReportModel`;
-  - tipi di supporto per chart point e metadata.
-- `SimulationReportInput` e `SimulationReportModel` includono `customerEmail?: string | null` per riportare l'indirizzo nel footer del PDF senza introdurre persistenza.
+- Rimossi contratti frontend specifici dei report PDF.
 - Nessuna modifica a contratti API.
 
 ### Piano test e risultati
-- Eseguito: `cd app/frontend && pnpm build`.
-- Risultato: build ok; resta warning Vite preesistente su chunk > 500 kB.
-- Eseguito: `cd app/frontend && pnpm exec tsc --noEmit`.
-- Risultato: KO per errori TypeScript preesistenti in componenti animazione/recharts/import-meta/hook feedback e `data/funds copy.ts`.
-- Rieseguito `pnpm build` dopo template A4 a tre pagine: ok.
+- Eseguito: `node scripts/verify-ranking-costs.mjs`: OK.
+- Eseguito: `cd app/frontend && pnpm build`: OK; resta warning Vite preesistente su chunk > 500 kB.
+- Eseguito: `cd app/frontend && pnpm exec tsc --noEmit`: KO per errori TypeScript preesistenti in componenti animazione/recharts/import-meta/hook feedback e `data/funds copy.ts`.
 
 ### Rischi aperti e rollback
-- Rischio: preview PDF browser-specific sui grafici Recharts; QA manuale richiesta su Chrome/Safari.
-- Rischio: testi narrativi o nomi fondo molto lunghi possono richiedere ritocco puntuale di spacing/font in preview A4.
-- Rollback: rimuovere viste report aggiornate, primitive PDF, utility narrative, campo `customerEmail` e CSS print A4, poi redeploy frontend.
+- Rischio: eventuali utenti abituati all'export non avranno piu' un'azione equivalente in app.
+- Rollback: ripristinare i componenti report eliminati, i tipi `SimulationReport*`, le CTA in `SimulatorPage`/`VisualComparison` e le regole print in `index.css`, poi redeploy frontend.
+
+---
+
+## Feature Note - Feedback post-development Comparatore v2 (2026-07-01)
+
+### Scope e motivazione
+- Applicate le modifiche frontend implementabili senza fonti esterne: ranking commerciale, popover rating, rimozione PDF, badge contrast-safe, sidebar, parser costi e risorse.
+- Popolati i sidecar CSV per fondi chiusi ai nuovi aderenti e accordi collettivi dalle fonti fornite, senza inventare valori non presenti nelle fonti.
+
+### Impatti frontend/backend/config
+- Frontend:
+  - `PensionFund` include `chiusoNuoviAderenti` e `collectiveAgreementInfo`.
+  - `scripts/generate_fp_to_ts.js` unisce i sidecar `data/fondi_chiusi_nuovi_aderenti.csv` e `data/fondi_accordi_collettivi.csv`.
+  - `FundTable` mostra legenda e asterisco per fondi chiusi, quando il sidecar contiene dati.
+  - `FundDetailModal` mostra il box "Adesione e accordi collettivi" accanto ai costi operativi quando disponibile.
+  - `RankingPage` ha filtro categoria, righe cliccabili, identita' fondo coerente con Confronta e rating accanto alla metrica.
+  - `fundRanking` ordina ISC/costi dal valore piu' alto al piu' basso e corregge il parsing di stringhe gratuite con anni.
+  - `PlaybookContent` include metodologia rating e definizioni operative delle categorie di investimento.
+  - `StatusBadge`, `FundRatingBadge`, `FundIdentity` e `InfoPopover` centralizzano UI riusabile.
+- Backend/config: nessun impatto.
+- PWA: nessun nuovo asset in precache; i chunk aggiornati seguono la strategia build/service worker esistente.
+
+### Piano test e risultati
+- `node scripts/generate_fp_to_ts.js`: OK, 489 righe generate.
+- `node scripts/verify-ranking-costs.mjs`: OK.
+- `data/fondi_accordi_collettivi.csv`: popolato da 19 PDF di schede costi collettive, 16 fondi e 72 comparti agganciati.
+- `cd app/frontend && pnpm build`: OK; warning preesistente su chunk > 500 kB.
+- `cd app/frontend && pnpm exec tsc --noEmit`: KO per errori preesistenti fuori scope, inclusi wrapper Framer Motion, tipi Recharts, `ImportMeta.env`, hook feedback e `app/frontend/data/funds copy.ts`.
+- `cd app/frontend && pnpm lint`: KO, script `lint` non definito.
+- Dev server locale: tentato, ma l'avvio con permessi esterni e' stato rifiutato; QA browser mobile/desktop non eseguita in questa sessione.
+
+### Rischi aperti e rollback
+- Dati fondi chiusi: il sidecar e' popolato da `Fondi Chiusi ai nuovi aderenti.xlsx`; 9 righe sorgente non sono applicate per mancato match con il dataset canonico.
+- Accordi collettivi: il sidecar e' popolato dai PDF forniti; per Programma Open il dettaglio numerico delle fasce A/B/C resta da verificare sulla fonte perche' l'estrazione testo non restituisce una tabella completa.
+- Definizioni MEFOP: il testo in app e' operativo e va sostituito/validato con fonte ufficiale business appena disponibile.
+- Loghi emittenti: esclusi dallo scope dopo decisione prodotto v3; non ci sono asset o fallback emittente dedicati nel Ranking.
+- Rollback: ripristinare `types.ts`, `fundRanking.ts`, generator e componenti ranking/tabella/modal ai commit precedenti e rigenerare `funds.ts`.
+
+---
+
+## Feature Note - Feedback post-development Comparatore v3 (2026-07-08)
+
+### Scope e motivazione
+- Implementate le decisioni v3 sul feedback post-development: niente loghi emittente, classificazioni costi separate, campi accordi collettivi separati e conferma del comportamento fondi chiusi.
+
+### Impatti frontend/backend/config
+- Frontend:
+  - `RankingFilters` usa `capitalGuarantee: CapitalGuaranteeFilter` e `includeClosedFunds`; i fondi chiusi sono esclusi di default.
+  - La barra Ranking usa select garanzia, toggle ESG, toggle fondi chiusi e select categoria senza label visuale ridondante.
+  - `RANKING_METRICS` separa `cost-management-percent` e `cost-management-fixed`; il parser costi distingue importi euro e percentuali.
+  - Il parser `erogazione` privilegia costi di pagamento/rivalutazione rendita rispetto ai costi RITA quando convivono nel campo.
+  - `Confronta Fondi` aggiunge filtro accordi collettivi con chip attivo e reset paginazione.
+  - `FundDetailModal` rimuove `Rating fonte`, nasconde la fonte accordi collettivi in UI e mostra `Commissione gestione collettiva` e `Provvigione incentivo` separati.
+  - Popover/metodologia rating aggiornati su scala 0-10; i badge rating nel Ranking hanno fondo uniforme chiaro.
+- Data/config:
+  - `data/fondi_accordi_collettivi.csv`, `scripts/generate_fp_to_ts.js` e `app/frontend/data/funds.ts` includono `collectiveManagementFee` e `incentiveFee`.
+- Backend/API/auth/PWA: nessun impatto.
+
+### Piano test e risultati
+- `node scripts/generate_fp_to_ts.js`: OK, 489 righe generate.
+- `node scripts/verify-ranking-costs.mjs`: OK; copre costo fisso ZED e priorita' rendita su RITA.
+- `cd app/frontend && pnpm build`: OK; warning Vite preesistente su chunk > 500 kB.
+- `cd app/frontend && pnpm exec tsc --noEmit`: KO per errori TypeScript globali preesistenti in wrapper Framer Motion, tipi Recharts, `ImportMeta.env`, hook feedback e `app/frontend/data/funds copy.ts`.
+- `cd app/frontend && pnpm lint`: KO, comando `lint` non configurato.
+- QA DOM desktop/mobile via dev server e Chrome headless: OK su Ranking e Confronta Fondi; verificati 17 card ranking, filtro garanzia, toggle ESG/chiusi e filtro accordi collettivi desktop/mobile.
+
+### Rischi aperti e rollback
+- Rischio: i campi collettivi restano stringhe fonte; non sono normalizzati numericamente per filtri o ranking.
+- Rischio: il filtro `Senza accordi collettivi` include comparti senza sidecar o con valore accordi non positivo.
+- Rollback: ripristinare `RankingFilters`, `RANKING_METRICS`, generator sidecar, `FundDetailModal`, `FilterControls`/`ActiveFiltersChips`, rigenerare `funds.ts` e rimuovere le colonne aggiunte al sidecar.
 
 ---
 
@@ -923,11 +980,41 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 ### Rischi aperti e rollback
 - Rischio: eventuali ambienti con `APP_AUTH_MODE=invite_code` verranno serviti come Google OAuth e richiedono credenziali OAuth valide.
 - Rollback: ripristinare endpoint `/auth/invite/login`, variabili `APP_AUTH_INVITE_*`, UI codice invito e default invite plan.
+
+---
+
+## Feature Note - Refinement ranking e filtro garanzia confronto (2026-06-24)
+
+### Scope e motivazione
+
+- Stato: `done`.
+- Applicazione del feedback post-development sul layout delle classifiche e sul filtro garanzia nella tab `Confronta fondi`.
+
+### Impatti frontend/backend/config
+
+- Frontend: card `RankingCard` riusabile; classifiche a larghezza completa; lista interna alta cinque righe con scroll solo dopo `Mostra tutti`; filtro tipizzato `CapitalGuaranteeFilter` in ricerca fondi, controlli desktop/mobile e chip attivi.
+- Backend/config/dataset: nessuna modifica. Il dataset espone gia' `PensionFund.garanzia: boolean | null`; `true` e `false` sono filtrabili, i valori mancanti restano nell'opzione generale.
+- API/auth/billing: nessun impatto.
+
+### UX, accessibilita' e PWA
+
+- Il controllo di espansione conserva `aria-expanded`; il contenitore espanso e' raggiungibile da tastiera e descrive il comportamento di scroll.
+- I controlli del filtro hanno label accessibili e sono presenti su desktop e mobile; reset, chip e reset della paginazione includono il nuovo stato.
+- Non cambia la strategia offline o la cache PWA; non e' necessario aggiornare `CACHE_VERSION` perche' non cambiano shell o policy di caching.
+
+### Piano test e rollback
+
+- `cd app/frontend && pnpm build`: OK; warning preesistente sul chunk principale oltre 500 kB.
+- `cd app/frontend && pnpm exec tsc --noEmit`: KO per errori preesistenti in animazioni, Recharts, `ImportMeta`, feedback e `data/funds copy.ts`; nessun errore nei file della feature.
+- `cd app/frontend && pnpm lint`: script assente nel package; aprire task tecnico per introdurre il lint frontend.
+- QA manuale desktop/mobile non eseguita: browser integrato non disponibile in questa sessione. Da completare prima del deploy production per verificare ranking, scroll interno, tastiera e combinazioni filtro.
+- Rischi: la scrollbar dipende anche dalle preferenze del sistema operativo (puo' essere overlay); la regione resta comunque scrollabile con mouse, touch e tastiera.
+- Rollback: ripristinare `RankingPage`, rimuovere `RankingCard` e il filtro `CapitalGuaranteeFilter`; nessun dato o contratto da migrare.
 # Feature Note - Ranking, confronto dati e qualita attributi 2026
 
 ## Scope e motivazione
 
-- Aggiunta la sezione Ranking con 16 classifiche su rendimenti, ISC e costi comparabili.
+- Aggiunta la sezione Ranking con classifiche su rendimenti, ISC e costi comparabili; dal feedback v3 le metriche sono 17 per separare gestione annua percentuale e fissa.
 - Inserita tabella di confronto per garanzia del capitale, ESG e costi operativi.
 - Corrette le linee BCC Vita Equity senza garanzia del capitale e rimossi i badge ESG per dichiarazioni negative.
 - Reso esplicito l'anno 2025 per il rendimento a un anno del dataset 2026.

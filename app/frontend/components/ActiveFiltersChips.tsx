@@ -1,5 +1,5 @@
 import React from 'react';
-import { FundCategory, PensionFund } from '../types';
+import { CapitalGuaranteeFilter, CollectiveAgreementFilter, FundCategory, PensionFund } from '../types';
 import { CATEGORY_MAP } from '../constants';
 
 interface ActiveFiltersChipsProps {
@@ -11,6 +11,10 @@ interface ActiveFiltersChipsProps {
   setSelectedCompany: (company: string) => void;
   selectedType: PensionFund['type'] | 'all';
   setSelectedType: (t: PensionFund['type'] | 'all') => void;
+  capitalGuaranteeFilter: CapitalGuaranteeFilter;
+  setCapitalGuaranteeFilter: (filter: CapitalGuaranteeFilter) => void;
+  collectiveAgreementFilter: CollectiveAgreementFilter;
+  setCollectiveAgreementFilter: (filter: CollectiveAgreementFilter) => void;
   onResetAll: () => void;
 }
 
@@ -23,9 +27,13 @@ const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
   setSelectedCompany,
   selectedType,
   setSelectedType,
+  capitalGuaranteeFilter,
+  setCapitalGuaranteeFilter,
+  collectiveAgreementFilter,
+  setCollectiveAgreementFilter,
   onResetAll
 }) => {
-  const hasActiveFilters = searchTerm || selectedCategory !== 'all' || selectedCompany !== 'all' || selectedType !== 'all';
+  const hasActiveFilters = searchTerm || selectedCategory !== 'all' || selectedCompany !== 'all' || selectedType !== 'all' || capitalGuaranteeFilter !== 'all' || collectiveAgreementFilter !== 'all';
 
   if (!hasActiveFilters) {
     return null;
@@ -68,6 +76,30 @@ const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
             className="inline-flex items-center gap-1.5 rounded-full bg-sky-100 dark:bg-sky-900/30 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300 hover:bg-sky-200 dark:hover:bg-sky-900/50 transition-colors"
           >
             <span>Categoria: {CATEGORY_MAP[selectedCategory]}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+
+        {capitalGuaranteeFilter !== 'all' && (
+          <button
+            onClick={() => setCapitalGuaranteeFilter('all')}
+            className="inline-flex items-center gap-1.5 rounded-full bg-sky-100 dark:bg-sky-900/30 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300 hover:bg-sky-200 dark:hover:bg-sky-900/50 transition-colors"
+          >
+            <span>Garanzia: {capitalGuaranteeFilter === 'with-guarantee' ? 'Sì' : 'No'}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+
+        {collectiveAgreementFilter !== 'all' && (
+          <button
+            onClick={() => setCollectiveAgreementFilter('all')}
+            className="inline-flex items-center gap-1.5 rounded-full bg-sky-100 dark:bg-sky-900/30 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300 hover:bg-sky-200 dark:hover:bg-sky-900/50 transition-colors"
+          >
+            <span>Accordi: {collectiveAgreementFilter === 'with-agreements' ? 'presenti' : 'assenti'}</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>

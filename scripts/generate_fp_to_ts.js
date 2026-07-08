@@ -8,6 +8,8 @@ const fs = require('fs');
 const path = require('path');
 
 const DATASET_FILE = 'database_comparti_2026-06-10.csv';
+const CLOSED_FUNDS_FILE = 'fondi_chiusi_nuovi_aderenti.csv';
+const COLLECTIVE_AGREEMENTS_FILE = 'fondi_accordi_collettivi.csv';
 const EXPECTED_ROWS = 489;
 
 // Corrections verified against the provider documentation. They are kept here because
@@ -45,6 +47,27 @@ const REQUIRED_COLUMNS = [
   'ISC 10 Anni',
   'ISC 35 Anni',
   'rating',
+];
+
+const CLOSED_FUNDS_COLUMNS = [
+  'tipo',
+  'N. Albo',
+  'Linea/Comparto',
+  'Chiuso ai nuovi aderenti',
+];
+
+const COLLECTIVE_AGREEMENT_COLUMNS = [
+  'tipo',
+  'N. Albo',
+  'Linea/Comparto',
+  'Accordi collettivi',
+  'Etichetta accordi',
+  'Costo sottoscrizione individuale',
+  'Costo sottoscrizione collettiva',
+  'Commissione gestione collettiva',
+  'Provvigione incentivo',
+  'Note',
+  'Fonte',
 ];
 
 function detectDelimiter(firstLine) {
@@ -131,6 +154,81 @@ function json(value) {
   return JSON.stringify(value);
 }
 
+function fundKey(type, nAlbo, comparto) {
+  return `${type}|${nAlbo}|${comparto}`;
+}
+
+function fundKeyFromRow(row) {
+  return fundKey(row.tipo, row['N. Albo'], row['Linea/Comparto']);
+}
+
+function readOptionalCsv(fileName) {
+  const filePath = path.join(__dirname, '..', 'data', fileName);
+  if (!fs.existsSync(filePath)) {
+    return { headers: [], rows: [] };
+  }
+
+  return parseCsv(fs.readFileSync(filePath, 'utf8'));
+}
+
+function validateSidecarHeaders(fileName, headers, requiredColumns) {
+  const missingColumns = requiredColumns.filter((column) => !headers.includes(column));
+  if (missingColumns.length > 0) {
+    throw new Error(`${fileName}: colonne mancanti: ${missingColumns.join(', ')}`);
+  }
+}
+
+function buildClosedFundsMap() {
+  const { headers, rows } = readOptionalCsv(CLOSED_FUNDS_FILE);
+  if (rows.length === 0) {
+    return new Map();
+  }
+
+  validateSidecarHeaders(CLOSED_FUNDS_FILE, headers, CLOSED_FUNDS_COLUMNS);
+  const map = new Map();
+  rows.forEach((row, index) => {
+    const key = fundKeyFromRow(row);
+    if (!row.tipo || !row['N. Albo'] || !row['Linea/Comparto']) {
+      throw new Error(`${CLOSED_FUNDS_FILE}: riga ${index + 2} con chiave incompleta`);
+    }
+    if (map.has(key)) {
+      throw new Error(`${CLOSED_FUNDS_FILE}: chiave duplicata ${key}`);
+    }
+    map.set(key, yesNoToBooleanString(row['Chiuso ai nuovi aderenti']) === 'true');
+  });
+  return map;
+}
+
+function buildCollectiveAgreementMap() {
+  const { headers, rows } = readOptionalCsv(COLLECTIVE_AGREEMENTS_FILE);
+  if (rows.length === 0) {
+    return new Map();
+  }
+
+  validateSidecarHeaders(COLLECTIVE_AGREEMENTS_FILE, headers, COLLECTIVE_AGREEMENT_COLUMNS);
+  const map = new Map();
+  rows.forEach((row, index) => {
+    const key = fundKeyFromRow(row);
+    if (!row.tipo || !row['N. Albo'] || !row['Linea/Comparto']) {
+      throw new Error(`${COLLECTIVE_AGREEMENTS_FILE}: riga ${index + 2} con chiave incompleta`);
+    }
+    if (map.has(key)) {
+      throw new Error(`${COLLECTIVE_AGREEMENTS_FILE}: chiave duplicata ${key}`);
+    }
+    map.set(key, {
+      hasCollectiveAgreements: yesNoToBooleanString(row['Accordi collettivi']) === 'true',
+      collectiveAgreementLabel: row['Etichetta accordi'] || '',
+      subscriptionCostIndividual: row['Costo sottoscrizione individuale'] || '',
+      subscriptionCostCollective: row['Costo sottoscrizione collettiva'] || '',
+      collectiveManagementFee: row['Commissione gestione collettiva'] || '',
+      incentiveFee: row['Provvigione incentivo'] || '',
+      notes: row.Note || '',
+      sourceFileName: row.Fonte || '',
+    });
+  });
+  return map;
+}
+
 function validateRows(headers, rows) {
   const missingColumns = REQUIRED_COLUMNS.filter((column) => !headers.includes(column));
   if (missingColumns.length > 0) {
@@ -149,7 +247,7 @@ function validateRows(headers, rows) {
       throw new Error(`Riga ${rowNumber}: classificazione COVIP non mappata "${category}"`);
     }
 
-    const key = `${row.tipo}|${row['N. Albo']}|${row['Linea/Comparto']}`;
+    const key = fundKeyFromRow(row);
     if (seenKeys.has(key)) {
       throw new Error(`Riga ${rowNumber}: chiave duplicata ${key}`);
     }
@@ -163,11 +261,22 @@ function validateRows(headers, rows) {
   });
 }
 
-function toGeneratedRow(row) {
+function toGeneratedRow(row, closedFundsMap, collectiveAgreementMap) {
   const fundKey = `${row['N. Albo']}|${row['Linea/Comparto']}`;
   const guarantee = CAPITAL_GUARANTEE_OVERRIDES.has(fundKey)
     ? 'false'
     : yesNoToBooleanString(row.Garanzia);
+  const sidecarKey = fundKeyFromRow(row);
+  const collectiveAgreement = collectiveAgreementMap.get(sidecarKey) ?? {
+    hasCollectiveAgreements: false,
+    collectiveAgreementLabel: '',
+    subscriptionCostIndividual: '',
+    subscriptionCostCollective: '',
+    collectiveManagementFee: '',
+    incentiveFee: '',
+    notes: '',
+    sourceFileName: '',
+  };
 
   return [
     row.tipo,
@@ -205,6 +314,15 @@ function toGeneratedRow(row) {
     normalizeDate(row['Data inizio quotazione']),
     row.Sostenibilità,
     row.rating,
+    closedFundsMap.get(sidecarKey) === true ? 'true' : 'false',
+    collectiveAgreement.hasCollectiveAgreements ? 'true' : 'false',
+    collectiveAgreement.collectiveAgreementLabel,
+    collectiveAgreement.subscriptionCostIndividual,
+    collectiveAgreement.subscriptionCostCollective,
+    collectiveAgreement.collectiveManagementFee,
+    collectiveAgreement.incentiveFee,
+    collectiveAgreement.notes,
+    collectiveAgreement.sourceFileName,
   ];
 }
 
@@ -233,6 +351,39 @@ function buildTsContent(rows) {
     ``,
     `const emptyToNull = (val: string): string | null => val.trim() ? val : null;`,
     ``,
+    `const buildCollectiveAgreementInfo = (`,
+    `  hasCollectiveAgreements: string,`,
+    `  collectiveAgreementLabel: string,`,
+    `  subscriptionCostIndividual: string,`,
+    `  subscriptionCostCollective: string,`,
+    `  collectiveManagementFee: string,`,
+    `  incentiveFee: string,`,
+    `  notes: string,`,
+    `  sourceFileName: string`,
+    `): PensionFund['collectiveAgreementInfo'] => {`,
+    `  const hasContent = hasCollectiveAgreements === 'true' || [`,
+    `    collectiveAgreementLabel,`,
+    `    subscriptionCostIndividual,`,
+    `    subscriptionCostCollective,`,
+    `    collectiveManagementFee,`,
+    `    incentiveFee,`,
+    `    notes,`,
+    `    sourceFileName,`,
+    `  ].some((value) => value.trim().length > 0);`,
+    `  if (!hasContent) return null;`,
+    ``,
+    `  return {`,
+    `    hasCollectiveAgreements: hasCollectiveAgreements === 'true',`,
+    `    collectiveAgreementLabel: emptyToNull(collectiveAgreementLabel),`,
+    `    subscriptionCostIndividual: emptyToNull(subscriptionCostIndividual),`,
+    `    subscriptionCostCollective: emptyToNull(subscriptionCostCollective),`,
+    `    collectiveManagementFee: emptyToNull(collectiveManagementFee),`,
+    `    incentiveFee: emptyToNull(incentiveFee),`,
+    `    notes: emptyToNull(notes),`,
+    `    sourceFileName: emptyToNull(sourceFileName),`,
+    `  };`,
+    `};`,
+    ``,
     `const generateId = (type: string, albo: string, comparto: string): string => {`,
     `  const sanitizedComparto = String(comparto || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');`,
     `  return \`\${type.toLowerCase()}-\${albo}-\${sanitizedComparto}\`;`,
@@ -255,7 +406,10 @@ function buildTsContent(rows) {
   tsLines.push(`    categoriaEstesa, classificazioneCovip, garanzia, costoAdesione, costoAnnuoGestione,`);
   tsLines.push(`    costoGestioneFinanziaria, costoAnticipazione, costoTrasferimento, costoRiscatto,`);
   tsLines.push(`    costoRiallocazionePosizione, costoRiallocazioneFlusso, costoErogazione, benchmark,`);
-  tsLines.push(`    azionario, obbligazionario, dataInizioQuotazione, sostenibilita, sourceRating`);
+  tsLines.push(`    azionario, obbligazionario, dataInizioQuotazione, sostenibilita, sourceRating,`);
+  tsLines.push(`    chiusoNuoviAderenti, hasCollectiveAgreements, collectiveAgreementLabel,`);
+  tsLines.push(`    subscriptionCostIndividual, subscriptionCostCollective, collectiveManagementFee, incentiveFee,`);
+  tsLines.push(`    collectiveAgreementNotes, collectiveAgreementSource`);
   tsLines.push(`  ] = row;`);
   tsLines.push(``);
   tsLines.push(`  const isc5aValue = parseFloatOrNull(isc5a);`);
@@ -307,6 +461,17 @@ function buildTsContent(rows) {
   tsLines.push(`    dataInizioQuotazione: emptyToNull(dataInizioQuotazione),`);
   tsLines.push(`    sostenibilita: emptyToNull(sostenibilita),`);
   tsLines.push(`    sourceRating: parseSourceRating(sourceRating),`);
+  tsLines.push(`    chiusoNuoviAderenti: chiusoNuoviAderenti === 'true',`);
+  tsLines.push(`    collectiveAgreementInfo: buildCollectiveAgreementInfo(`);
+  tsLines.push(`      hasCollectiveAgreements,`);
+  tsLines.push(`      collectiveAgreementLabel,`);
+  tsLines.push(`      subscriptionCostIndividual,`);
+  tsLines.push(`      subscriptionCostCollective,`);
+  tsLines.push(`      collectiveManagementFee,`);
+  tsLines.push(`      incentiveFee,`);
+  tsLines.push(`      collectiveAgreementNotes,`);
+  tsLines.push(`      collectiveAgreementSource`);
+  tsLines.push(`    ),`);
   tsLines.push(`  };`);
   tsLines.push(``);
   tsLines.push(`  return { ...fundWithoutRating, rating: calculateFundRating(fundWithoutRating) };`);
@@ -320,10 +485,12 @@ function main() {
   const outputPath = path.join(__dirname, '..', 'app', 'frontend', 'data', 'funds.ts');
   const content = fs.readFileSync(datasetPath, 'utf8');
   const { headers, rows } = parseCsv(content);
+  const closedFundsMap = buildClosedFundsMap();
+  const collectiveAgreementMap = buildCollectiveAgreementMap();
 
   validateRows(headers, rows);
 
-  const generatedRows = rows.map(toGeneratedRow);
+  const generatedRows = rows.map((row) => toGeneratedRow(row, closedFundsMap, collectiveAgreementMap));
   const tsContent = buildTsContent(generatedRows);
 
   fs.writeFileSync(outputPath, tsContent, 'utf8');

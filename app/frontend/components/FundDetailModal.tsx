@@ -4,8 +4,8 @@ import { CATEGORY_MAP } from '../constants';
 import PerformanceChart from './PerformanceChart';
 import CostChart from './CostChart';
 import { getFundInformativeNote } from '../data/fundInformativeNotes';
-import { formatRatingScoreOutOfTen, formatRatingStarsText, ratingBadgeClasses, ratingStarsFromScore } from '../utils/fundRating';
 import { DATASET_METADATA } from '../config/datasetMetadata';
+import FundRatingBadge from './common/FundRatingBadge';
 
 interface FundDetailModalProps {
   fund: PensionFund | null;
@@ -82,6 +82,7 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
   const informativeNote = fund.notaInformativa ?? getFundInformativeNote(fund.type, fund.nAlbo);
   const normalizedInformativeNote = normalizeExternalUrl(informativeNote?.url ?? null);
   const informativeNoteTitle = informativeNote?.fileName ?? 'Nota informativa';
+  const collectiveInfo = fund.collectiveAgreementInfo;
 
   return (
     <div
@@ -107,8 +108,18 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
           <div className="pr-10 sm:pr-12">
             <h2 id="modal-title" className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-900 dark:text-slate-100 leading-tight">
               {fund.linea}
+              {fund.chiusoNuoviAderenti && (
+                <span className="ml-1 font-black text-rose-600 dark:text-rose-400" aria-label="Chiuso ai nuovi aderenti">
+                  *
+                </span>
+              )}
             </h2>
             <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400 mt-1">{fund.pip}</p>
+            {fund.chiusoNuoviAderenti && (
+              <p className="mt-1 inline-flex rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-800 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-200">
+                * Chiuso ai nuovi aderenti
+              </p>
+            )}
             
             {/* Fund info in header - categories for FPN, website/document links for all */}
             {(fund.categoriaContratto || normalizedSite || normalizedInformativeNote) && (
@@ -182,7 +193,7 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
         <div className="p-2.5 sm:p-4 md:p-5 lg:p-6 overflow-y-auto flex-1">
             {/* Principal Info */}
             <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 sm:p-3 md:p-4 mb-3 sm:mb-4 md:mb-6">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-4 text-center">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 text-center">
                   <div>
                     <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Società</p>
                     <p
@@ -207,10 +218,6 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
                   <div>
                       <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Garanzia</p>
                       <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200">{fund.garanzia === true ? 'Presente' : fund.garanzia === false ? 'Non presente' : 'Non disponibile'}</p>
-                  </div>
-                  <div>
-                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Rating fonte</p>
-                      <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200">{fund.sourceRating ?? 'N/A'}</p>
                   </div>
                   <div>
                       <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Decorrenza</p>
@@ -239,22 +246,7 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
                         : fund.rating.motivoEsclusione}
                     </p>
                   </div>
-                  <span className={`inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-bold ${ratingBadgeClasses(fund.rating.classeRating)}`}>
-                    <span className="tracking-normal" aria-hidden="true">
-                      {Array.from({ length: 5 }, (_, index) => {
-                        const stars = ratingStarsFromScore(fund.rating.ratingScore);
-                        const fillPercent = stars == null ? 0 : Math.max(0, Math.min(1, stars - index)) * 100;
-                        return (
-                          <span key={index} className="relative inline-block text-slate-300 dark:text-slate-600">
-                            <span aria-hidden="true">★</span>
-                            <span className="absolute inset-0 overflow-hidden text-amber-500" style={{ width: `${fillPercent}%` }} aria-hidden="true">★</span>
-                          </span>
-                        );
-                      })}
-                    </span>
-                    <span className="sr-only">{formatRatingStarsText(fund.rating.ratingScore)}</span>
-                    {fund.rating.ratingScore != null && <span className="ml-2 tabular-nums">{formatRatingScoreOutOfTen(fund.rating.ratingScore)}</span>}
-                  </span>
+                  <FundRatingBadge fund={fund} />
                 </div>
                 <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="divide-y divide-gray-200 dark:divide-slate-700 bg-white/70 dark:bg-slate-800/50 rounded-lg px-2.5 sm:px-3 md:px-4 text-xs sm:text-sm">
@@ -330,22 +322,45 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({ fund, isOpen, onClose
                     </div>
                 </div>
                 <div className="sm:col-span-2">
-                    <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 dark:text-slate-200 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14h6m-6 4h6M5 5h14M5 9h14M5 13h.01M5 17h.01" />
-                      </svg>
-                      Costi operativi
-                    </h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 divide-y divide-gray-200 rounded-lg bg-gray-50 px-2.5 text-xs sm:text-sm dark:divide-slate-700 dark:bg-slate-700/50 sm:px-3 md:px-4 lg:divide-y-0">
-                        <TextValueRow label="Adesione" value={fund.costiDettaglio.adesione} />
-                        <TextValueRow label="Gestione annua" value={fund.costiDettaglio.annuiGestione} />
-                        <TextValueRow label="Gestione finanziaria" value={fund.costiDettaglio.gestioneFinanziaria} />
-                        <TextValueRow label="Anticipazione" value={fund.costiDettaglio.anticipazione} />
-                        <TextValueRow label="Trasferimento" value={fund.costiDettaglio.trasferimento} />
-                        <TextValueRow label="Riscatto" value={fund.costiDettaglio.riscatto} />
-                        <TextValueRow label="Riallocazione posizione" value={fund.costiDettaglio.riallocazionePosizione} />
-                        <TextValueRow label="Riallocazione flusso" value={fund.costiDettaglio.riallocazioneFlussoContributivo} />
-                        <TextValueRow label="Erogazione" value={fund.costiDettaglio.erogazione} />
+                    <div className={`grid grid-cols-1 gap-4 ${collectiveInfo ? 'lg:grid-cols-2' : ''}`}>
+                      <div>
+                        <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 dark:text-slate-200 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14h6m-6 4h6M5 5h14M5 9h14M5 13h.01M5 17h.01" />
+                          </svg>
+                          Costi operativi
+                        </h3>
+                        <div className="grid grid-cols-1 gap-x-4 divide-y divide-gray-200 rounded-lg bg-gray-50 px-2.5 text-xs sm:text-sm dark:divide-slate-700 dark:bg-slate-700/50 sm:px-3 md:px-4">
+                            <TextValueRow label="Adesione" value={fund.costiDettaglio.adesione} />
+                            <TextValueRow label="Gestione annua" value={fund.costiDettaglio.annuiGestione} />
+                            <TextValueRow label="Gestione finanziaria" value={fund.costiDettaglio.gestioneFinanziaria} />
+                            <TextValueRow label="Anticipazione" value={fund.costiDettaglio.anticipazione} />
+                            <TextValueRow label="Trasferimento" value={fund.costiDettaglio.trasferimento} />
+                            <TextValueRow label="Riscatto" value={fund.costiDettaglio.riscatto} />
+                            <TextValueRow label="Riallocazione posizione" value={fund.costiDettaglio.riallocazionePosizione} />
+                            <TextValueRow label="Riallocazione flusso" value={fund.costiDettaglio.riallocazioneFlussoContributivo} />
+                            <TextValueRow label="Erogazione" value={fund.costiDettaglio.erogazione} />
+                        </div>
+                      </div>
+                      {collectiveInfo && (
+                        <div>
+                          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 dark:text-slate-200 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-sky-600 dark:text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m0-4a4 4 0 118 0 4 4 0 01-8 0z" />
+                            </svg>
+                            Adesione e accordi collettivi
+                          </h3>
+                          <div className="divide-y divide-gray-200 rounded-lg bg-sky-50/70 px-2.5 text-xs sm:text-sm dark:divide-slate-700 dark:bg-slate-900/40 sm:px-3 md:px-4">
+                            <TextValueRow label="Accordi collettivi" value={collectiveInfo.hasCollectiveAgreements ? 'Presenti' : 'Non dichiarati'} />
+                            <TextValueRow label="Dettaglio accordo" value={collectiveInfo.collectiveAgreementLabel} />
+                            <TextValueRow label="Costo sottoscrizione individuale" value={collectiveInfo.subscriptionCostIndividual} />
+                            <TextValueRow label="Costo sottoscrizione collettiva" value={collectiveInfo.subscriptionCostCollective} />
+                            <TextValueRow label="Commissione gestione collettiva" value={collectiveInfo.collectiveManagementFee} />
+                            <TextValueRow label="Provvigione incentivo" value={collectiveInfo.incentiveFee} />
+                            <TextValueRow label="Note" value={collectiveInfo.notes} />
+                          </div>
+                        </div>
+                      )}
                     </div>
                 </div>
                 <div className="sm:col-span-2">

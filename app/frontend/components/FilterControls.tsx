@@ -1,5 +1,5 @@
 import React, { useId, useState, useEffect, useRef } from 'react';
-import { FundCategory, PensionFund } from '../types';
+import { CapitalGuaranteeFilter, CollectiveAgreementFilter, FundCategory, PensionFund } from '../types';
 import { CATEGORY_MAP } from '../constants';
 import { AnimatedButton } from './animations/AnimatedButton';
 
@@ -14,6 +14,10 @@ interface FilterControlsProps {
   companies: string[];
   selectedType: PensionFund['type'] | 'all';
   setSelectedType: (t: PensionFund['type'] | 'all') => void;
+  capitalGuaranteeFilter: CapitalGuaranteeFilter;
+  setCapitalGuaranteeFilter: (filter: CapitalGuaranteeFilter) => void;
+  collectiveAgreementFilter: CollectiveAgreementFilter;
+  setCollectiveAgreementFilter: (filter: CollectiveAgreementFilter) => void;
   onReset: () => void;
   totalFunds?: number;
 }
@@ -29,6 +33,10 @@ const FilterControls: React.FC<FilterControlsProps> = ({
   companies,
   selectedType,
   setSelectedType,
+  capitalGuaranteeFilter,
+  setCapitalGuaranteeFilter,
+  collectiveAgreementFilter,
+  setCollectiveAgreementFilter,
   onReset,
   totalFunds = 0
 }) => {
@@ -50,7 +58,9 @@ const FilterControls: React.FC<FilterControlsProps> = ({
     searchTerm,
     selectedCategory !== 'all' && selectedCategory,
     selectedCompany !== 'all' && selectedCompany,
-    selectedType !== 'all' && selectedType
+    selectedType !== 'all' && selectedType,
+    capitalGuaranteeFilter !== 'all' && capitalGuaranteeFilter,
+    collectiveAgreementFilter !== 'all' && collectiveAgreementFilter
   ].filter(Boolean).length;
 
   return (
@@ -109,6 +119,30 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           <option value="PIP">PIP</option>
           <option value="FPA">FPA</option>
           <option value="FPN">FPN</option>
+        </select>
+
+        <select
+          id="capital-guarantee"
+          value={capitalGuaranteeFilter}
+          onChange={(event) => setCapitalGuaranteeFilter(event.target.value as CapitalGuaranteeFilter)}
+          aria-label="Garanzia del capitale"
+          className="w-auto min-w-[155px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-200"
+        >
+          <option value="all">Tutte le garanzie</option>
+          <option value="with-guarantee">Con garanzia</option>
+          <option value="without-guarantee">Senza garanzia</option>
+        </select>
+
+        <select
+          id="collective-agreements"
+          value={collectiveAgreementFilter}
+          onChange={(event) => setCollectiveAgreementFilter(event.target.value as CollectiveAgreementFilter)}
+          aria-label="Accordi collettivi"
+          className="w-auto min-w-[165px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-200"
+        >
+          <option value="all">Tutti gli accordi</option>
+          <option value="with-agreements">Con accordi collettivi</option>
+          <option value="without-agreements">Senza accordi collettivi</option>
         </select>
 
         <CompanyQuickSearch
@@ -196,6 +230,28 @@ const FilterControls: React.FC<FilterControlsProps> = ({
               <option value="PIP">PIP</option>
               <option value="FPA">FPA</option>
               <option value="FPN">FPN</option>
+            </select>
+
+            <select
+              value={capitalGuaranteeFilter}
+              onChange={(event) => setCapitalGuaranteeFilter(event.target.value as CapitalGuaranteeFilter)}
+              aria-label="Garanzia del capitale"
+              className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-800 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-200"
+            >
+              <option value="all">Tutte le garanzie</option>
+              <option value="with-guarantee">Con garanzia</option>
+              <option value="without-guarantee">Senza garanzia</option>
+            </select>
+
+            <select
+              value={collectiveAgreementFilter}
+              onChange={(event) => setCollectiveAgreementFilter(event.target.value as CollectiveAgreementFilter)}
+              aria-label="Accordi collettivi"
+              className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-800 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-200"
+            >
+              <option value="all">Tutti gli accordi</option>
+              <option value="with-agreements">Con accordi collettivi</option>
+              <option value="without-agreements">Senza accordi collettivi</option>
             </select>
 
             <CompanyQuickSearch
