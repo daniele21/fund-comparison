@@ -1,0 +1,16 @@
+# 1. Install Firebase CLI globally
+npm install -g firebase-tools
+
+# 2. Login to Firebase
+firebase login
+
+firebase use financial-suite
+
+# 3. Initialize Firebase in your project directory
+firebase init
+
+# 4. Choose "Hosting" and follow the prompts (set public directory, configure as single-page app if needed)
+
+# 5. Build your frontend (if using React, Angular, etc.)
+
+cd app/frontend && npm run build && firebase deploy --only hosting

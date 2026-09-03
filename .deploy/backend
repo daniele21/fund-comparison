@@ -1,0 +1,42 @@
+gcloud auth login
+
+gcloud config set project financial-suite
+
+cd app/backend && gcloud builds submit --tag gcr.io/financial-suite/fund-comparison-api:latest && cd ../../
+
+gcloud run deploy fund-comparison-api \
+  --image gcr.io/financial-suite/fund-comparison-api:latest \
+  --region europe-west1 \
+  --service-account="fund-comparison-run@financial-suite.iam.gserviceaccount.com" \
+  --allow-unauthenticated \
+  --env-vars-file app/backend/env_prod.json \
+  --set-secrets "APP_JWT_SECRET_KEY=fund-comparison-api--app_jwt_secret_key:latest,APP_JWT_ACCESS_TOKEN_EXPIRE_MINUTES=fund-comparison-api--app_jwt_access_token_expire_minutes:latest,APP_GOOGLE_CLIENT_SECRET=fund-comparison-api--app_google_client_secret:latest,APP_TELEGRAM_BOT_TOKEN=fund-comparison-api--app_telegram_bot_token:latest" \
+  --min-instances=0 \
+  --max-instances=5 \
+  --format='value(status.url)'
+
+gcloud run deploy fund-comparison-api \
+  --image gcr.io/financial-suite/fund-comparison-api:latest \
+  --region europe-west1 \
+  --service-account="fund-comparison-run@financial-suite.iam.gserviceaccount.com" \
+  --allow-unauthenticated \
+  --env-vars-file app/backend/env_prod.json \
+  --set-secrets "APP_JWT_SECRET_KEY=APP_JWT_SECRET_KEY:latest,APP_JWT_ACCESS_TOKEN_EXPIRE_MINUTES=APP_JWT_ACCESS_TOKEN_EXPIRE_MINUTES:latest,APP_GOOGLE_CLIENT_SECRET=APP_GOOGLE_CLIENT_SECRET:latest,APP_TELEGRAM_BOT_TOKEN=APP_TELEGRAM_BOT_TOKEN:latest" \
+  --min-instances=0 \
+  --max-instances=5 \
+  --format='value(status.url)'
+
+-------------------------
+
+cd app/backend && gcloud builds submit --tag gcr.io/gen-lang-client-0685938029/fund-comparison-api-v2:latest && cd ../../
+
+gcloud run deploy fund-comparison-api-v2 \
+  --image gcr.io/gen-lang-client-0685938029/fund-comparison-api-v2:latest \
+  --region europe-west1 \
+  --service-account="295273639887-compute@developer.gserviceaccount.com" \
+  --allow-unauthenticated \
+  --env-vars-file app/backend/env_prod.json \
+  --set-secrets "APP_JWT_SECRET_KEY=fund-comparison-api--app_jwt_secret_key:latest,APP_JWT_ACCESS_TOKEN_EXPIRE_MINUTES=fund-comparison-api--app_jwt_access_token_expire_minutes:latest,APP_GOOGLE_CLIENT_SECRET=fund-comparison-api--app_google_client_secret:latest,APP_TELEGRAM_BOT_TOKEN=fund-comparison-api--app_telegram_bot_token:latest,APP_STRIPE_PUBLIC_KEY=fund-comparison-api--app_stripe_public_key:latest,APP_STRIPE_SECRET_KEY=fund-comparison-api--app_stripe_secret_key:latest,APP_STRIPE_WEBHOOK_SECRET=fund-comparison-api--app_stripe_webhook_secret:latest,APP_SHOPIFY_WEBHOOK_SECRET=fund-comparison-api--app_shopify_webhook_secret:latest,APP_MIN_PASSWORD_LENGTH=fund-comparison-api--app_min_password_length:latest,APP_PASSWORD_COMPLEXITY=fund-comparison-api--app_password_complexity:latest" \
+  --min-instances=0 \
+  --max-instances=5 \
+  --format='value(status.url)'
