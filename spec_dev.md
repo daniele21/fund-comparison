@@ -1037,3 +1037,31 @@ Usa questo template per feature, bugfix importanti, refactor o cambi architettur
 - Rollback: rimuovere i componenti Ranking/confronto, ripristinare il dataset canonico e rigenerare `funds.ts`.
 
 ---
+
+## Feature Note - Feedback post-development Comparatore v4 (2026-07-13)
+
+### Scope e motivazione
+
+- Stato: `done`.
+- Applicato feedback v4 su dati costi, ranking, metodologia rating e layout desktop.
+- Nota operativa completa: `docs/FEEDBACK_POST_DEVELOPMENT_COMPARATORE_V4.md`.
+
+### Impatti frontend/backend/config
+
+- Frontend: nuovo filtro tipo fondo nel Ranking (`Tutti i tipi`, `PIP`, `FPA`, `FPN`), navigazione interna con hash retry-safe verso metodologia rating, copy metodologia aggiornato, offset header/sidebar desktop riallineato e maggiore distanza logo-titolo.
+- Dataset: invertite le voci Mediafond `COMPARTO AZIONARIO` tra `Gestione annua` e `Gestione finanziaria`; aggiunto override riproducibile nel generator; rigenerato `app/frontend/data/funds.ts`.
+- Backend/config/API/auth/billing/PWA: nessun impatto.
+
+### Piano test e risultati
+
+- `node scripts/generate_fp_to_ts.js`: OK, 489 righe generate.
+- `node scripts/verify-ranking-costs.mjs`: OK; copre parser erogazione Previd-System e filtro tipo Ranking.
+- `cd app/frontend && pnpm build`: OK; warning preesistente sul chunk principale oltre 500 kB.
+- `cd app/frontend && pnpm exec tsc --noEmit`: KO per errori preesistenti fuori scope in animazioni, Recharts, `ImportMeta`, feedback e `data/funds copy.ts`.
+- `cd app/frontend && pnpm lint`: KO per script assente.
+- QA visuale browser desktop/mobile: OK su Chrome headless/CDP locale con mock `authMode=none`; verificati `/ranking`, `/compare` e `/guide#rating-accademia-previdenza`.
+
+### Rischi aperti e rollback
+
+- Rischio: testo metodologia aggiornato secondo feedback, senza cambiare l'algoritmo rating esistente.
+- Rollback: ripristinare i file frontend modificati, rimuovere l'override Mediafond dal generator, ripristinare la riga Mediafond nei CSV, rigenerare `funds.ts` e rimuovere la regressione filtro tipo dallo script ranking.

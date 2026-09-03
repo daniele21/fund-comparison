@@ -50,6 +50,33 @@ const InfoCard: React.FC<{
   );
 };
 
+const ratingMethodologyItems = [
+  {
+    title: 'Che cosa misura il rating',
+    text: `Il rating assegna a ogni comparto di fondo pensione aperto un punteggio su scala 1–10, che esprime l’efficienza complessiva del prodotto nel trasformare i contributi versati in rendimenti, tenendo conto dei costi e dell’orizzonte previdenziale di lungo periodo.`,
+  },
+  {
+    title: 'Costi: uso dell’ISC al posto del TER',
+    text: `Per valutare i costi non si utilizza il TER, bensì l’Indicatore Sintetico dei Costi (ISC) definito da COVIP, che riassume tutte le principali voci di costo (commissioni di gestione, spese annue, costi di adesione e trasferimento, eventuali commissioni di performance) su un orizzonte standardizzato; si usa come riferimento l’ISC a 10 anni, oppure, se non disponibile, l’ISC a 5 anni.`,
+  },
+  {
+    title: 'Rendimenti storici e orizzonti temporali',
+    text: `Il rating combina i rendimenti netti del comparto su più periodi (almeno 3 anni e, se disponibili, 5, 10, 15, 20 e 25 anni), calcolati su serie omogenee di valore quota, in modo da cogliere sia il comportamento recente sia la solidità nel lungo termine e garantire confronti coerenti tra fondi della stessa categoria.`,
+  },
+  {
+    title: 'Score netto per periodo e media ponderata',
+    text: `Per ogni periodo disponibile viene calcolato uno “score netto” come differenza tra rendimento del comparto e ISC selezionato; questi score vengono poi combinati in una media ponderata, con pesi maggiori per gli orizzonti più lunghi e minori per quelli più brevi, normalizzando i pesi quando mancano alcuni periodi, così da ottenere un punteggio numerico unico su scala 1–10.`,
+  },
+  {
+    title: 'Casi in cui il rating non viene calcolato',
+    text: `Il rating non viene calcolato se il comparto ha meno di 3 anni di storia, se manca il rendimento a 3 anni o se non è disponibile né l’ISC a 10 anni né quello a 5 anni, perché in queste condizioni non è possibile stimare in modo affidabile il rapporto tra rendimenti e costi; tali comparti vengono indicati come “non classificabili” per trasparenza verso l’utente.`,
+  },
+  {
+    title: 'Confronto corretto tra comparti',
+    text: `Il rating deve essere letto come strumento comparativo tra comparti omogenei, perché costi e rendimenti hanno significato solo se confrontati tra linee con caratteristiche simili; anche il comparatore COVIP consente di analizzare i costi selezionando comparti della stessa tipologia, proprio per garantire confronti coerenti e non fuorvianti.`,
+  },
+] as const;
+
 const PlaybookContent: React.FC<PlaybookContentProps> = ({ onNavigate }) => {
   return (
     <div className="relative px-2 sm:px-4 md:px-6 lg:px-0">
@@ -136,30 +163,22 @@ const PlaybookContent: React.FC<PlaybookContentProps> = ({ onNavigate }) => {
 
         <section id="rating-accademia-previdenza" className="scroll-mt-24">
           <div className="text-center max-w-2xl mx-auto px-4">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">Come viene calcolato il rating</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">Metodologia del rating dei fondi pensione</h2>
             <p className="mt-3 sm:mt-4 text-base sm:text-lg leading-7 sm:leading-8 text-slate-600 dark:text-slate-300">
-              Il rating Accademia Previdenza misura ogni comparto combinando rendimenti disponibili e costi sintetici.
+              Il rating Accademia Previdenza confronta comparti omogenei usando rendimenti storici, ISC e orizzonte previdenziale di lungo periodo.
             </p>
           </div>
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <InfoCard title="Ammissibilità" accent="sky" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>}>
-              Il comparto deve avere almeno un rendimento a 3 anni e un ISC utilizzabile a 10 o 5 anni. Se mancano questi dati, il rating non viene calcolato.
-            </InfoCard>
-            <InfoCard title="ISC utilizzato" accent="sky" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 12v-2" /></svg>}>
-              Il calcolo usa prima l&apos;ISC a 10 anni. Se non disponibile, usa l&apos;ISC a 5 anni. L&apos;orizzonte scelto resta visibile nella scheda fondo.
-            </InfoCard>
-            <InfoCard title="Score netto" accent="sky" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 17l6-6 4 4 8-8" /></svg>}>
-              Per ogni periodo disponibile lo score è rendimento storico meno ISC selezionato. I periodi senza rendimento non entrano nella media.
-            </InfoCard>
-            <InfoCard title="Pesi normalizzati" accent="sky" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h10M4 18h6" /></svg>}>
-              I pesi premiano gli orizzonti più lunghi, ma vengono normalizzati sui soli periodi disponibili per non penalizzare dati assenti.
-            </InfoCard>
-            <InfoCard title="Punteggio 0-10" accent="sky" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.52 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.52 4.674c.3.921-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.52-4.674a1 1 0 00-.363-1.118L3.082 10.1c-.783-.57-.38-1.81.588-1.81h4.915a1 1 0 00.95-.69l1.514-4.674z" /></svg>}>
-              Il risultato finale viene normalizzato in una scala da 0 a 10 e visualizzato con stelline e valore numerico.
-            </InfoCard>
-            <InfoCard title="Casi limite" accent="sky" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>}>
-              Rendimenti negativi e score negativi restano validi. Il rating viene escluso solo quando mancano i dati minimi richiesti.
-            </InfoCard>
+            {ratingMethodologyItems.map((item, index) => (
+              <InfoCard
+                key={item.title}
+                title={item.title}
+                accent="sky"
+                icon={<span className="text-sm font-black">{index + 1}</span>}
+              >
+                {item.text}
+              </InfoCard>
+            ))}
           </div>
         </section>
 

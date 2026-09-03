@@ -1,4 +1,4 @@
-import type { CapitalGuaranteeFilter, FundCategory, FundCostDetails, PensionFund } from '../types';
+import type { CapitalGuaranteeFilter, FundCategory, FundCostDetails, FundType, PensionFund } from '../types';
 import { getCapitalGuaranteeStatus, getEsgStatus } from './fundAttributes';
 
 type ReturnKey = keyof PensionFund['rendimenti'];
@@ -34,6 +34,7 @@ export const RANKING_METRICS: RankingMetric[] = [
 ];
 
 export interface RankingFilters {
+  fundType: FundType | 'all';
   onlyEsg: boolean;
   capitalGuarantee: CapitalGuaranteeFilter;
   category: FundCategory | 'all';
@@ -121,6 +122,7 @@ const metricValue = (fund: PensionFund, metric: RankingMetric): number | null =>
 export const getRankedFunds = (funds: PensionFund[], metric: RankingMetric, filters: RankingFilters): RankedFund[] => {
   return funds
     .filter((fund) => filters.includeClosedFunds || !fund.chiusoNuoviAderenti)
+    .filter((fund) => filters.fundType === 'all' || fund.type === filters.fundType)
     .filter((fund) => !filters.onlyEsg || getEsgStatus(fund) === 'yes')
     .filter((fund) => filters.capitalGuarantee !== 'with-guarantee' || getCapitalGuaranteeStatus(fund) === 'yes')
     .filter((fund) => filters.capitalGuarantee !== 'without-guarantee' || getCapitalGuaranteeStatus(fund) === 'no')

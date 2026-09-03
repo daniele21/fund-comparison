@@ -33,7 +33,7 @@ try {
     { cwd: appRoot, stdio: 'pipe' }
   );
 
-  const { parseRankingCostForTest } = require(join(outDir, 'utils', 'fundRanking.js'));
+  const { getRankedFunds, parseRankingCostForTest, RANKING_METRICS } = require(join(outDir, 'utils', 'fundRanking.js'));
 
   assert.equal(parseRankingCostForTest('50 euro', 'EUR'), 50);
   assert.equal(parseRankingCostForTest('100,00 EUR', 'EUR'), 100);
@@ -60,6 +60,39 @@ try {
       'erogazione'
     ),
     1.35
+  );
+
+  const returnMetric = RANKING_METRICS.find((metric) => metric.id === 'return-1y');
+  assert.ok(returnMetric);
+  const sampleFunds = [
+    {
+      type: 'FPN',
+      categoria: 'AZN',
+      chiusoNuoviAderenti: false,
+      linea: 'Fondo negoziale',
+      rendimenti: { ultimoAnno: 5 },
+      isc: {},
+      costiDettaglio: {},
+    },
+    {
+      type: 'FPA',
+      categoria: 'AZN',
+      chiusoNuoviAderenti: false,
+      linea: 'Fondo aperto',
+      rendimenti: { ultimoAnno: 9 },
+      isc: {},
+      costiDettaglio: {},
+    },
+  ];
+  assert.deepEqual(
+    getRankedFunds(sampleFunds, returnMetric, {
+      fundType: 'FPN',
+      onlyEsg: false,
+      capitalGuarantee: 'all',
+      category: 'all',
+      includeClosedFunds: false,
+    }).map((rankedFund) => rankedFund.fund.type),
+    ['FPN']
   );
 
   console.log('Ranking cost parser regression checks passed.');

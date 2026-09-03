@@ -12,6 +12,7 @@ interface RankingPageProps {
 
 const RankingPage: React.FC<RankingPageProps> = ({ funds, onFundClick }) => {
   const [filters, setFilters] = React.useState<RankingFilters>({
+    fundType: 'all',
     onlyEsg: false,
     capitalGuarantee: 'all',
     category: 'all',

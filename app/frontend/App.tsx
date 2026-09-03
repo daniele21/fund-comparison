@@ -48,6 +48,42 @@ const VisualComparison = lazy(() => import('./components/VisualComparison'));
 const RankingPage = lazy(() => import('./features/ranking/RankingPage'));
 
 const FREE_PLAN_LIMIT = 10;
+const APP_ROUTE_PATHS = new Set([
+  '/',
+  '/playbook',
+  '/home',
+  '/simulator',
+  '/analyze',
+  '/compare',
+  '/ranking',
+  '/guide',
+  '/tfr-faq',
+  '/admin',
+  '/dashboard',
+]);
+
+const scrollToHashTarget = (hash: string, attempt = 0): void => {
+  const rawTargetId = hash.startsWith('#') ? hash.slice(1) : hash;
+  if (!rawTargetId) return;
+
+  let targetId = rawTargetId;
+  try {
+    targetId = decodeURIComponent(rawTargetId);
+  } catch {
+    targetId = rawTargetId;
+  }
+
+  const target = document.getElementById(targetId);
+  if (!target) {
+    if (attempt < 10) {
+      window.setTimeout(() => scrollToHashTarget(hash, attempt + 1), 100);
+    }
+    return;
+  }
+
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
 const LazyFallback: React.FC = () => (
   <div className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-6 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300">
     Caricamento sezione...
@@ -163,10 +199,7 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     const scrollToCurrentHash = () => {
-      const targetId = window.location.hash.slice(1);
-      if (!targetId) return;
-      const target = document.getElementById(decodeURIComponent(targetId));
-      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollToHashTarget(window.location.hash);
     };
 
     if (view === 'dashboard' && activeSection === 'playbook' && window.location.hash) {
@@ -176,6 +209,47 @@ const AppContent: React.FC = () => {
     window.addEventListener('hashchange', scrollToCurrentHash);
     return () => window.removeEventListener('hashchange', scrollToCurrentHash);
   }, [view, activeSection]);
+
+  useEffect(() => {
+    const handleInAppLinkClick = (event: MouseEvent): void => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.shiftKey
+      ) {
+        return;
+      }
+
+      if (!(event.target instanceof Element)) return;
+      const anchor = event.target.closest<HTMLAnchorElement>('a[href]');
+      if (!anchor || anchor.hasAttribute('download') || (anchor.target && anchor.target !== '_self')) {
+        return;
+      }
+
+      const url = new URL(anchor.href);
+      const normalizedPath = url.pathname.toLowerCase();
+      if (url.origin !== window.location.origin || !APP_ROUTE_PATHS.has(normalizedPath)) {
+        return;
+      }
+
+      event.preventDefault();
+      const resolved = resolveRouteFromPathname(url.pathname);
+      const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+      window.history.pushState(null, '', nextUrl);
+      setView(resolved.view);
+      setActiveSection(resolved.section);
+
+      if (url.hash) {
+        window.setTimeout(() => scrollToHashTarget(url.hash), 200);
+      }
+    };
+
+    document.addEventListener('click', handleInAppLinkClick);
+    return () => document.removeEventListener('click', handleInAppLinkClick);
+  }, []);
 
   // Sync UI state to URL path
   useEffect(() => {
@@ -500,10 +574,10 @@ const AppContent: React.FC = () => {
         />
       
       {/* Layout with Sidebar */}
-      <div className="flex pt-16 min-h-[calc(100vh-4rem)]">
+      <div className="flex pt-16 md:pt-[81px] min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-81px)]">
         {/* Fixed Sidebar Navigation */}
         <aside
-          className={`hidden md:block fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-slate-200 dark:border-slate-800 shadow-lg transition-all duration-300 z-10 ${
+          className={`hidden md:block fixed left-0 top-[81px] h-[calc(100vh-81px)] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-slate-200 dark:border-slate-800 shadow-lg transition-all duration-300 z-10 ${
             sidebarCollapsed ? 'w-20' : 'w-56 lg:w-60'
           }`}
         >
@@ -512,11 +586,11 @@ const AppContent: React.FC = () => {
             aria-label="Navigazione dashboard"
           >
             {/* Sidebar Header */}
-            <div className={`flex min-h-14 items-center border-b border-slate-200/50 bg-gradient-to-r from-slate-50 to-white dark:border-slate-800/50 dark:from-slate-900/50 dark:to-slate-800/50 ${
+            <div className={`flex h-16 items-center border-b border-slate-200/50 bg-gradient-to-r from-slate-50 to-white dark:border-slate-800/50 dark:from-slate-900/50 dark:to-slate-800/50 ${
               sidebarCollapsed ? 'justify-center px-3 py-2' : 'justify-between px-4 py-2'
             }`}>
               {!sidebarCollapsed && (
-                <div className="flex items-center gap-2">
+                <div className="flex h-12 items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                     Menu
@@ -526,7 +600,7 @@ const AppContent: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSidebarCollapsed(prev => !prev)}
-                className="flex h-11 w-11 min-h-11 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-all duration-200 hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                className="flex h-12 w-12 min-h-12 items-center justify-center rounded-xl bg-slate-100 p-3 text-slate-600 transition-all duration-200 hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                 aria-label={sidebarCollapsed ? 'Espandi menu' : 'Comprimi menu'}
                 title={sidebarCollapsed ? 'Espandi menu' : 'Comprimi menu'}
               >

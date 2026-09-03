@@ -20,6 +20,16 @@ const CAPITAL_GUARANTEE_OVERRIDES = new Set([
   '5047|BCC VITA EQUITY ASIA PIP',
 ]);
 
+const COST_DETAIL_OVERRIDES = new Map([
+  [
+    'FPN|126|COMPARTO AZIONARIO',
+    {
+      annuiGestione: '0,12% del patrimonio su base annua; 0,03% per commissioni depositario; 0,02% per commissioni amministrative',
+      gestioneFinanziaria: '10% dell’extra rendimento, se positivo, realizzato nei confronti del benchmark di riferimento alla scadenza della convenzione (su base triennale)',
+    },
+  ],
+]);
+
 const CATEGORY_MAP = {
   Garantito: 'GAR',
   Bilanciato: 'BIL',
@@ -267,6 +277,7 @@ function toGeneratedRow(row, closedFundsMap, collectiveAgreementMap) {
     ? 'false'
     : yesNoToBooleanString(row.Garanzia);
   const sidecarKey = fundKeyFromRow(row);
+  const costOverride = COST_DETAIL_OVERRIDES.get(sidecarKey);
   const collectiveAgreement = collectiveAgreementMap.get(sidecarKey) ?? {
     hasCollectiveAgreements: false,
     collectiveAgreementLabel: '',
@@ -300,8 +311,8 @@ function toGeneratedRow(row, closedFundsMap, collectiveAgreementMap) {
     row['Classificazione Covip'],
     guarantee,
     row['Costi di Adesione'],
-    row['Costi annui di Gestione'],
-    row['Costi di Gestione Finanziaria'],
+    costOverride?.annuiGestione ?? row['Costi annui di Gestione'],
+    costOverride?.gestioneFinanziaria ?? row['Costi di Gestione Finanziaria'],
     row['Costi di Anticipazione'],
     row['Costi di Trasferimento'],
     row['Costi di Riscatto'],
