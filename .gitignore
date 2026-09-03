@@ -60,8 +60,6 @@ app/firestore-access.json
 app/firestore-access.json.backup
 **/firestore-access.json
 **/firestore-access.json.backup
-.deploy/backend
-.deploy/frontend
 app/backend/.env.production
 app/backend/deploy_from_env.py
 app/backend/DEPLOY.md
